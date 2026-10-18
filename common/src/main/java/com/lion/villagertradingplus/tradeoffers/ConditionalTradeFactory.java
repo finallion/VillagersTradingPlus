@@ -1,40 +1,31 @@
 package com.lion.villagertradingplus.tradeoffers;
 
 import com.lion.villagertradingplus.tradeoffers.conditions.TradeCondition;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOffers;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.trading.MerchantOffer;
 
-/**
- * Wraps another trade factory and yields its offer only when the condition passes. Returning
- * {@code null} plugs directly into vanilla's existing null-filtering during offer selection, so a
- * failed condition simply means the trade is not offered by that villager.
- */
-public final class ConditionalTradeFactory implements TradeOffers.Factory {
+/// Yields the offer only when the condition passes. A null offer hides the trade.
+public final class ConditionalTradeFactory implements TradeFactory {
 
-    private final TradeOffers.Factory delegate;
+    private final TradeFactory delegate;
     private final TradeCondition condition;
 
-    public ConditionalTradeFactory(TradeOffers.Factory delegate, TradeCondition condition) {
+    public ConditionalTradeFactory(TradeFactory delegate, TradeCondition condition) {
         this.delegate = delegate;
         this.condition = condition;
     }
 
     @Override
-    public TradeOffer create(Entity entity, Random random) {
+    public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, RandomSource random) {
         if (!condition.test(entity)) {
             return null;
         }
-        return delegate.create(entity, random);
+        return delegate.create(world, entity, random);
     }
 
-    /**
-     * The wrapped factory. The trade catalogue reaches past the gate deliberately: it lists gated
-     * trades whatever their condition currently says, and marks them, rather than showing a list
-     * that silently shrinks when it starts raining.
-     */
-    public TradeOffers.Factory delegate() {
+    /// The catalogue reads the delegate to list gated trades.
+    public TradeFactory delegate() {
         return this.delegate;
     }
 

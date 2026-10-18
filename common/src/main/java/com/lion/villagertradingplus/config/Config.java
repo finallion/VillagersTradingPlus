@@ -1,10 +1,6 @@
 package com.lion.villagertradingplus.config;
 
-
-/**
- * @author Draylar
- * <a href="https://github.com/Draylar/omega-config">https://github.com/Draylar/omega-config</a>
- */
+/// Based on Omega Config by Draylar: https://github.com/Draylar/omega-config
 @SuppressWarnings({"unchecked"})
 public interface Config {
 
