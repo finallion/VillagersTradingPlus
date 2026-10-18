@@ -34,8 +34,8 @@ public final class PricingTradeFactory implements TradeOffers.Factory {
     }
 
     @Override
-    public TradeOffer create(Entity entity, Random random) {
-        TradeOffer offer = delegate.create(entity, random);
+    public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, Random random) {
+        TradeOffer offer = delegate.create(world, entity, random);
         if (offer == null) {
             return null;
         }
@@ -73,7 +73,7 @@ public final class PricingTradeFactory implements TradeOffers.Factory {
         float factor = VillagerTradingPlus.CONFIG.trade_cost_scale;
         if (VillagerTradingPlus.CONFIG.enable_time_of_day_pricing) {
             float variance = VillagerTradingPlus.CONFIG.time_of_day_price_variance;
-            long timeOfDay = entity.getWorld().getTimeOfDay() % 24000L;
+            long timeOfDay = entity.getEntityWorld().getTimeOfDay() % 24000L;
             double swing = Math.sin(2.0 * Math.PI * (timeOfDay / 24000.0));
             factor *= (float) (1.0 + variance * swing);
         }

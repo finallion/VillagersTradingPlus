@@ -116,8 +116,7 @@ public final class ItemStackSerializer {
 
         if (json.has("skull_owner")) {
             stack.set(DataComponentTypes.PROFILE,
-                    new ProfileComponent(Optional.of(json.get("skull_owner").getAsString()),
-                            Optional.empty(), new com.mojang.authlib.properties.PropertyMap()));
+                    ProfileComponent.ofDynamic(json.get("skull_owner").getAsString()));
         }
 
         if (json.has("book")) {

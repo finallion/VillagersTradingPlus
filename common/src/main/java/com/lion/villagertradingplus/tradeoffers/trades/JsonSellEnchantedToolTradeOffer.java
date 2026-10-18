@@ -46,14 +46,14 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
+        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
             int power = MIN_POWER + random.nextInt(MAX_POWER - MIN_POWER + 1);
             // The pool of candidate enchantments is passed in explicitly now instead of being implied by
             // a boolean: #minecraft:in_enchanting_table is what "as an enchanting table would" means.
             // Copied rather than rebuilt from the item alone, so the JSON's count and any name, lore
             // or component sugar on the sell stack survive the random enchanting pass.
             ItemStack itemStack = EnchantmentHelper.enchant(random, this.sell.copy(), power,
-                    entity.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT)
+                    entity.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT)
                             .getOrThrow(EnchantmentTags.IN_ENCHANTING_TABLE).stream());
 
             return new TradeOffer(traded(new ItemStack(currency.getItem(), price(power))), itemStack,
@@ -68,7 +68,10 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
          */
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
-            TradeOffer sample = create(merchant, Random.create(0L));
+            if (!(merchant.getEntityWorld() instanceof net.minecraft.server.world.ServerWorld world)) {
+                return;
+            }
+            TradeOffer sample = create(world, merchant, Random.create(0L));
             if (sample != null) {
                 out.addOffer(sample, price(MIN_POWER), price(MAX_POWER));
             }

@@ -58,14 +58,14 @@ public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
+        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
             // Copied rather than rebuilt from item and count, so a name, lore or extra enchantment
             // the JSON put on the sell stack survives onto the traded tool.
             ItemStack itemStack = this.sell.copy();
             if (this.enchantmentKey != null) {
                 // An unknown id simply yields an unenchanted tool rather than losing the whole trade;
                 // a datapack may name an enchantment that this world does not have loaded.
-                entity.getWorld().getRegistryManager()
+                entity.getEntityWorld().getRegistryManager()
                         .getOrThrow(RegistryKeys.ENCHANTMENT)
                         .getOptional(this.enchantmentKey)
                         .ifPresent(enchantment -> itemStack.addEnchantment(enchantment, this.level));

@@ -57,14 +57,14 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
+        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
             // forEnchantment builds the stack instead of mutating one, so the blank book is the
             // fallback rather than the starting point. An unknown id still just yields that blank
             // book rather than losing the whole trade; a datapack may name an enchantment that this
             // world does not have loaded.
             ItemStack book = this.enchantmentKey == null
                     ? new ItemStack(Items.ENCHANTED_BOOK)
-                    : entity.getWorld().getRegistryManager()
+                    : entity.getEntityWorld().getRegistryManager()
                             .getOrThrow(RegistryKeys.ENCHANTMENT)
                             .getOptional(this.enchantmentKey)
                             .map(enchantment -> EnchantmentHelper.getEnchantedBookWith(

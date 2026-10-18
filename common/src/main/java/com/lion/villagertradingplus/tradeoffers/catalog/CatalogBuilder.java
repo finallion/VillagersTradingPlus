@@ -195,7 +195,10 @@ public final class CatalogBuilder {
      * seed, so the row is stable across openings even when {@code create} is random.
      */
     public void addSampled(TradeOffers.Factory factory, Entity merchant) {
-        TradeOffer offer = factory.create(merchant, Random.create(CATALOG_SEED));
+        if (!(merchant.getEntityWorld() instanceof net.minecraft.server.world.ServerWorld world)) {
+            return;
+        }
+        TradeOffer offer = factory.create(world, merchant, Random.create(CATALOG_SEED));
         if (offer != null) {
             addOffer(offer);
         }

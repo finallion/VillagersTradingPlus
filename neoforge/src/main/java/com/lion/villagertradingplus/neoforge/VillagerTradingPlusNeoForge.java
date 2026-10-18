@@ -25,7 +25,7 @@ public class VillagerTradingPlusNeoForge {
     public VillagerTradingPlusNeoForge(IEventBus modEventBus) {
         VillagerTradingPlus.init();
 
-        if (FMLEnvironment.dist == Dist.CLIENT) {
+        if (FMLEnvironment.getDist() == Dist.CLIENT) {
             VillagerTradingPlusClient.init();
         }
 

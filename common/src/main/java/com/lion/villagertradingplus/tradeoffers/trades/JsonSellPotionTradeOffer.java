@@ -53,8 +53,8 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
-            List<RegistryEntry<Potion>> list = brewable(entity.getWorld());
+        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
+            List<RegistryEntry<Potion>> list = brewable(entity.getEntityWorld());
             if (list.isEmpty()) {
                 return null;
             }
@@ -68,7 +68,7 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         /** The potion pool is a fixed registry scan, so every brewable result gets its own row. */
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
-            List<RegistryEntry<Potion>> brewable = brewable(merchant.getWorld());
+            List<RegistryEntry<Potion>> brewable = brewable(merchant.getEntityWorld());
             out.pushShare(brewable.isEmpty() ? 1.0f : 1.0f / brewable.size());
             for (RegistryEntry<Potion> potion : brewable) {
                 if (out.isFull()) {

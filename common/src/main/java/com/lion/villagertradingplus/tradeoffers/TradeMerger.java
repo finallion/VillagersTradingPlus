@@ -75,12 +75,12 @@ public final class TradeMerger {
                     TradeOffers.PROFESSION_TO_LEVELED_TRADE.computeIfAbsent(profession, ignored -> new Int2ObjectOpenHashMap<>());
 
             loadedTrades.forEach((level, loadedLevelTrades) -> {
-                TradeOffers.Factory[] existing = target.get(level.intValue());
+                TradeOffers.Factory[] existing = target.get(level);
 
                 // distinct() works on identity here, which is the point: installDefaults already put
                 // these very Factory instances into the table, so re-merging them inside the same
                 // reload is a no-op instead of offering every default trade twice.
-                target.put(level.intValue(), Stream.concat(
+                target.put(level, Stream.concat(
                                 existing != null ? Arrays.stream(existing) : Stream.empty(),
                                 Arrays.stream(loadedLevelTrades))
                         .distinct()
@@ -91,7 +91,7 @@ public final class TradeMerger {
 
     private static Int2ObjectMap<TradeOffers.Factory[]> copy(Int2ObjectMap<TradeOffers.Factory[]> levels) {
         Int2ObjectMap<TradeOffers.Factory[]> copy = new Int2ObjectOpenHashMap<>();
-        levels.forEach((level, factories) -> copy.put(level.intValue(), factories.clone()));
+        levels.forEach((level, factories) -> copy.put(level, factories.clone()));
         return copy;
     }
 }

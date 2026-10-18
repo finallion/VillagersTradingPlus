@@ -276,7 +276,7 @@ public final class TradeCatalogPanel {
     }
 
     private void playClick() {
-        this.client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+        this.client.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
     }
 
     // --- rendering -----------------------------------------------------------------------------

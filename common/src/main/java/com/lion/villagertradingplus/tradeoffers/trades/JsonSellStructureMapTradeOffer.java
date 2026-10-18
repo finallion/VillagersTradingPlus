@@ -54,8 +54,8 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
-            if (!(entity.getWorld() instanceof ServerWorld serverWorld)) {
+        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
+            if (!(entity.getEntityWorld() instanceof ServerWorld serverWorld)) {
                 return null;
             } else {
                 BlockPos blockPos = serverWorld.locateStructure(this.structure, entity.getBlockPos(), 100, true);

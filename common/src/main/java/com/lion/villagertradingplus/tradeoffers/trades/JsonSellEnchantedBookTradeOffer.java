@@ -50,8 +50,8 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
             this.demand = demand;
         }
 
-        public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
-            List<RegistryEntry<Enchantment>> list = available(entity.getWorld());
+        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
+            List<RegistryEntry<Enchantment>> list = available(entity.getEntityWorld());
             if (list.isEmpty()) {
                 return null;
             }
@@ -69,7 +69,7 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
          */
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
-            List<RegistryEntry<Enchantment>> available = available(merchant.getWorld());
+            List<RegistryEntry<Enchantment>> available = available(merchant.getEntityWorld());
             for (RegistryEntry<Enchantment> enchantment : available) {
                 // create() picks an enchantment uniformly, then a level uniformly within it.
                 int levels = enchantment.value().getMaxLevel() - enchantment.value().getMinLevel() + 1;

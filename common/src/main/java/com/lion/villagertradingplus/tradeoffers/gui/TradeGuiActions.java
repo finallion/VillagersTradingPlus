@@ -92,7 +92,7 @@ public final class TradeGuiActions {
 
         CatalogBuilder builder = buildCatalog(merchant, level);
         // One catalogue goes out as several packets; they arrive in order and the client reassembles.
-        TradeCatalogPacket.write(player.getServer().getRegistryManager(), level, maxLevel,
+        TradeCatalogPacket.write(player.getEntityWorld().getRegistryManager(), level, maxLevel,
                         builder.entries(), builder.skipped())
                 .forEach(slice -> NetworkHelper.sendToPlayer(player, slice));
     }

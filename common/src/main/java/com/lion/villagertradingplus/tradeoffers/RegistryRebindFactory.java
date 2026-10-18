@@ -52,13 +52,13 @@ public final class RegistryRebindFactory implements TradeOffers.Factory {
     }
 
     @Override
-    public TradeOffer create(Entity entity, Random random) {
-        TradeOffer offer = this.delegate.create(entity, random);
+    public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, Random random) {
+        TradeOffer offer = this.delegate.create(world, entity, random);
         if (offer == null) {
             return null;
         }
 
-        Registry<Enchantment> live = entity.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
+        Registry<Enchantment> live = entity.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
         ItemStack sell = offer.getSellItem();
         if (!rebind(sell, DataComponentTypes.ENCHANTMENTS, live)
                 & !rebind(sell, DataComponentTypes.STORED_ENCHANTMENTS, live)) {

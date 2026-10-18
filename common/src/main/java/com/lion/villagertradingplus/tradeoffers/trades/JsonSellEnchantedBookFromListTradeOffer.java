@@ -126,8 +126,8 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
         }
 
         @Override
-        public TradeOffer create(Entity entity, Random random) {
-            List<Resolved> resolved = resolve(entity.getWorld());
+        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, Random random) {
+            List<Resolved> resolved = resolve(entity.getEntityWorld());
             int totalWeight = totalWeight(resolved);
             if (totalWeight <= 0) {
                 return null;
@@ -147,7 +147,7 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
          */
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
-            List<Resolved> resolved = resolve(merchant.getWorld());
+            List<Resolved> resolved = resolve(merchant.getEntityWorld());
             int totalWeight = totalWeight(resolved);
 
             for (Resolved candidate : resolved) {

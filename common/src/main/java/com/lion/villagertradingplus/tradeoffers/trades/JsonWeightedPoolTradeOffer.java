@@ -86,7 +86,7 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
         }
 
         @Override
-        public TradeOffer create(Entity entity, Random random) {
+        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, Random random) {
             if (entries.isEmpty() || totalWeight <= 0) {
                 return null;
             }
@@ -94,7 +94,7 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
             for (Entry entry : entries) {
                 roll -= entry.weight();
                 if (roll < 0) {
-                    return entry.factory().create(entity, random);
+                    return entry.factory().create(world, entity, random);
                 }
             }
             return null;

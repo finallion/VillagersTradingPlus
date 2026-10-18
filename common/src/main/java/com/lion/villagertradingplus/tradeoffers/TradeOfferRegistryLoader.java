@@ -29,8 +29,8 @@ public class TradeOfferRegistryLoader {
             Int2ObjectOpenHashMap<TradeOffers.Factory[]> factories = villagerTrades.getOrDefault(villagerProfession, new Int2ObjectOpenHashMap<>());
 
             listInt2ObjectOpenHashMap.forEach((level, factoryList) -> {
-                final TradeOffers.Factory[] oldFactories = factories.getOrDefault(level.intValue(), new TradeOffers.Factory[0]);
-                factories.put(level.intValue(), ArrayUtils.addAll(oldFactories, factoryList.toArray(new TradeOffers.Factory[0])));
+                final TradeOffers.Factory[] oldFactories = factories.getOrDefault(level, new TradeOffers.Factory[0]);
+                factories.put(level, ArrayUtils.addAll(oldFactories, factoryList.toArray(new TradeOffers.Factory[0])));
             });
 
             villagerTrades.put(villagerProfession, factories);

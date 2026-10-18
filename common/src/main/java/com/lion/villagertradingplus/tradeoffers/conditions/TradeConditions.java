@@ -13,10 +13,13 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.GlobalPos;
-import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.GameRules;
+import net.minecraft.registry.Registries;
+import net.minecraft.world.rule.GameRule;
+import net.minecraft.world.rule.GameRuleType;
+import net.minecraft.world.rule.GameRules;
 import net.minecraft.world.World;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -27,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 
 /**
  * Registry and parser for the cross-cutting {@code "conditions"} block that any trade may carry.
@@ -42,7 +46,6 @@ import java.util.function.Function;
 public final class TradeConditions {
 
     private static final Map<String, ConditionType> REGISTRY = new HashMap<>();
-    private static final Map<String, GameRules.Key<GameRules.BooleanRule>> BOOLEAN_RULES = new HashMap<>();
 
     /** How many entries of a list-valued condition to name before collapsing the rest into a count. */
     private static final int DESCRIBE_LIST_LIMIT = 3;
@@ -53,19 +56,6 @@ public final class TradeConditions {
     }
 
     static {
-        // accept() stopped being static in 1.21.6 because game rules are feature-gated now. A
-        // throwaway instance over the default feature set enumerates every rule a vanilla world can
-        // have, which is all this map is for: turning a rule name from JSON into a typed Key.
-        new GameRules(FeatureFlags.DEFAULT_ENABLED_FEATURES).accept(new GameRules.Visitor() {
-            @Override
-            public <T extends GameRules.Rule<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
-            }
-
-            @Override
-            public void visitBoolean(GameRules.Key<GameRules.BooleanRule> key, GameRules.Type<GameRules.BooleanRule> type) {
-                BOOLEAN_RULES.put(key.getName(), key);
-            }
-        });
         registerBuiltins();
     }
 
@@ -147,23 +137,23 @@ public final class TradeConditions {
         if (json.has("tag")) {
             TagKey<net.minecraft.world.biome.Biome> tag = TagKey.of(RegistryKeys.BIOME,
                     Identifier.tryParse(JsonFields.requireString(json, "\"biome\" condition", "tag")));
-            return villager -> villager.getWorld().getBiome(villager.getBlockPos()).isIn(tag);
+            return villager -> villager.getEntityWorld().getBiome(villager.getBlockPos()).isIn(tag);
         }
         Set<String> biomes = toStringSet(JsonFields.requireArray(json, "\"biome\" condition", "biomes"));
-        return villager -> villager.getWorld().getBiome(villager.getBlockPos()).getKey()
+        return villager -> villager.getEntityWorld().getBiome(villager.getBlockPos()).getKey()
                 .map(key -> biomes.contains(key.getValue().toString()))
                 .orElse(false);
     }
 
     private static TradeCondition parseDimension(JsonObject json) {
         String dimension = JsonFields.requireString(json, "\"dimension\" condition", "dimension");
-        return villager -> villager.getWorld().getRegistryKey().getValue().toString().equals(dimension);
+        return villager -> villager.getEntityWorld().getRegistryKey().getValue().toString().equals(dimension);
     }
 
     private static TradeCondition parseWeather(JsonObject json) {
         String state = JsonFields.requireString(json, "\"weather\" condition", "state");
         return villager -> {
-            World world = villager.getWorld();
+            World world = villager.getEntityWorld();
             return switch (state) {
                 case "thunder" -> world.isThundering();
                 case "rain" -> world.isRaining();
@@ -174,25 +164,19 @@ public final class TradeConditions {
 
     private static TradeCondition parseDayNight(JsonObject json) {
         boolean wantDay = "day".equals(JsonFields.requireString(json, "\"day_night\" condition", "time"));
-        return villager -> villager.getWorld().isDay() == wantDay;
+        return villager -> villager.getEntityWorld().isDay() == wantDay;
     }
 
-    /**
-     * Matches the lunar day, and by default only while the moon is actually up.
-     *
-     * <p>{@code getMoonPhase()} is {@code getLunarTime() / 24000 % 8}: it names the lunar day and
-     * says nothing about the time within it, so on its own it holds all through the following
-     * daylight hours too - a "full moon" trade would sit there unlocked at noon. Set
-     * {@code "require_night": false} to gate on the bare lunar day anyway.
-     */
+    /// The phase index names the lunar day only, so by default the condition also requires night.
     private static TradeCondition parseMoonPhase(JsonObject json) {
         Set<Integer> phases = new HashSet<>();
         for (JsonElement element : JsonFields.requireArray(json, "\"moon_phase\" condition", "phases")) {
             phases.add(element.getAsInt());
         }
         boolean requireNight = !json.has("require_night") || json.get("require_night").getAsBoolean();
-        return villager -> phases.contains(villager.getWorld().getMoonPhase())
-                && (!requireNight || !villager.getWorld().isDay());
+        return villager -> phases.contains(villager.getEntityWorld().getEnvironmentAttributes()
+                .getAttributeValue(EnvironmentAttributes.MOON_PHASE_VISUAL).getIndex())
+                && (!requireNight || !villager.getEntityWorld().isDay());
     }
 
     private static TradeCondition parseConfigFlag(JsonObject json) {
@@ -209,18 +193,91 @@ public final class TradeConditions {
         };
     }
 
+    /// Boolean rule name from a datapack and the registry path it maps to.
+    private record LegacyRule(String path, boolean inverted) {
+        static LegacyRule of(String path) {
+            return new LegacyRule(path, false);
+        }
+
+        static LegacyRule inverse(String path) {
+            return new LegacyRule(path, true);
+        }
+    }
+
+    private static final Map<String, LegacyRule> LEGACY_BOOLEAN_RULES = Map.ofEntries(
+            Map.entry("announceAdvancements", LegacyRule.of("show_advancement_messages")),
+            Map.entry("commandBlocksEnabled", LegacyRule.of("command_blocks_work")),
+            Map.entry("enableCommandBlocks", LegacyRule.of("command_blocks_work")),
+            Map.entry("disableElytraMovementCheck", LegacyRule.inverse("elytra_movement_check")),
+            Map.entry("disablePlayerMovementCheck", LegacyRule.inverse("player_movement_check")),
+            Map.entry("disableRaids", LegacyRule.inverse("raids")),
+            Map.entry("doDaylightCycle", LegacyRule.of("advance_time")),
+            Map.entry("doEntityDrops", LegacyRule.of("entity_drops")),
+            Map.entry("doImmediateRespawn", LegacyRule.of("immediate_respawn")),
+            Map.entry("doInsomnia", LegacyRule.of("spawn_phantoms")),
+            Map.entry("doLimitedCrafting", LegacyRule.of("limited_crafting")),
+            Map.entry("doMobLoot", LegacyRule.of("mob_drops")),
+            Map.entry("doMobSpawning", LegacyRule.of("spawn_mobs")),
+            Map.entry("doPatrolSpawning", LegacyRule.of("spawn_patrols")),
+            Map.entry("doTileDrops", LegacyRule.of("block_drops")),
+            Map.entry("doTraderSpawning", LegacyRule.of("spawn_wandering_traders")),
+            Map.entry("doVinesSpread", LegacyRule.of("spread_vines")),
+            Map.entry("doWardenSpawning", LegacyRule.of("spawn_wardens")),
+            Map.entry("doWeatherCycle", LegacyRule.of("advance_weather")),
+            Map.entry("naturalRegeneration", LegacyRule.of("natural_health_regeneration")),
+            Map.entry("spawnerBlocksEnabled", LegacyRule.of("spawner_blocks_work"))
+    );
+
+    private static final String LEGACY_DO_FIRE_TICK = "doFireTick";
+    private static final String LEGACY_FIRE_TICKS_AWAY_FROM_PLAYER = "allowFireTicksAwayFromPlayer";
+    private static final String LEGACY_PASSENGERS_USE_PORTALS = "entitiesWithPassengersCanUsePortals";
+
+    private static GameRule<Boolean> findBooleanRule(String name) {
+        for (GameRule<?> rule : Registries.GAME_RULE) {
+            if (rule.getType() != GameRuleType.BOOL) {
+                continue;
+            }
+            String path = rule.getId().getPath();
+            if (name.equals(rule.getId().toString()) || name.equals(path) || name.equalsIgnoreCase(path.replace("_", ""))) {
+                @SuppressWarnings("unchecked")
+                GameRule<Boolean> bool = (GameRule<Boolean>) rule;
+                return bool;
+            }
+        }
+        return null;
+    }
+
     private static TradeCondition parseGamerule(JsonObject json) {
         String ruleName = JsonFields.requireString(json, "\"gamerule\" condition", "rule");
         boolean expected = !json.has("value") || json.get("value").getAsBoolean();
-        GameRules.Key<GameRules.BooleanRule> key = BOOLEAN_RULES.get(ruleName);
+        switch (ruleName) {
+            case LEGACY_DO_FIRE_TICK:
+                return fireSpreadCondition(radius -> radius != 0, expected);
+            case LEGACY_FIRE_TICKS_AWAY_FROM_PLAYER:
+                return fireSpreadCondition(radius -> radius == -1, expected);
+            case LEGACY_PASSENGERS_USE_PORTALS:
+                VillagerTradingPlus.LOGGER.warn("gamerule condition: " + ruleName + " no longer exists; the condition reads it as true");
+                return villager -> expected;
+            default:
+                break;
+        }
+        LegacyRule legacy = LEGACY_BOOLEAN_RULES.get(ruleName);
+        String lookup = legacy == null ? ruleName : legacy.path();
+        boolean wanted = legacy != null && legacy.inverted() ? !expected : expected;
+        GameRule<Boolean> key = findBooleanRule(lookup);
         if (key == null) {
             VillagerTradingPlus.LOGGER.error("gamerule condition references unknown boolean rule: " + ruleName);
             return villager -> false;
         }
-        // getGameRules() moved off World onto ServerWorld. Trades are only ever generated
-        // server-side, so a client-side world simply fails the condition rather than guessing.
-        return villager -> villager.getWorld() instanceof ServerWorld serverWorld
-                && serverWorld.getGameRules().getBoolean(key) == expected;
+        return villager -> villager.getEntityWorld() instanceof ServerWorld serverWorld
+                && serverWorld.getGameRules().getValue(key) == wanted;
+    }
+
+    // Fire rules use one int radius: 0 is off, -1 is everywhere, else near players only.
+    private static TradeCondition fireSpreadCondition(IntPredicate test, boolean expected) {
+        GameRule<Integer> radius = GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER;
+        return villager -> villager.getEntityWorld() instanceof ServerWorld serverWorld
+                && test.test(serverWorld.getGameRules().getValue(radius)) == expected;
     }
 
     private static TradeCondition parseJobSite(JsonObject json) {
@@ -321,11 +378,11 @@ public final class TradeConditions {
             return Optional.empty();
         }
         GlobalPos pos = jobSite.get();
-        if (!pos.dimension().equals(villager.getWorld().getRegistryKey())) {
+        if (!pos.dimension().equals(villager.getEntityWorld().getRegistryKey())) {
             return Optional.empty();
         }
         return Optional.of(net.minecraft.registry.Registries.BLOCK.getId(
-                villager.getWorld().getBlockState(pos.pos()).getBlock()));
+                villager.getEntityWorld().getBlockState(pos.pos()).getBlock()));
     }
 
     private static Set<String> toStringSet(JsonArray array) {

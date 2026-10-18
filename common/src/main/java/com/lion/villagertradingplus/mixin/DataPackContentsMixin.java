@@ -1,6 +1,7 @@
 package com.lion.villagertradingplus.mixin;
 
 import com.lion.villagertradingplus.tradeoffers.util.DatapackRegistries;
+import net.minecraft.command.permission.PermissionPredicate;
 import net.minecraft.registry.CombinedDynamicRegistries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryWrapper;
@@ -28,12 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(DataPackContents.class)
 public class DataPackContentsMixin {
 
-    /**
-     * The parameter list has to match the constructor exactly, and Mixin only checks that when it
-     * applies the injection - a stale signature builds green and then kills the game at startup with
-     * "Invalid descriptor". As of 1.21.6 the constructor takes the combined registries plus a
-     * wrapper lookup and a list of pending tag loads, where it used to take one immutable manager.
-     */
+    /// The parameter list must match the constructor. Mixin checks it only at apply time.
     @Inject(method = "<init>", at = @At("RETURN"))
     private void villagertradingplus$captureDatapackRegistries(
             CombinedDynamicRegistries<ServerDynamicRegistryType> dynamicRegistries,
@@ -41,7 +37,7 @@ public class DataPackContentsMixin {
             FeatureSet enabledFeatures,
             CommandManager.RegistrationEnvironment environment,
             List<Registry.PendingTagLoad<?>> pendingTagLoads,
-            int functionPermissionLevel,
+            PermissionPredicate permissions,
             CallbackInfo ci) {
         DatapackRegistries.set(dynamicRegistries.getCombinedRegistryManager());
     }

@@ -53,7 +53,7 @@ public class JsonBuyTaggedItemTradeOffer extends JsonTradeOffer {
         }
 
         @Override
-        public TradeOffer create(Entity entity, Random random) {
+        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, Random random) {
             ItemStack resolved = buy.resolve(random);
             if (resolved.isEmpty()) {
                 return null;
