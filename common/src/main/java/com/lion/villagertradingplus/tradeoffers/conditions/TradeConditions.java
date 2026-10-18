@@ -5,19 +5,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.tradeoffers.util.JsonFields;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ai.brain.MemoryModuleType;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.resource.featuretoggle.FeatureFlags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
-
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleType;
+import net.minecraft.world.level.gamerules.GameRules;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,66 +29,36 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 
-/**
- * Registry and parser for the cross-cutting {@code "conditions"} block that any trade may carry.
- * A condition is JSON {@code {"type": "...", ...params}}. {@link #parse} returns the combined list,
- * evaluated with AND semantics by default or OR when the array is preceded by a {@code logic}
- * marker (see {@link #parse}). An unknown condition type fails closed (the trade is withheld) with
- * a loud log so typos are visible instead of silently disabling gating.
- *
- * <p>Each condition type registers a <em>describer</em> alongside its parser. The predicate alone is
- * an opaque lambda, so without one the trade catalogue could tell a player a trade was gated but
- * never say by what.
- */
+/// Parses the `conditions` block. Conditions combine with AND, or with OR when `logic` is `or`.
+/// An unknown type fails closed and withholds the trade.
 public final class TradeConditions {
 
     private static final Map<String, ConditionType> REGISTRY = new HashMap<>();
-    private static final Map<String, GameRules.Key<GameRules.BooleanRule>> BOOLEAN_RULES = new HashMap<>();
 
-    /** How many entries of a list-valued condition to name before collapsing the rest into a count. */
     private static final int DESCRIBE_LIST_LIMIT = 3;
 
-    /** A condition type: how to build its predicate, and how to phrase it for a player. */
     private record ConditionType(Function<JsonObject, TradeCondition> parser,
-                                 Function<JsonObject, Text> describer) {
+                                 Function<JsonObject, Component> describer) {
     }
 
     static {
-        // accept() stopped being static in 1.21.6 because game rules are feature-gated now. A
-        // throwaway instance over the default feature set enumerates every rule a vanilla world can
-        // have, which is all this map is for: turning a rule name from JSON into a typed Key.
-        new GameRules(FeatureFlags.DEFAULT_ENABLED_FEATURES).accept(new GameRules.Visitor() {
-            @Override
-            public <T extends GameRules.Rule<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
-            }
-
-            @Override
-            public void visitBoolean(GameRules.Key<GameRules.BooleanRule> key, GameRules.Type<GameRules.BooleanRule> type) {
-                BOOLEAN_RULES.put(key.getName(), key);
-            }
-        });
         registerBuiltins();
     }
 
     private TradeConditions() {
     }
 
-    /** Registers a condition type with a generic description. Prefer the three-arg overload. */
     public static void register(String type, Function<JsonObject, TradeCondition> factory) {
-        register(type, factory, json -> Text.translatable("condition.villagertradingplus.generic", type));
+        register(type, factory, json -> Component.translatable("condition.villagertradingplus.generic", type));
     }
 
     public static void register(String type, Function<JsonObject, TradeCondition> factory,
-                                Function<JsonObject, Text> describer) {
+                                Function<JsonObject, Component> describer) {
         REGISTRY.put(type, new ConditionType(factory, describer));
     }
 
-    /**
-     * Parses the {@code conditions} array into a single combined {@link TradeCondition}. Default
-     * logic is AND; pass {@code "logic": "or"} on the owning trade object to switch, which is read
-     * separately by {@link #parse(JsonArray, boolean)}.
-     */
     public static ParsedConditions parse(JsonArray conditions) {
         return parse(conditions, false);
     }
@@ -98,16 +70,13 @@ public final class TradeConditions {
             String type = stripNamespace(JsonFields.requireString(obj, "trade condition", "type"));
             ConditionType conditionType = REGISTRY.get(type);
             if (conditionType == null) {
-                // Withheld rather than skipped: the type may come from a mod that is not installed,
-                // and offering the trade ungated would be the more harmful guess.
                 VillagerTradingPlus.LOGGER.error("Unknown trade condition type: " + type + " -- this trade will be withheld.");
                 parsed.add(new ParsedConditions.Entry(
-                        Text.translatable("condition.villagertradingplus.unknown", type),
-                        villager -> false)); // fail closed
+                        Component.translatable("condition.villagertradingplus.unknown", type),
+                        villager -> false));
                 continue;
             }
-            // Parsed before it is described, so a malformed condition fails with one clean message
-            // instead of first logging that its describer choked on the same missing field.
+            // Parse before describing, so a malformed condition logs one message.
             TradeCondition condition = conditionType.parser().apply(obj);
             parsed.add(new ParsedConditions.Entry(describeSafely(conditionType, obj, type), condition));
         }
@@ -115,13 +84,13 @@ public final class TradeConditions {
         return new ParsedConditions(List.copyOf(parsed), orLogic);
     }
 
-    /** A malformed describer must never take down trade loading, so fall back to the bare type name. */
-    private static Text describeSafely(ConditionType type, JsonObject json, String typeName) {
+    /// Falls back to the type name when the describer throws.
+    private static Component describeSafely(ConditionType type, JsonObject json, String typeName) {
         try {
             return type.describer().apply(json);
         } catch (RuntimeException e) {
             VillagerTradingPlus.LOGGER.warn("Could not describe trade condition of type " + typeName, e);
-            return Text.translatable("condition.villagertradingplus.generic", typeName);
+            return Component.translatable("condition.villagertradingplus.generic", typeName);
         }
     }
 
@@ -141,29 +110,27 @@ public final class TradeConditions {
         register("job_site_block", TradeConditions::parseJobSite, TradeConditions::describeJobSite);
     }
 
-    // --- Built-in condition parsers ---------------------------------------------------------
-
     private static TradeCondition parseBiome(JsonObject json) {
         if (json.has("tag")) {
-            TagKey<net.minecraft.world.biome.Biome> tag = TagKey.of(RegistryKeys.BIOME,
+            TagKey<net.minecraft.world.level.biome.Biome> tag = TagKey.create(Registries.BIOME,
                     Identifier.tryParse(JsonFields.requireString(json, "\"biome\" condition", "tag")));
-            return villager -> villager.getWorld().getBiome(villager.getBlockPos()).isIn(tag);
+            return villager -> villager.level().getBiome(villager.blockPosition()).is(tag);
         }
         Set<String> biomes = toStringSet(JsonFields.requireArray(json, "\"biome\" condition", "biomes"));
-        return villager -> villager.getWorld().getBiome(villager.getBlockPos()).getKey()
-                .map(key -> biomes.contains(key.getValue().toString()))
+        return villager -> villager.level().getBiome(villager.blockPosition()).unwrapKey()
+                .map(key -> biomes.contains(key.identifier().toString()))
                 .orElse(false);
     }
 
     private static TradeCondition parseDimension(JsonObject json) {
         String dimension = JsonFields.requireString(json, "\"dimension\" condition", "dimension");
-        return villager -> villager.getWorld().getRegistryKey().getValue().toString().equals(dimension);
+        return villager -> villager.level().dimension().identifier().toString().equals(dimension);
     }
 
     private static TradeCondition parseWeather(JsonObject json) {
         String state = JsonFields.requireString(json, "\"weather\" condition", "state");
         return villager -> {
-            World world = villager.getWorld();
+            Level world = villager.level();
             return switch (state) {
                 case "thunder" -> world.isThundering();
                 case "rain" -> world.isRaining();
@@ -174,25 +141,19 @@ public final class TradeConditions {
 
     private static TradeCondition parseDayNight(JsonObject json) {
         boolean wantDay = "day".equals(JsonFields.requireString(json, "\"day_night\" condition", "time"));
-        return villager -> villager.getWorld().isDay() == wantDay;
+        return villager -> villager.level().isBrightOutside() == wantDay;
     }
 
-    /**
-     * Matches the lunar day, and by default only while the moon is actually up.
-     *
-     * <p>{@code getMoonPhase()} is {@code getLunarTime() / 24000 % 8}: it names the lunar day and
-     * says nothing about the time within it, so on its own it holds all through the following
-     * daylight hours too - a "full moon" trade would sit there unlocked at noon. Set
-     * {@code "require_night": false} to gate on the bare lunar day anyway.
-     */
+    /// The phase index names the lunar day only, so by default the condition also requires night.
     private static TradeCondition parseMoonPhase(JsonObject json) {
         Set<Integer> phases = new HashSet<>();
         for (JsonElement element : JsonFields.requireArray(json, "\"moon_phase\" condition", "phases")) {
             phases.add(element.getAsInt());
         }
         boolean requireNight = !json.has("require_night") || json.get("require_night").getAsBoolean();
-        return villager -> phases.contains(villager.getWorld().getMoonPhase())
-                && (!requireNight || !villager.getWorld().isDay());
+        return villager -> phases.contains(villager.level().environmentAttributes()
+                .getDimensionValue(EnvironmentAttributes.MOON_PHASE).index())
+                && (!requireNight || !villager.level().isBrightOutside());
     }
 
     private static TradeCondition parseConfigFlag(JsonObject json) {
@@ -209,18 +170,91 @@ public final class TradeConditions {
         };
     }
 
+    /// Boolean rule name from a datapack and the registry path it maps to.
+    private record LegacyRule(String path, boolean inverted) {
+        static LegacyRule of(String path) {
+            return new LegacyRule(path, false);
+        }
+
+        static LegacyRule inverse(String path) {
+            return new LegacyRule(path, true);
+        }
+    }
+
+    private static final Map<String, LegacyRule> LEGACY_BOOLEAN_RULES = Map.ofEntries(
+            Map.entry("announceAdvancements", LegacyRule.of("show_advancement_messages")),
+            Map.entry("commandBlocksEnabled", LegacyRule.of("command_blocks_work")),
+            Map.entry("enableCommandBlocks", LegacyRule.of("command_blocks_work")),
+            Map.entry("disableElytraMovementCheck", LegacyRule.inverse("elytra_movement_check")),
+            Map.entry("disablePlayerMovementCheck", LegacyRule.inverse("player_movement_check")),
+            Map.entry("disableRaids", LegacyRule.inverse("raids")),
+            Map.entry("doDaylightCycle", LegacyRule.of("advance_time")),
+            Map.entry("doEntityDrops", LegacyRule.of("entity_drops")),
+            Map.entry("doImmediateRespawn", LegacyRule.of("immediate_respawn")),
+            Map.entry("doInsomnia", LegacyRule.of("spawn_phantoms")),
+            Map.entry("doLimitedCrafting", LegacyRule.of("limited_crafting")),
+            Map.entry("doMobLoot", LegacyRule.of("mob_drops")),
+            Map.entry("doMobSpawning", LegacyRule.of("spawn_mobs")),
+            Map.entry("doPatrolSpawning", LegacyRule.of("spawn_patrols")),
+            Map.entry("doTileDrops", LegacyRule.of("block_drops")),
+            Map.entry("doTraderSpawning", LegacyRule.of("spawn_wandering_traders")),
+            Map.entry("doVinesSpread", LegacyRule.of("spread_vines")),
+            Map.entry("doWardenSpawning", LegacyRule.of("spawn_wardens")),
+            Map.entry("doWeatherCycle", LegacyRule.of("advance_weather")),
+            Map.entry("naturalRegeneration", LegacyRule.of("natural_health_regeneration")),
+            Map.entry("spawnerBlocksEnabled", LegacyRule.of("spawner_blocks_work"))
+    );
+
+    private static final String LEGACY_DO_FIRE_TICK = "doFireTick";
+    private static final String LEGACY_FIRE_TICKS_AWAY_FROM_PLAYER = "allowFireTicksAwayFromPlayer";
+    private static final String LEGACY_PASSENGERS_USE_PORTALS = "entitiesWithPassengersCanUsePortals";
+
+    private static GameRule<Boolean> findBooleanRule(String name) {
+        for (GameRule<?> rule : BuiltInRegistries.GAME_RULE) {
+            if (rule.gameRuleType() != GameRuleType.BOOL) {
+                continue;
+            }
+            String path = rule.getIdentifier().getPath();
+            if (name.equals(rule.getIdentifier().toString()) || name.equals(path) || name.equalsIgnoreCase(path.replace("_", ""))) {
+                @SuppressWarnings("unchecked")
+                GameRule<Boolean> bool = (GameRule<Boolean>) rule;
+                return bool;
+            }
+        }
+        return null;
+    }
+
     private static TradeCondition parseGamerule(JsonObject json) {
         String ruleName = JsonFields.requireString(json, "\"gamerule\" condition", "rule");
         boolean expected = !json.has("value") || json.get("value").getAsBoolean();
-        GameRules.Key<GameRules.BooleanRule> key = BOOLEAN_RULES.get(ruleName);
+        switch (ruleName) {
+            case LEGACY_DO_FIRE_TICK:
+                return fireSpreadCondition(radius -> radius != 0, expected);
+            case LEGACY_FIRE_TICKS_AWAY_FROM_PLAYER:
+                return fireSpreadCondition(radius -> radius == -1, expected);
+            case LEGACY_PASSENGERS_USE_PORTALS:
+                VillagerTradingPlus.LOGGER.warn("gamerule condition: " + ruleName + " no longer exists; the condition reads it as true");
+                return villager -> expected;
+            default:
+                break;
+        }
+        LegacyRule legacy = LEGACY_BOOLEAN_RULES.get(ruleName);
+        String lookup = legacy == null ? ruleName : legacy.path();
+        boolean wanted = legacy != null && legacy.inverted() ? !expected : expected;
+        GameRule<Boolean> key = findBooleanRule(lookup);
         if (key == null) {
             VillagerTradingPlus.LOGGER.error("gamerule condition references unknown boolean rule: " + ruleName);
             return villager -> false;
         }
-        // getGameRules() moved off World onto ServerWorld. Trades are only ever generated
-        // server-side, so a client-side world simply fails the condition rather than guessing.
-        return villager -> villager.getWorld() instanceof ServerWorld serverWorld
-                && serverWorld.getGameRules().getBoolean(key) == expected;
+        return villager -> villager.level() instanceof ServerLevel serverWorld
+                && serverWorld.getGameRules().get(key) == wanted;
+    }
+
+    // Fire rules use one int radius: 0 is off, -1 is everywhere, else near players only.
+    private static TradeCondition fireSpreadCondition(IntPredicate test, boolean expected) {
+        GameRule<Integer> radius = GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER;
+        return villager -> villager.level() instanceof ServerLevel serverWorld
+                && test.test(serverWorld.getGameRules().get(radius)) == expected;
     }
 
     private static TradeCondition parseJobSite(JsonObject json) {
@@ -236,62 +270,59 @@ public final class TradeConditions {
                 .orElse(false);
     }
 
-    // --- Built-in condition describers ------------------------------------------------------
-
-    private static Text describeBiome(JsonObject json) {
+    private static Component describeBiome(JsonObject json) {
         if (json.has("tag")) {
-            return Text.translatable("condition.villagertradingplus.biome_tag", prettify(json.get("tag").getAsString()));
+            return Component.translatable("condition.villagertradingplus.biome_tag", prettify(json.get("tag").getAsString()));
         }
-        return Text.translatable("condition.villagertradingplus.biome", joinArray(json.getAsJsonArray("biomes")));
+        return Component.translatable("condition.villagertradingplus.biome", joinArray(json.getAsJsonArray("biomes")));
     }
 
-    private static Text describeDimension(JsonObject json) {
-        return Text.translatable("condition.villagertradingplus.dimension", prettify(json.get("dimension").getAsString()));
+    private static Component describeDimension(JsonObject json) {
+        return Component.translatable("condition.villagertradingplus.dimension", prettify(json.get("dimension").getAsString()));
     }
 
-    private static Text describeWeather(JsonObject json) {
+    private static Component describeWeather(JsonObject json) {
         String state = json.get("state").getAsString();
         String key = switch (state) {
             case "thunder", "rain" -> state;
             default -> "clear";
         };
-        return Text.translatable("condition.villagertradingplus.weather",
-                Text.translatable("condition.villagertradingplus.weather." + key));
+        return Component.translatable("condition.villagertradingplus.weather",
+                Component.translatable("condition.villagertradingplus.weather." + key));
     }
 
-    private static Text describeDayNight(JsonObject json) {
+    private static Component describeDayNight(JsonObject json) {
         String time = "day".equals(json.get("time").getAsString()) ? "day" : "night";
-        return Text.translatable("condition.villagertradingplus.day_night",
-                Text.translatable("condition.villagertradingplus.day_night." + time));
+        return Component.translatable("condition.villagertradingplus.day_night",
+                Component.translatable("condition.villagertradingplus.day_night." + time));
     }
 
-    private static Text describeMoonPhase(JsonObject json) {
+    private static Component describeMoonPhase(JsonObject json) {
         boolean requireNight = !json.has("require_night") || json.get("require_night").getAsBoolean();
-        return Text.translatable(
+        return Component.translatable(
                 requireNight ? "condition.villagertradingplus.moon_phase_night" : "condition.villagertradingplus.moon_phase",
                 joinArray(json.getAsJsonArray("phases")));
     }
 
-    private static Text describeConfigFlag(JsonObject json) {
+    private static Component describeConfigFlag(JsonObject json) {
         boolean expected = !json.has("value") || json.get("value").getAsBoolean();
-        return Text.translatable("condition.villagertradingplus.config_flag",
+        return Component.translatable("condition.villagertradingplus.config_flag",
                 json.get("field").getAsString(), String.valueOf(expected));
     }
 
-    private static Text describeGamerule(JsonObject json) {
+    private static Component describeGamerule(JsonObject json) {
         boolean expected = !json.has("value") || json.get("value").getAsBoolean();
-        return Text.translatable("condition.villagertradingplus.gamerule",
+        return Component.translatable("condition.villagertradingplus.gamerule",
                 json.get("rule").getAsString(), String.valueOf(expected));
     }
 
-    private static Text describeJobSite(JsonObject json) {
+    private static Component describeJobSite(JsonObject json) {
         if (json.has("wood_variant")) {
-            return Text.translatable("condition.villagertradingplus.job_site_wood", json.get("wood_variant").getAsString());
+            return Component.translatable("condition.villagertradingplus.job_site_wood", json.get("wood_variant").getAsString());
         }
-        return Text.translatable("condition.villagertradingplus.job_site_block", joinArray(json.getAsJsonArray("blocks")));
+        return Component.translatable("condition.villagertradingplus.job_site_block", joinArray(json.getAsJsonArray("blocks")));
     }
 
-    /** Comma-joins a JSON array, naming at most {@link #DESCRIBE_LIST_LIMIT} entries. */
     private static String joinArray(JsonArray array) {
         StringBuilder joined = new StringBuilder();
         int shown = Math.min(array.size(), DESCRIBE_LIST_LIMIT);
@@ -307,25 +338,24 @@ public final class TradeConditions {
         return joined.toString();
     }
 
-    /** Drops the {@code minecraft:} namespace so descriptions stay readable in a tooltip. */
     private static String prettify(String id) {
         return id.startsWith("minecraft:") ? id.substring("minecraft:".length()) : id;
     }
 
     private static Optional<Identifier> jobSiteBlockId(Entity villager) {
-        if (!(villager instanceof VillagerEntity villagerEntity)) {
+        if (!(villager instanceof Villager villagerEntity)) {
             return Optional.empty();
         }
-        Optional<GlobalPos> jobSite = villagerEntity.getBrain().getOptionalRegisteredMemory(MemoryModuleType.JOB_SITE);
+        Optional<GlobalPos> jobSite = villagerEntity.getBrain().getMemory(MemoryModuleType.JOB_SITE);
         if (jobSite.isEmpty()) {
             return Optional.empty();
         }
         GlobalPos pos = jobSite.get();
-        if (!pos.dimension().equals(villager.getWorld().getRegistryKey())) {
+        if (!pos.dimension().equals(villager.level().dimension())) {
             return Optional.empty();
         }
-        return Optional.of(net.minecraft.registry.Registries.BLOCK.getId(
-                villager.getWorld().getBlockState(pos.pos()).getBlock()));
+        return Optional.of(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(
+                villager.level().getBlockState(pos.pos()).getBlock()));
     }
 
     private static Set<String> toStringSet(JsonArray array) {
