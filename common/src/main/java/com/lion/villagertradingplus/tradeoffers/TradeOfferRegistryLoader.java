@@ -1,60 +1,81 @@
 package com.lion.villagertradingplus.tradeoffers;
 
+import com.google.gson.JsonElement;
+import com.lion.villagertradingplus.VillagerTradingPlus;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.village.TradeOffers;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.village.VillagerProfession;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
 
-import java.util.*;
-
+/// Holds the trade files of a reload and builds the snapshots once the item components exist.
 public class TradeOfferRegistryLoader {
-    private static final HashMap<RegistryKey<VillagerProfession>, Int2ObjectOpenHashMap<List<TradeOffers.Factory>>> TRADES_REGISTRY = new HashMap<>();
+    private static final Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> COLLECTED = new LinkedHashMap<>();
+    private static Map<Identifier, JsonElement> defaultFiles = Map.of();
+    private static Map<Identifier, JsonElement> additionFiles = Map.of();
 
-    /// Starts a reload from a clean slate. Call before any trade file is deserialized.
-    ///
-    /// Two things have to be dropped, not one: what this loader accumulated, and what the previous
-    /// reload left in vanilla's table. Both survive a reload while re-parsing hands out fresh
-    /// `Factory` instances, so anything kept from the last pass can no longer be recognised as the
-    /// same trade and ends up in the pool a second time.
-    public static void begin() {
-        TRADES_REGISTRY.clear();
-        TradeMerger.resetToVanilla();
+    public static void stageDefaultFiles(Map<Identifier, JsonElement> files) {
+        defaultFiles = new TreeMap<>(files);
     }
 
-    public static HashMap<RegistryKey<VillagerProfession>, Int2ObjectOpenHashMap<TradeOffers.Factory[]>> getRegistryForLoading() {
-        HashMap<RegistryKey<VillagerProfession>, Int2ObjectOpenHashMap<TradeOffers.Factory[]>> villagerTrades = new HashMap<>();
-
-        TRADES_REGISTRY.forEach(((villagerProfession, listInt2ObjectOpenHashMap) -> {
-            Int2ObjectOpenHashMap<TradeOffers.Factory[]> factories = villagerTrades.getOrDefault(villagerProfession, new Int2ObjectOpenHashMap<>());
-
-            listInt2ObjectOpenHashMap.forEach((level, factoryList) -> {
-                final TradeOffers.Factory[] oldFactories = factories.getOrDefault(level.intValue(), new TradeOffers.Factory[0]);
-                factories.put(level.intValue(), ArrayUtils.addAll(oldFactories, factoryList.toArray(new TradeOffers.Factory[0])));
-            });
-
-            villagerTrades.put(villagerProfession, factories);
-        }));
-
-
-        return villagerTrades;
+    public static void stageAdditionFiles(Map<Identifier, JsonElement> files) {
+        additionFiles = new TreeMap<>(files);
     }
 
-    public static void registerVillagerTrade(RegistryKey<VillagerProfession> profession, int level, TradeOffers.Factory trade) {
-        getVillagerTradeList(profession, level).add(trade);
-    }
-
-    private static List<TradeOffers.Factory> getVillagerTradeList(RegistryKey<VillagerProfession> profession, int level) {
-        Int2ObjectOpenHashMap<List<TradeOffers.Factory>> villagerMap = getOrDefaultAndAdd(TRADES_REGISTRY, profession, new Int2ObjectOpenHashMap<>());
-        return getOrDefaultAndAdd(villagerMap, level, new ArrayList<>());
-    }
-
-    public static <K, V> V getOrDefaultAndAdd(Map<K, V> map, K key, V defaultValue) {
-        if (map.containsKey(key)) {
-            return map.get(key);
+    /// Parses the staged files and publishes the snapshots. A parse error does not stop the world load.
+    public static void finish() {
+        try {
+            loadVillagerFiles();
+        } catch (RuntimeException e) {
+            VillagerTradingPlus.LOGGER.error("Villager trades could not be built. Keeping the previous trades.", e);
         }
+        try {
+            WanderingTraderTradeLoader.finish();
+        } catch (RuntimeException e) {
+            VillagerTradingPlus.LOGGER.error("Wandering trader trades could not be built. Keeping the previous trades.", e);
+        }
+    }
 
-        map.put(key, defaultValue);
-        return defaultValue;
+    private static void loadVillagerFiles() {
+        COLLECTED.clear();
+
+        defaultFiles.forEach((identifier, json) -> {
+            if (json.isJsonObject()) {
+                VillagerTradingPlus.LOGGER.info("Deserializing default trades from: {}", identifier);
+                TradeOfferManager.deserializeJson(json.getAsJsonObject());
+            }
+        });
+        Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> defaults = drain();
+
+        additionFiles.forEach((identifier, json) -> {
+            if (json.isJsonObject()) {
+                VillagerTradingPlus.LOGGER.info("Deserializing added trades from: {}", identifier);
+                TradeOfferManager.deserializeJson(json.getAsJsonObject());
+            }
+        });
+        TradePools.publish(new TradeSnapshot(defaults, drain()));
+    }
+
+    public static void registerVillagerTrade(ResourceKey<VillagerProfession> profession, int level, TradeFactory trade) {
+        COLLECTED.computeIfAbsent(profession, key -> new Int2ObjectOpenHashMap<>())
+                .computeIfAbsent(level, key -> new ArrayList<>())
+                .add(trade);
+    }
+
+    private static Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> drain() {
+        Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> copy = new LinkedHashMap<>();
+        COLLECTED.forEach((profession, levels) -> {
+            Int2ObjectMap<List<TradeFactory>> levelCopy = new Int2ObjectOpenHashMap<>();
+            levels.int2ObjectEntrySet().forEach(entry -> levelCopy.put(entry.getIntKey(), List.copyOf(entry.getValue())));
+            copy.put(profession, levelCopy);
+        });
+        COLLECTED.clear();
+        return Collections.unmodifiableMap(copy);
     }
 }

@@ -1,6 +1,7 @@
 plugins {
-	id "architectury-plugin" version "3.4-SNAPSHOT"
-	id "dev.architectury.loom" version "1.11-SNAPSHOT" apply false
+	id "architectury-plugin" version "3.5.170"
+	id "dev.architectury.loom-no-remap" version "1.17.493" apply false
+	id "com.gradleup.shadow" version "9.6.1" apply false
 	id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
@@ -9,23 +10,15 @@ architectury {
 }
 
 subprojects {
-	apply plugin: "dev.architectury.loom"
-
-	loom {
-		silentMojangMappingsLicense()
-	}
+	apply plugin: "dev.architectury.loom-no-remap"
 
 	dependencies {
 		minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-		mappings loom.layered {
-			mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}"
-			mappings "dev.architectury:yarn-mappings-patch-neoforge:${rootProject.yarn_mappings_patch_neoforge_version}"
-		}
 	}
 }
 
 allprojects {
-	apply plugin: "java"
+	apply plugin: "java-library"
 	apply plugin: "architectury-plugin"
 	apply plugin: "maven-publish"
 
@@ -40,9 +33,9 @@ allprojects {
 		maven { url 'https://jitpack.io' }
 	}
 
-	tasks.withType(JavaCompile) {
+	tasks.withType(JavaCompile).configureEach {
 		options.encoding = "UTF-8"
-		options.release = 21
+		options.release = 25
 	}
 
 	java {
@@ -50,6 +43,10 @@ allprojects {
 	}
 }
 
+
+evaluationDependsOn(":common")
+evaluationDependsOn(":fabric")
+evaluationDependsOn(":neoforge")
 
 publishMods {
 	dryRun = providers.environmentVariable("PUBLISH_LIVE").getOrElse("false") != "true"
@@ -92,7 +89,7 @@ publishMods {
 		modLoaders.add("neoforge")
 	}
 
-	// One Modrinth version per loader, so the loader has to be part of the version number as well.
+	// Modrinth needs one version per loader, so the loader is part of the version.
 	modrinth("modrinthFabric") {
 		from mrOptions
 		file project(":fabric")
@@ -110,13 +107,12 @@ publishMods {
 		modLoaders.add("neoforge")
 	}
 
-	// A single GitHub release carrying both jars.
 	github {
 		accessToken = providers.environmentVariable("GITHUB_TOKEN").getOrElse("")
 		repository = "finallion/VillagerTradingPlus"
 		commitish = providers.environmentVariable("GITHUB_SHA").getOrElse(rootProject.minecraft_version)
 		file project(":fabric")
-		additionalFiles.from(project(":neoforge").tasks.named("remapJar").flatMap { it.archiveFile })
+		additionalFiles.from(project(":neoforge").tasks.named("shadowJar").flatMap { it.archiveFile })
 		modLoaders.add("fabric")
 		modLoaders.add("neoforge")
 	}
