@@ -35,11 +35,18 @@ public class TradeOfferRegistryLoader {
         return villagerTrades;
     }
 
-    public static void registerVillagerTrade(RegistryKey<VillagerProfession> profession, int level, TradeOffers.Factory trade) {
+    public static void registerVillagerTrade(
+            RegistryKey<VillagerProfession> profession,
+            int level,
+            TradeOffers.Factory trade
+    ) {
         getVillagerTradeList(profession, level).add(trade);
     }
 
-    private static List<TradeOffers.Factory> getVillagerTradeList(RegistryKey<VillagerProfession> profession, int level) {
+    private static List<TradeOffers.Factory> getVillagerTradeList(
+            RegistryKey<VillagerProfession> profession,
+            int level
+    ) {
         Int2ObjectOpenHashMap<List<TradeOffers.Factory>> villagerMap = getOrDefaultAndAdd(TRADES_REGISTRY, profession, new Int2ObjectOpenHashMap<>());
         return getOrDefaultAndAdd(villagerMap, level, new ArrayList<>());
     }

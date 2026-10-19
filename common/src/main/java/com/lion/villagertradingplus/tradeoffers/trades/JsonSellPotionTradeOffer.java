@@ -44,7 +44,14 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack buy, ItemStack sell, ItemStack currency, int maxUses, int experience, float multiplier) {
+        public Factory(
+                ItemStack buy,
+                ItemStack sell,
+                ItemStack currency,
+                int maxUses,
+                int experience,
+                float multiplier
+        ) {
             this.buy = buy;
             this.sell = sell;
             this.currency = currency;
@@ -55,14 +62,21 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
 
         public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
             List<RegistryEntry<Potion>> list = brewable(entity.getWorld());
+
             if (list.isEmpty()) {
                 return null;
             }
 
             RegistryEntry<Potion> potion = list.get(random.nextInt(list.size()));
 
-            return new TradeOffer(waterBottle(), Optional.of(tradedCurrency()), sellStack(potion),
-                    this.maxUses, this.experience, this.multiplier);
+            return new TradeOffer(
+                    waterBottle(),
+                    Optional.of(tradedCurrency()),
+                    sellStack(potion),
+                    this.maxUses,
+                    this.experience,
+                    this.multiplier
+            );
         }
 
         /// The potion pool is a fixed registry scan, so each brewable result gets a row.
@@ -75,8 +89,16 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     out.countSkipped(1);
                     continue;
                 }
-                out.add(waterBottle().itemStack(), currency, sellStack(potion), this.maxUses, this.experience,
-                        this.multiplier, 0);
+
+                out.add(
+                        waterBottle().itemStack(),
+                        currency,
+                        sellStack(potion),
+                        this.maxUses,
+                        this.experience,
+                        this.multiplier,
+                        0
+                );
             }
             out.popShare();
         }
@@ -92,8 +114,12 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         /// A TradedItem is a match rule, so the water potion is spelled out as a component predicate.
         private TradedItem waterBottle() {
             return new TradedItem(this.buy.getItem(), this.buy.getCount())
-                    .withComponents(builder -> builder.add(DataComponentTypes.POTION_CONTENTS,
-                            new PotionContentsComponent(Potions.WATER)));
+                    .withComponents(
+                            builder -> builder.add(
+                                    DataComponentTypes.POTION_CONTENTS,
+                                    new PotionContentsComponent(Potions.WATER)
+                            )
+                    );
         }
 
         private TradedItem tradedCurrency() {

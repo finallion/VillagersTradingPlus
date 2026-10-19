@@ -44,7 +44,15 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack buy, ItemStack currency, TagKey<Structure> structure, String nameKey, int maxUses, int experience, float multiplier) {
+        public Factory(
+                ItemStack buy,
+                ItemStack currency,
+                TagKey<Structure> structure,
+                String nameKey,
+                int maxUses,
+                int experience,
+                float multiplier
+        ) {
             this.buy = buy;
             this.currency = currency;
             this.structure = structure;
@@ -59,6 +67,7 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
                 return null;
             } else {
                 BlockPos blockPos = serverWorld.locateStructure(this.structure, entity.getBlockPos(), 100, true);
+
                 if (blockPos != null) {
                     ItemStack itemStack = FilledMapItem.createMap(serverWorld, blockPos.getX(), blockPos.getZ(), (byte)2, true, true);
                     FilledMapItem.fillExplorationMap(serverWorld, itemStack);

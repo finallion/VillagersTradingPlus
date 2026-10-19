@@ -18,8 +18,7 @@ public final class NetworkHelperImpl {
 
     private static Consumer<TradeCatalogPayload> catalogReceiver;
 
-    private NetworkHelperImpl() {
-    }
+    private NetworkHelperImpl() {}
 
     /// Registration happens in register(RegisterPayloadHandlersEvent).
     public static void init() {
@@ -39,6 +38,7 @@ public final class NetworkHelperImpl {
         registrar.playToClient(TradeCatalogPayload.ID, TradeCatalogPayload.CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
                     Consumer<TradeCatalogPayload> receiver = catalogReceiver;
+
                     if (receiver != null) {
                         receiver.accept(payload);
                     }

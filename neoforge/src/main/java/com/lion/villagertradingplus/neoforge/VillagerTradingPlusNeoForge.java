@@ -36,11 +36,17 @@ public class VillagerTradingPlusNeoForge {
 
     // Listeners are keyed, so NeoForge can order them. The ids mirror the Fabric ids from getFabricId().
     private static void registerResourceReloader(AddServerReloadListenersEvent event) {
-        event.addListener(Identifier.of(VillagerTradingPlus.MOD_ID, "default_villager_data_loader"),
-                new DefaultTradeOfferResourceListener());
-        event.addListener(Identifier.of(VillagerTradingPlus.MOD_ID, "villager_data_loader"),
-                new TradeOfferResourceListener());
-        event.addListener(Identifier.of(VillagerTradingPlus.MOD_ID, "wandering_trader_data_loader"),
-                new WanderingTraderTradeOfferResourceListener());
+        event.addListener(
+                Identifier.of(VillagerTradingPlus.MOD_ID, "default_villager_data_loader"),
+                new DefaultTradeOfferResourceListener()
+        );
+        event.addListener(
+                Identifier.of(VillagerTradingPlus.MOD_ID, "villager_data_loader"),
+                new TradeOfferResourceListener()
+        );
+        event.addListener(
+                Identifier.of(VillagerTradingPlus.MOD_ID, "wandering_trader_data_loader"),
+                new WanderingTraderTradeOfferResourceListener()
+        );
     }
 }

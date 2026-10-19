@@ -47,7 +47,14 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack currency, RegistryKey<Enchantment> enchantmentKey, int level, int maxUses, int experience, float multiplier) {
+        public Factory(
+                ItemStack currency,
+                RegistryKey<Enchantment> enchantmentKey,
+                int level,
+                int maxUses,
+                int experience,
+                float multiplier
+        ) {
             this.currency = currency;
             this.enchantmentKey = enchantmentKey;
             this.level = level;
@@ -60,12 +67,17 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
             return entity.getWorld().getRegistryManager()
                     .getOrThrow(RegistryKeys.ENCHANTMENT)
                     .getOptional(this.enchantmentKey)
-                    .map(enchantment -> new TradeOffer(
-                            traded(this.currency.copy()),
-                            EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(enchantment, this.level)),
-                            this.maxUses,
-                            this.experience,
-                            this.multiplier))
+                    .map(
+                            enchantment -> new TradeOffer(
+                                    traded(this.currency.copy()),
+                                    EnchantmentHelper.getEnchantedBookWith(
+                                            new EnchantmentLevelEntry(enchantment, this.level)
+                                    ),
+                                    this.maxUses,
+                                    this.experience,
+                                    this.multiplier
+                            )
+                    )
                     .orElseGet(() -> {
                         VillagerTradingPlus.LOGGER.warn("Skipping a sell_specific_enchanted_book offer: unknown enchantment '{}'", this.enchantmentKey.getValue());
                         return null;

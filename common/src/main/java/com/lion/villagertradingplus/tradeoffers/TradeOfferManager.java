@@ -61,11 +61,13 @@ public class TradeOfferManager {
     @Nullable
     private static JsonTradeOffer findAdapter(String type) {
         Identifier id = Identifier.tryParse(type);
+
         if (id == null) {
             return null;
         }
 
         JsonTradeOffer adapter = tradeOfferRegistry.get(id);
+
         if (adapter != null) {
             return adapter;
         }
@@ -77,11 +79,13 @@ public class TradeOfferManager {
 
         if (LEGACY_NAMESPACE.equals(id.getNamespace())) {
             adapter = tradeOfferRegistry.get(Identifier.of(VillagerTradingPlus.MOD_ID, id.getPath()));
+
             if (adapter != null && REPORTED_LEGACY_TYPES.add(type)) {
                 VillagerTradingPlus.LOGGER.warn(
                         "Trade type '{}' still uses the old namespace; it now lives at '{}:{}'. Still accepted, but please update the file.",
                         type, VillagerTradingPlus.MOD_ID, id.getPath());
             }
+
             return adapter;
         }
 
@@ -118,7 +122,8 @@ public class TradeOfferManager {
         // One unusable file costs that file, not the reload. The listener logs the file name before this call.
         try {
             Identifier professionId = Identifier.tryParse(
-                    JsonFields.requireString(jsonRoot, "villager trade file", "profession"));
+                    JsonFields.requireString(jsonRoot, "villager trade file", "profession")
+            );
 
             // The registry check rejects an unknown profession. A typo key would otherwise register silently.
             if (professionId == null || Registries.VILLAGER_PROFESSION.getOptionalValue(professionId).isEmpty()) {
@@ -128,8 +133,10 @@ public class TradeOfferManager {
 
             RegistryKey<VillagerProfession> profession =
                     RegistryKey.of(RegistryKeys.VILLAGER_PROFESSION, professionId);
-            deserializeTrades(jsonRoot, (integer, factory)
-                    -> TradeOfferRegistryLoader.registerVillagerTrade(profession, integer, factory));
+            deserializeTrades(
+                    jsonRoot,
+                    (integer, factory) -> TradeOfferRegistryLoader.registerVillagerTrade(profession, integer, factory)
+            );
         } catch (TradeParseException e) {
             VillagerTradingPlus.LOGGER.error("Skipping villager trade file{}: {}", fileSuffix(), e.getMessage());
         } catch (RuntimeException e) {
@@ -147,6 +154,7 @@ public class TradeOfferManager {
             JsonObject trades = JsonFields.requireObject(jsonRoot, "wandering trader trade file", "trades");
             for (Map.Entry<String, JsonElement> entry : trades.entrySet()) {
                 Integer level = WanderingTraderTradeLoader.LEVEL_MAPPING.get(entry.getKey());
+
                 if (level == null) {
                     VillagerTradingPlus.LOGGER.error("Unknown wandering trader trade tier: " + entry.getKey() + " (use 'common' or 'rare').");
                     continue;
@@ -171,6 +179,7 @@ public class TradeOfferManager {
                     }
 
                     TradeOffers.Factory factory = deserializeTrade(trade);
+
                     if (factory == null) {
                         VillagerTradingPlus.LOGGER.error("Wandering trader trade type broken: " + trade);
                     } else {
@@ -185,14 +194,21 @@ public class TradeOfferManager {
         }
     }
 
-    private static void deserializeTrades(@NotNull JsonObject jsonRoot, BiConsumer<Integer, TradeOffers.Factory> tradeConsumer) {
+    private static void deserializeTrades(
+            @NotNull JsonObject jsonRoot,
+            BiConsumer<Integer, TradeOffers.Factory> tradeConsumer
+    ) {
         JsonObject trades = JsonFields.requireObject(jsonRoot, "villager trade file", "trades");
         for (Map.Entry<String, JsonElement> entry : trades.entrySet()) {
 
             Integer level = professionMapping.get(entry.getKey());
+
             if (level == null) {
-                VillagerTradingPlus.LOGGER.error("Unknown villager trade tier: " + entry.getKey()
-                        + " (use novice, apprentice, journeyman, expert or master).");
+                VillagerTradingPlus.LOGGER.error(
+                        "Unknown villager trade tier: "
+                                + entry.getKey()
+                                + " (use novice, apprentice, journeyman, expert or master)."
+                );
                 continue;
             }
 
@@ -231,6 +247,7 @@ public class TradeOfferManager {
     public static TradeOffers.Factory deserializeTrade(JsonObject trade) {
         String type = readString(trade, "type");
         JsonTradeOffer adapter = findAdapter(type);
+
         if (adapter == null) {
             VillagerTradingPlus.LOGGER.warn("Skipping trade with unknown type '{}'{}.", type, fileSuffix());
             return null;
@@ -242,8 +259,10 @@ public class TradeOfferManager {
 
             if (VillagerTradingPlus.CONFIG.enable_conditional_trades && trade.has("conditions")) {
                 boolean orLogic = "or".equalsIgnoreCase(readString(trade, "logic"));
-                factory = new ConditionalTradeFactory(factory,
-                        TradeConditions.parse(trade.getAsJsonArray("conditions"), orLogic));
+                factory = new ConditionalTradeFactory(
+                        factory,
+                        TradeConditions.parse(trade.getAsJsonArray("conditions"), orLogic)
+                );
             }
 
             return PricingTradeFactory.wrapIfNeeded(factory, trade);

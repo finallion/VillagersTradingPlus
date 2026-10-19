@@ -43,13 +43,12 @@ public abstract class JsonTradeOffer {
     protected static TradedItem traded(ItemStack stack) {
         TradedItem tradedItem = new TradedItem(stack.getItem(), stack.getCount());
         ComponentChanges changes = stack.getComponentChanges();
+
         if (changes.isEmpty()) {
             return tradedItem;
         }
-        return tradedItem.withComponents(builder -> {
-            addChanges(builder, changes);
-            return builder;
-        });
+
+        return tradedItem.withComponents(builder -> { addChanges(builder, changes); return builder; });
     }
 
     /// An empty stack means no second slot, which maps to an absent optional.

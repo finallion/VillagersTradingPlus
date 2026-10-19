@@ -46,9 +46,11 @@ public class JsonSellTaggedItemTradeOffer extends JsonTradeOffer {
         @Override
         public TradeOffer create(Entity entity, Random random) {
             ItemStack resolved = sell.resolve(random);
+
             if (resolved.isEmpty()) {
                 return null;
             }
+
             return new TradeOffer(traded(currency.copy()), tradedOrEmpty(ItemStack.EMPTY), resolved, 0, maxUses, experience, multiplier, demand);
         }
 
@@ -62,6 +64,7 @@ public class JsonSellTaggedItemTradeOffer extends JsonTradeOffer {
                     out.countSkipped(1);
                     continue;
                 }
+
                 out.add(currency, ItemStack.EMPTY, resolved, maxUses, experience, multiplier, demand);
             }
             out.popShare();

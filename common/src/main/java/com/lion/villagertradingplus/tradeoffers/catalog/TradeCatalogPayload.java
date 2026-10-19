@@ -18,10 +18,14 @@ public record TradeCatalogPayload(int index, int count, byte[] data) implements 
 
     /// The decode bound is needed, because the length prefix comes from the wire.
     public static final PacketCodec<PacketByteBuf, TradeCatalogPayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.VAR_INT, TradeCatalogPayload::index,
-            PacketCodecs.VAR_INT, TradeCatalogPayload::count,
-            PacketCodecs.byteArray(TradeCatalogPacket.MAX_SLICE_BYTES), TradeCatalogPayload::data,
-            TradeCatalogPayload::new);
+            PacketCodecs.VAR_INT,
+            TradeCatalogPayload::index,
+            PacketCodecs.VAR_INT,
+            TradeCatalogPayload::count,
+            PacketCodecs.byteArray(TradeCatalogPacket.MAX_SLICE_BYTES),
+            TradeCatalogPayload::data,
+            TradeCatalogPayload::new
+    );
 
     @Override
     public CustomPayload.Id<? extends CustomPayload> getId() {
