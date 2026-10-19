@@ -59,19 +59,31 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
             }
 
             Enchantment value = enchantment.get().value();
-            entries.add(new Entry(
-                    ResourceKey.create(Registries.ENCHANTMENT, identifier),
-                    readInt(obj, "min_level", value.getMinLevel()),
-                    readInt(obj, "max_level", value.getMaxLevel()),
-                    readInt(obj, "weight", 1)));
+            entries.add(
+                    new Entry(
+                            ResourceKey.create(Registries.ENCHANTMENT, identifier),
+                            readInt(obj, "min_level", value.getMinLevel()),
+                            readInt(obj, "max_level", value.getMaxLevel()),
+                            readInt(obj, "weight", 1)
+                    )
+            );
         }
 
         int baseCost = readInt(json, "base_cost", 2);
         int costPerLevel = readInt(json, "cost_per_level", 3);
         int treasureMultiplier = readInt(json, "treasure_multiplier", 2);
 
-        return new Factory(currency, entries, baseCost, costPerLevel, treasureMultiplier,
-                maxUses, experience, priceMultiplier, demand);
+        return new Factory(
+                currency,
+                entries,
+                baseCost,
+                costPerLevel,
+                treasureMultiplier,
+                maxUses,
+                experience,
+                priceMultiplier,
+                demand
+        );
     }
 
     /// Holds the key only, because the factory outlives the registry it parsed against.
@@ -92,8 +104,17 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
         private final float multiplier;
         private final int demand;
 
-        public Factory(ItemStack currency, List<Entry> entries, int baseCost, int costPerLevel,
-                       int treasureMultiplier, int maxUses, int experience, float multiplier, int demand) {
+        public Factory(
+                ItemStack currency,
+                List<Entry> entries,
+                int baseCost,
+                int costPerLevel,
+                int treasureMultiplier,
+                int maxUses,
+                int experience,
+                float multiplier,
+                int demand
+        ) {
             this.currency = currency;
             this.entries = entries;
             this.baseCost = baseCost;
@@ -109,6 +130,7 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
         public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, RandomSource random) {
             List<Resolved> resolved = resolve(entity.level());
             int totalWeight = totalWeight(resolved);
+
             if (totalWeight <= 0) {
                 return null;
             }
@@ -116,9 +138,16 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
             Resolved chosen = pick(resolved, totalWeight, random);
             int level = Mth.nextInt(random, chosen.entry().minLevel(), chosen.entry().maxLevel());
 
-            return new MerchantOffer(traded(new ItemStack(currency.getItem(), cost(chosen.enchantment(), level))),
-                    tradedOrEmpty(new ItemStack(Items.BOOK)), book(chosen.enchantment(), level),
-                    0, maxUses, experience, multiplier, demand);
+            return new MerchantOffer(
+                    traded(new ItemStack(currency.getItem(), cost(chosen.enchantment(), level))),
+                    tradedOrEmpty(new ItemStack(Items.BOOK)),
+                    book(chosen.enchantment(), level),
+                    0,
+                    maxUses,
+                    experience,
+                    multiplier,
+                    demand
+            );
         }
 
         /// Lists every (enchantment, level) pair. The price follows from them.
@@ -137,9 +166,16 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
                         out.countSkipped(entry.maxLevel() - level + 1);
                         break;
                     }
-                    out.add(new ItemStack(currency.getItem(), cost(candidate.enchantment(), level)),
-                            new ItemStack(Items.BOOK), book(candidate.enchantment(), level),
-                            maxUses, experience, multiplier, demand);
+
+                    out.add(
+                            new ItemStack(currency.getItem(), cost(candidate.enchantment(), level)),
+                            new ItemStack(Items.BOOK),
+                            book(candidate.enchantment(), level),
+                            maxUses,
+                            experience,
+                            multiplier,
+                            demand
+                    );
                 }
                 out.popShare();
                 out.popWeight();
@@ -169,9 +205,11 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
 
         private int cost(Holder<Enchantment> enchantment, int level) {
             int cost = baseCost + level * costPerLevel;
+
             if (enchantment.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
                 cost *= treasureMultiplier;
             }
+
             return Mth.clamp(cost, 1, 64);
         }
 
@@ -179,6 +217,7 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
             int roll = random.nextInt(totalWeight);
             for (Resolved candidate : resolved) {
                 roll -= candidate.entry().weight();
+
                 if (roll < 0) {
                     return candidate;
                 }

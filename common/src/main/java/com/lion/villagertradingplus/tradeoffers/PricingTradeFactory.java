@@ -26,11 +26,13 @@ public final class PricingTradeFactory implements TradeFactory {
     @Override
     public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, RandomSource random) {
         MerchantOffer offer = delegate.create(world, entity, random);
+
         if (offer == null) {
             return null;
         }
 
         float factor = priceFactor(entity);
+
         if (factor == 1.0f) {
             return offer;
         }
@@ -40,11 +42,19 @@ public final class PricingTradeFactory implements TradeFactory {
         ItemCost first = new ItemCost(
                 originalFirst.item(),
                 scaleCount(originalFirst.count(), originalFirst.itemStack().getMaxStackSize(), factor),
-                originalFirst.components());
+                originalFirst.components()
+        );
 
-        return new MerchantOffer(first, offer.getItemCostB(), offer.getResult(),
-                offer.getUses(), offer.getMaxUses(), offer.getXp(),
-                offer.getPriceMultiplier(), offer.getDemand());
+        return new MerchantOffer(
+                first,
+                offer.getItemCostB(),
+                offer.getResult(),
+                offer.getUses(),
+                offer.getMaxUses(),
+                offer.getXp(),
+                offer.getPriceMultiplier(),
+                offer.getDemand()
+        );
     }
 
     public TradeFactory delegate() {
@@ -58,12 +68,14 @@ public final class PricingTradeFactory implements TradeFactory {
 
     public float priceFactor(Entity entity) {
         float factor = VillagerTradingPlus.CONFIG.trade_cost_scale;
+
         if (VillagerTradingPlus.CONFIG.enable_time_of_day_pricing) {
             float variance = VillagerTradingPlus.CONFIG.time_of_day_price_variance;
             long timeOfDay = entity.level().getOverworldClockTime() % 24000L;
             double swing = Math.sin(2.0 * Math.PI * (timeOfDay / 24000.0));
             factor *= (float) (1.0 + variance * swing);
         }
+
         return factor;
     }
 }

@@ -44,7 +44,15 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack buy, ItemStack currency, TagKey<Structure> structure, String nameKey, int maxUses, int experience, float multiplier) {
+        public Factory(
+                ItemStack buy,
+                ItemStack currency,
+                TagKey<Structure> structure,
+                String nameKey,
+                int maxUses,
+                int experience,
+                float multiplier
+        ) {
             this.buy = buy;
             this.currency = currency;
             this.structure = structure;
@@ -54,11 +62,16 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, net.minecraft.util.RandomSource random) {
+        public MerchantOffer create(
+                net.minecraft.server.level.ServerLevel world,
+                Entity entity,
+                net.minecraft.util.RandomSource random
+        ) {
             if (!(entity.level() instanceof ServerLevel serverWorld)) {
                 return null;
             } else {
                 BlockPos blockPos = serverWorld.findNearestMapStructure(this.structure, entity.blockPosition(), 100, true);
+
                 if (blockPos != null) {
                     ItemStack itemStack = MapItem.create(serverWorld, blockPos.getX(), blockPos.getZ(), (byte)2, true, true);
                     MapItem.renderBiomePreviewMap(serverWorld, itemStack);

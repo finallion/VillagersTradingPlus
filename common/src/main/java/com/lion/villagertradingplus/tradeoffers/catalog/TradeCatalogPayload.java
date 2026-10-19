@@ -15,10 +15,14 @@ public record TradeCatalogPayload(int index, int count, byte[] data) implements 
 
     /// Bounded on decode, because the length prefix comes from the wire.
     public static final StreamCodec<FriendlyByteBuf, TradeCatalogPayload> CODEC = StreamCodec.composite(
-            ByteBufCodecs.VAR_INT, TradeCatalogPayload::index,
-            ByteBufCodecs.VAR_INT, TradeCatalogPayload::count,
-            ByteBufCodecs.byteArray(TradeCatalogPacket.MAX_SLICE_BYTES), TradeCatalogPayload::data,
-            TradeCatalogPayload::new);
+            ByteBufCodecs.VAR_INT,
+            TradeCatalogPayload::index,
+            ByteBufCodecs.VAR_INT,
+            TradeCatalogPayload::count,
+            ByteBufCodecs.byteArray(TradeCatalogPacket.MAX_SLICE_BYTES),
+            TradeCatalogPayload::data,
+            TradeCatalogPayload::new
+    );
 
     @Override
     public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {

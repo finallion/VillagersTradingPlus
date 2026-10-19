@@ -70,9 +70,11 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
             if (entries.isEmpty() || totalWeight <= 0) {
                 return null;
             }
+
             int roll = random.nextInt(totalWeight);
             for (Entry entry : entries) {
                 roll -= entry.weight();
+
                 if (roll < 0) {
                     return entry.factory().create(world, entity, random);
                 }

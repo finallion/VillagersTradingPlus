@@ -16,20 +16,25 @@ public final class TradeCatalogPacket {
 
     private static final int MAX_TOTAL_BYTES = 4 * 1024 * 1024;
 
-    private TradeCatalogPacket() {
-    }
+    private TradeCatalogPacket() {}
 
     public record Payload(int level, int maxLevel, List<CatalogEntry> entries, int omitted) {
     }
 
-    public static List<TradeCatalogPayload> write(RegistryAccess registries, int level, int maxLevel,
-                                                  List<CatalogEntry> entries, int alreadySkipped) {
+    public static List<TradeCatalogPayload> write(
+            RegistryAccess registries,
+            int level,
+            int maxLevel,
+            List<CatalogEntry> entries,
+            int alreadySkipped
+    ) {
         RegistryFriendlyByteBuf scratch = new RegistryFriendlyByteBuf(Unpooled.buffer(), registries);
         int written = 0;
         for (CatalogEntry entry : entries) {
             if (scratch.writerIndex() > MAX_TOTAL_BYTES) {
                 break;
             }
+
             entry.write(scratch);
             written++;
         }
@@ -79,12 +84,17 @@ public final class TradeCatalogPacket {
             } else if (slice.index() != this.received.size() || slice.count() != this.expected) {
                 VillagerTradingPlus.LOGGER.warn(
                         "Discarding an out-of-sequence trade catalogue slice ({} of {}, expected {} of {}).",
-                        slice.index(), slice.count(), this.received.size(), this.expected);
+                        slice.index(),
+                        slice.count(),
+                        this.received.size(),
+                        this.expected
+                );
                 reset();
                 return emptyPayload();
             }
 
             this.size += slice.data().length;
+
             if (this.size > MAX_TOTAL_BYTES) {
                 VillagerTradingPlus.LOGGER.warn("Discarding an oversized trade catalogue ({} bytes).", this.size);
                 reset();
@@ -92,6 +102,7 @@ public final class TradeCatalogPacket {
             }
 
             this.received.add(slice.data());
+
             if (this.received.size() < this.expected) {
                 return null;
             }

@@ -11,15 +11,16 @@ import net.minecraft.world.entity.npc.villager.VillagerProfession;
 /// Read-only view of the trades that VTP and vanilla offer to a profession.
 public final class TradeLookup {
 
-    private TradeLookup() {
-    }
+    private TradeLookup() {}
 
     public static int tradeCount(RegistryAccess registries, ResourceKey<VillagerProfession> profession, int level) {
         TradeSnapshot snapshot = TradePools.villagerSnapshot();
         int count = snapshot.defaultsAt(profession, level).size() + snapshot.additionsAt(profession, level).size();
+
         if (TradePools.replacesVanillaSet(snapshot, profession)) {
             return count;
         }
+
         return count + vanillaCount(registries, profession, level);
     }
 

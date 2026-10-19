@@ -27,8 +27,7 @@ public final class TradePools {
 
     private static volatile TradeSnapshot villagers = TradeSnapshot.EMPTY;
 
-    private TradePools() {
-    }
+    private TradePools() {}
 
     public static void publish(TradeSnapshot snapshot) {
         villagers = snapshot;
@@ -64,11 +63,18 @@ public final class TradePools {
             pool.addAll(vanillaPool(level.registryAccess(), profession.value().getTrades(tier)));
             key.ifPresent(k -> pool.addAll(snapshot.defaultsAt(k, tier)));
         }
+
         key.ifPresent(k -> pool.addAll(snapshot.additionsAt(k, tier)));
         return pool;
     }
 
-    public static int draw(ServerLevel level, Entity trader, List<TradeFactory> pool, int amount, MerchantOffers target) {
+    public static int draw(
+            ServerLevel level,
+            Entity trader,
+            List<TradeFactory> pool,
+            int amount,
+            MerchantOffers target
+    ) {
         RandomSource random = trader.getRandom();
         List<TradeFactory> remaining = new ArrayList<>(pool);
         int added = 0;
@@ -91,20 +97,30 @@ public final class TradePools {
         return added;
     }
 
-    public static int addVillagerOffers(ServerLevel level, Entity trader, Holder<VillagerProfession> profession, int tier, MerchantOffers target) {
+    public static int addVillagerOffers(
+            ServerLevel level,
+            Entity trader,
+            Holder<VillagerProfession> profession,
+            int tier,
+            MerchantOffers target
+    ) {
         int amount = villagerPicks(level, trader, profession, tier);
         return draw(level, trader, forVillager(level, profession, tier), amount, target);
     }
 
     public static int villagerPicks(ServerLevel level, Entity trader, Holder<VillagerProfession> profession, int tier) {
         ResourceKey<TradeSet> set = profession.value().getTrades(tier);
+
         if (!drawsFromPool(profession)) {
             return vanillaAmount(level, trader, set, VANILLA_OFFERS_PER_LEVEL);
         }
+
         int configured = VillagerTradingPlus.CONFIG.trade_offers_per_level;
+
         if (replacesVanillaSet(villagers, profession.unwrapKey()) || !hasTradeSet(level, set)) {
             return configured;
         }
+
         return Math.max(0, vanillaAmount(level, trader, set, VANILLA_OFFERS_PER_LEVEL) + configured - VANILLA_OFFERS_PER_LEVEL);
     }
 
@@ -137,10 +153,17 @@ public final class TradePools {
         if (tier == 1) {
             return VillagerTradingPlus.CONFIG.trade_offers_wandering_trader;
         }
+
         return vanillaAmount(level, trader, TradeSets.WANDERING_TRADER_UNCOMMON, 2);
     }
 
-    private static void fillWanderingSet(ServerLevel level, Entity trader, ResourceKey<TradeSet> setKey, int vtpTier, MerchantOffers target) {
+    private static void fillWanderingSet(
+            ServerLevel level,
+            Entity trader,
+            ResourceKey<TradeSet> setKey,
+            int vtpTier,
+            MerchantOffers target
+    ) {
         List<TradeFactory> pool = wanderingPool(level, setKey, vtpTier);
         int amount = vtpTier == 1
                 ? VillagerTradingPlus.CONFIG.trade_offers_wandering_trader
@@ -152,9 +175,11 @@ public final class TradePools {
         WanderingTraderTradeLoader.Snapshot snapshot = WanderingTraderTradeLoader.snapshot();
         List<TradeFactory> custom = vtpTier == 0 ? List.of() : snapshot.tier(vtpTier);
         List<TradeFactory> pool = new ArrayList<>();
+
         if (!(snapshot.replaceVanilla() && !custom.isEmpty())) {
             pool.addAll(vanillaPool(level.registryAccess(), setKey));
         }
+
         pool.addAll(custom);
         return pool;
     }
@@ -163,10 +188,13 @@ public final class TradePools {
         if (setKey == null) {
             return fallback;
         }
+
         Optional<Holder.Reference<TradeSet>> set = level.registryAccess().lookupOrThrow(Registries.TRADE_SET).get(setKey);
+
         if (set.isEmpty()) {
             return fallback;
         }
+
         TradeSet tradeSet = set.get().value();
         LootContext context = VanillaTradeFactory.context(level, trader, trader.getRandom(), tradeSet.randomSequence());
         return tradeSet.calculateNumberOfTrades(context);
@@ -176,11 +204,14 @@ public final class TradePools {
         if (setKey == null) {
             return List.of();
         }
+
         HolderLookup.RegistryLookup<TradeSet> sets = registries.lookupOrThrow(Registries.TRADE_SET);
         Optional<Holder.Reference<TradeSet>> set = sets.get(setKey);
+
         if (set.isEmpty()) {
             return List.of();
         }
+
         List<TradeFactory> pool = new ArrayList<>();
         Optional<Identifier> sequence = set.get().value().randomSequence();
         set.get().value().trades().forEach(trade -> pool.add(new VanillaTradeFactory(trade, sequence)));

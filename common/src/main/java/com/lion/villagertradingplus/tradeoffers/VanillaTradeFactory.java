@@ -97,7 +97,12 @@ public final class VanillaTradeFactory implements TradeFactory {
     }
 
     /// Builds the loot context that vanilla builds before it rolls a trade set.
-    public static LootContext context(ServerLevel level, Entity trader, RandomSource random, Optional<Identifier> randomSequence) {
+    public static LootContext context(
+            ServerLevel level,
+            Entity trader,
+            RandomSource random,
+            Optional<Identifier> randomSequence
+    ) {
         LootParams params = new LootParams.Builder(level)
                 .withParameter(LootContextParams.ORIGIN, trader.position())
                 .withParameter(LootContextParams.THIS_ENTITY, trader)

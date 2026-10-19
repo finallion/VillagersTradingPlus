@@ -100,9 +100,11 @@ public final class TradeCatalogPanel {
 
     public int toggle(int requestedLevel) {
         this.visible = !this.visible;
+
         if (!this.visible) {
             return -1;
         }
+
         return requestLevel(requestedLevel);
     }
 
@@ -121,8 +123,7 @@ public final class TradeCatalogPanel {
         applyWidth(Mth.clamp(merchantX - DOCK_GAP - SCREEN_MARGIN, MIN_WIDTH, MAX_WIDTH));
 
         this.x = Math.max(SCREEN_MARGIN, merchantX - DOCK_GAP - this.width);
-        this.y = Mth.clamp(merchantY, SCREEN_MARGIN,
-                Math.max(SCREEN_MARGIN, screenHeight - HEIGHT - SCREEN_MARGIN));
+        this.y = Mth.clamp(merchantY, SCREEN_MARGIN, Math.max(SCREEN_MARGIN, screenHeight - HEIGHT - SCREEN_MARGIN));
         this.overlapping = this.x + this.width > merchantX;
 
         if (this.x + this.width > screenWidth) {
@@ -171,20 +172,24 @@ public final class TradeCatalogPanel {
             playClick();
             return requestLevel(wrapLevel(this.level - 1, maxLevel));
         }
+
         if (maxLevel > 1 && inRect(localX, localY, this.navRightX, NAV_Y, NAV_SIZE, NAV_SIZE)) {
             playClick();
             return requestLevel(wrapLevel(this.level + 1, maxLevel));
         }
+
         if (inRect(localX, localY, NAV_LEFT_X, FOOTER_Y, NAV_SIZE, NAV_SIZE)) {
             playClick();
             scrollRows(-ROWS_PER_PAGE);
             return -1;
         }
+
         if (inRect(localX, localY, this.navRightX, FOOTER_Y, NAV_SIZE, NAV_SIZE)) {
             playClick();
             scrollRows(ROWS_PER_PAGE);
             return -1;
         }
+
         return -1;
     }
 
@@ -226,6 +231,7 @@ public final class TradeCatalogPanel {
 
         // Adopt the tier that the server served. It can differ from the requested tier.
         TradeCatalogPacket.Payload payload = TradeCatalogClientState.current();
+
         if (payload != null && !TradeCatalogClientState.isLoading()) {
             this.level = payload.level();
         }
@@ -245,6 +251,7 @@ public final class TradeCatalogPanel {
         }
 
         List<CatalogEntry> entries = entries();
+
         if (entries.isEmpty()) {
             drawCentered(context, label("catalog_empty"), FIRST_ROW_Y + 24, TEXT_DIM);
             this.hoveredRow = -1;
@@ -277,6 +284,7 @@ public final class TradeCatalogPanel {
 
         for (int row = 0; row < ROWS_PER_PAGE; row++) {
             int index = this.firstRow + row;
+
             if (index >= entries.size()) {
                 break;
             }
@@ -284,6 +292,7 @@ public final class TradeCatalogPanel {
             CatalogEntry entry = entries.get(index);
             int rowY = this.y + FIRST_ROW_Y + row * ROW_STEP;
             boolean hovered = mouseX >= this.x + 2 && mouseX < this.x + this.width - 2 && mouseY >= rowY - 1 && mouseY < rowY + ROW_HEIGHT - 1;
+
             if (hovered) {
                 this.hoveredRow = index;
             }
@@ -291,29 +300,44 @@ public final class TradeCatalogPanel {
             if (!entry.conditionsMet()) {
                 context.fill(this.x + 2, rowY - 1, this.x + this.width - 2, rowY + ROW_HEIGHT - 1, ROW_GATED);
             }
+
             if (hovered) {
                 context.fill(this.x + 2, rowY - 1, this.x + this.width - 2, rowY + ROW_HEIGHT - 1, ROW_HOVER);
             }
 
             drawSlot(context, this.x + this.buyX, rowY);
             drawStack(context, entry.firstBuy(), this.x + this.buyX, rowY);
+
             if (!entry.secondBuy().isEmpty()) {
                 drawSlot(context, this.x + this.buy2X, rowY);
                 drawStack(context, entry.secondBuy(), this.x + this.buy2X, rowY);
             }
+
             context.text(font, Component.literal("->"), this.x + this.arrowX, rowY + 4, TEXT, false);
             drawSlot(context, this.x + this.sellX, rowY);
             drawStack(context, entry.sell(), this.x + this.sellX, rowY);
 
             if (this.showMarker && !entry.conditions().isEmpty()) {
-                context.text(font, Component.literal("!"), this.x + this.markerX, rowY + 5,
-                        entry.conditionsMet() ? TEXT_DIM : TEXT_GATED, false);
+                context.text(
+                        font,
+                        Component.literal("!"),
+                        this.x + this.markerX,
+                        rowY + 5,
+                        entry.conditionsMet() ? TEXT_DIM : TEXT_GATED,
+                        false
+                );
             }
 
             if (this.showChance) {
                 String chance = percent(overallChance(entry));
-                context.text(font, Component.literal(chance),
-                        this.x + this.width - 8 - font.width(chance), rowY + 5, TEXT_DIM, false);
+                context.text(
+                        font,
+                        Component.literal(chance),
+                        this.x + this.width - 8 - font.width(chance),
+                        rowY + 5,
+                        TEXT_DIM,
+                        false
+                );
             }
         }
     }
@@ -352,24 +376,32 @@ public final class TradeCatalogPanel {
                 : Screen.getTooltipFromItem(this.client, hoveredStack);
         appendMetadata(lines, entry);
 
-        context.setTooltipForNextFrame(this.client.font, lines,
+        context.setTooltipForNextFrame(
+                this.client.font,
+                lines,
                 hoveredStack.isEmpty() ? Optional.empty() : hoveredStack.getTooltipImage(),
-                mouseX, mouseY);
+                mouseX,
+                mouseY
+        );
     }
 
     private ItemStack stackAt(CatalogEntry entry, int mouseX, int mouseY, int rowY) {
         if (mouseY < rowY || mouseY >= rowY + 16) {
             return ItemStack.EMPTY;
         }
+
         if (inSlot(mouseX, this.x + this.buyX)) {
             return entry.firstBuy();
         }
+
         if (inSlot(mouseX, this.x + this.buy2X)) {
             return entry.secondBuy();
         }
+
         if (inSlot(mouseX, this.x + this.sellX)) {
             return entry.sell();
         }
+
         return ItemStack.EMPTY;
     }
 
@@ -383,50 +415,88 @@ public final class TradeCatalogPanel {
         }
 
         if (entry.tierPoolSize() > 0) {
-            lines.add(Component.translatable("gui.villagertradingplus.tooltip.chance",
-                            entry.tierPoolSize(), entry.tierPicks(), percent(tierChance(entry)))
-                    .withStyle(ChatFormatting.GRAY));
+            lines.add(
+                    Component.translatable(
+                            "gui.villagertradingplus.tooltip.chance",
+                            entry.tierPoolSize(),
+                            entry.tierPicks(),
+                            percent(tierChance(entry))
+                    )
+                            .withStyle(ChatFormatting.GRAY)
+            );
         }
+
         if (entry.isPooled()) {
-            lines.add(Component.translatable("gui.villagertradingplus.tooltip.pool_share",
-                            entry.poolWeight(), entry.poolTotalWeight(),
-                            percent((float) entry.poolWeight() / entry.poolTotalWeight()))
-                    .withStyle(ChatFormatting.GRAY));
+            lines.add(
+                    Component.translatable(
+                            "gui.villagertradingplus.tooltip.pool_share",
+                            entry.poolWeight(),
+                            entry.poolTotalWeight(),
+                            percent((float) entry.poolWeight() / entry.poolTotalWeight())
+                    )
+                            .withStyle(ChatFormatting.GRAY)
+            );
         }
+
         if (entry.poolShare() < 1.0f) {
-            lines.add(Component.translatable("gui.villagertradingplus.tooltip.combined_share",
-                            percent(overallChance(entry)))
-                    .withStyle(ChatFormatting.GRAY));
+            lines.add(
+                    Component.translatable(
+                            "gui.villagertradingplus.tooltip.combined_share",
+                            percent(overallChance(entry))
+                    )
+                            .withStyle(ChatFormatting.GRAY)
+            );
         }
 
         if (!entry.conditions().isEmpty()) {
             lines.add(Component.empty());
-            lines.add(Component.translatable("gui.villagertradingplus.tooltip.conditions")
-                    .withStyle(entry.conditionsMet() ? ChatFormatting.GREEN : ChatFormatting.GOLD));
+            lines.add(
+                    Component.translatable("gui.villagertradingplus.tooltip.conditions")
+                            .withStyle(entry.conditionsMet() ? ChatFormatting.GREEN : ChatFormatting.GOLD)
+            );
             for (ConditionInfo condition : entry.conditions()) {
-                lines.add(Component.literal(condition.satisfied() ? " ✔ " : " ✘ ")
-                        .append(condition.description())
-                        .withStyle(condition.satisfied() ? ChatFormatting.GREEN : ChatFormatting.RED));
+                lines.add(
+                        Component.literal(condition.satisfied() ? " ✔ " : " ✘ ")
+                                .append(condition.description())
+                                .withStyle(condition.satisfied() ? ChatFormatting.GREEN : ChatFormatting.RED)
+                );
             }
         }
 
         lines.add(Component.empty());
         lines.add(Component.translatable("gui.villagertradingplus.tooltip.economics").withStyle(ChatFormatting.DARK_GRAY));
-        lines.add(Component.translatable("gui.villagertradingplus.tooltip.max_uses", entry.maxUses())
-                .withStyle(ChatFormatting.DARK_GRAY));
-        lines.add(Component.translatable("gui.villagertradingplus.tooltip.experience", entry.villagerExperience())
-                .withStyle(ChatFormatting.DARK_GRAY));
-        lines.add(Component.translatable("gui.villagertradingplus.tooltip.price_multiplier",
-                        String.format(Locale.ROOT, "%.2f", entry.priceMultiplier()))
-                .withStyle(ChatFormatting.DARK_GRAY));
+        lines.add(
+                Component.translatable("gui.villagertradingplus.tooltip.max_uses", entry.maxUses())
+                        .withStyle(ChatFormatting.DARK_GRAY)
+        );
+        lines.add(
+                Component.translatable("gui.villagertradingplus.tooltip.experience", entry.villagerExperience())
+                        .withStyle(ChatFormatting.DARK_GRAY)
+        );
+        lines.add(
+                Component.translatable(
+                        "gui.villagertradingplus.tooltip.price_multiplier",
+                        String.format(Locale.ROOT, "%.2f", entry.priceMultiplier())
+                )
+                        .withStyle(ChatFormatting.DARK_GRAY)
+        );
+
         if (entry.demand() != 0) {
-            lines.add(Component.translatable("gui.villagertradingplus.tooltip.demand", entry.demand())
-                    .withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(
+                    Component.translatable("gui.villagertradingplus.tooltip.demand", entry.demand())
+                            .withStyle(ChatFormatting.DARK_GRAY)
+            );
         }
+
         if (entry.hasPriceRange()) {
-            lines.add(Component.translatable("gui.villagertradingplus.tooltip.price_range",
-                            entry.minPrice(), entry.maxPrice())
-                    .withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(
+                    Component.translatable(
+                            "gui.villagertradingplus.tooltip.price_range",
+                            entry.minPrice(),
+                            entry.maxPrice()
+                    )
+                            .withStyle(ChatFormatting.DARK_GRAY)
+            );
         }
     }
 
@@ -435,6 +505,7 @@ public final class TradeCatalogPanel {
         if (entry.tierPoolSize() <= 0) {
             return 1.0f;
         }
+
         return Math.min(1.0f, (float) entry.tierPicks() / entry.tierPoolSize());
     }
 
@@ -459,14 +530,20 @@ public final class TradeCatalogPanel {
         return payload == null ? 1 : payload.maxLevel();
     }
 
-    private void drawNavButton(GuiGraphicsExtractor context, int localX, int localY, String label, int mouseX, int mouseY) {
+    private void drawNavButton(
+            GuiGraphicsExtractor context,
+            int localX,
+            int localY,
+            String label,
+            int mouseX,
+            int mouseY
+    ) {
         int left = this.x + localX;
         int top = this.y + localY;
         boolean hovered = mouseX >= left && mouseX < left + NAV_SIZE && mouseY >= top && mouseY < top + NAV_SIZE;
 
         context.fill(left, top, left + NAV_SIZE, top + NAV_SIZE, SLOT_BORDER);
-        context.fill(left + 1, top + 1, left + NAV_SIZE - 1, top + NAV_SIZE - 1,
-                hovered ? BUTTON_HOVER : BUTTON_FILL);
+        context.fill(left + 1, top + 1, left + NAV_SIZE - 1, top + NAV_SIZE - 1, hovered ? BUTTON_HOVER : BUTTON_FILL);
 
         Font font = this.client.font;
         context.text(font, label, left + (NAV_SIZE - font.width(label)) / 2, top + 6, BUTTON_LABEL, true);
@@ -481,6 +558,7 @@ public final class TradeCatalogPanel {
         if (stack.isEmpty()) {
             return;
         }
+
         context.fakeItem(stack, slotX, slotY);
         context.itemDecorations(this.client.font, stack, slotX, slotY);
     }

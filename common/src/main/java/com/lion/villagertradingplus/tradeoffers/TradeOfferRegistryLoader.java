@@ -62,7 +62,11 @@ public class TradeOfferRegistryLoader {
         TradePools.publish(new TradeSnapshot(defaults, drain()));
     }
 
-    public static void registerVillagerTrade(ResourceKey<VillagerProfession> profession, int level, TradeFactory trade) {
+    public static void registerVillagerTrade(
+            ResourceKey<VillagerProfession> profession,
+            int level,
+            TradeFactory trade
+    ) {
         COLLECTED.computeIfAbsent(profession, key -> new Int2ObjectOpenHashMap<>())
                 .computeIfAbsent(level, key -> new ArrayList<>())
                 .add(trade);

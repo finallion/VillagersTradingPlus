@@ -23,7 +23,12 @@ public final class Ingredient {
     private final int count;
     private final JsonObject componentSugar; // reapplied to each tag pick
 
-    private Ingredient(ItemStack fixed, TagKey<net.minecraft.world.item.Item> tag, int count, JsonObject componentSugar) {
+    private Ingredient(
+            ItemStack fixed,
+            TagKey<net.minecraft.world.item.Item> tag,
+            int count,
+            JsonObject componentSugar
+    ) {
         this.fixed = fixed;
         this.tag = tag;
         this.count = count;
@@ -32,11 +37,15 @@ public final class Ingredient {
 
     public static Ingredient fromJson(JsonObject json) {
         int count = json.has("count") ? json.get("count").getAsInt() : 1;
+
         if (json.has("tag")) {
-            TagKey<net.minecraft.world.item.Item> tag = TagKey.create(Registries.ITEM,
-                    Identifier.tryParse(json.get("tag").getAsString()));
+            TagKey<net.minecraft.world.item.Item> tag = TagKey.create(
+                    Registries.ITEM,
+                    Identifier.tryParse(json.get("tag").getAsString())
+            );
             return new Ingredient(null, tag, count, json);
         }
+
         return new Ingredient(ItemStackSerializer.fromJson(json), null, count, null);
     }
 
@@ -50,6 +59,7 @@ public final class Ingredient {
         }
 
         Optional<HolderSet.Named<net.minecraft.world.item.Item>> entries = BuiltInRegistries.ITEM.get(tag);
+
         if (entries.isEmpty() || entries.get().size() == 0) {
             return ItemStack.EMPTY;
         }
@@ -65,6 +75,7 @@ public final class Ingredient {
         }
 
         Optional<HolderSet.Named<net.minecraft.world.item.Item>> entries = BuiltInRegistries.ITEM.get(tag);
+
         if (entries.isEmpty()) {
             return List.of();
         }
@@ -78,9 +89,11 @@ public final class Ingredient {
 
     private ItemStack build(Holder<net.minecraft.world.item.Item> entry) {
         ItemStack stack = new ItemStack(entry.value(), count);
+
         if (componentSugar != null) {
             ItemStackSerializer.applyComponents(stack, componentSugar);
         }
+
         return stack;
     }
 }

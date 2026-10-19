@@ -49,7 +49,14 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack buy, ItemStack sell, ItemStack currency, int maxUses, int experience, float multiplier) {
+        public Factory(
+                ItemStack buy,
+                ItemStack sell,
+                ItemStack currency,
+                int maxUses,
+                int experience,
+                float multiplier
+        ) {
             this.buy = buy;
             this.sell = sell;
             this.currency = currency;
@@ -58,16 +65,27 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, net.minecraft.util.RandomSource random) {
+        public MerchantOffer create(
+                net.minecraft.server.level.ServerLevel world,
+                Entity entity,
+                net.minecraft.util.RandomSource random
+        ) {
             List<Holder<Potion>> list = brewable(entity.level());
+
             if (list.isEmpty()) {
                 return null;
             }
 
             Holder<Potion> potion = list.get(random.nextInt(list.size()));
 
-            return new MerchantOffer(waterBottle(), Optional.of(tradedCurrency()), sellStack(potion),
-                    this.maxUses, this.experience, this.multiplier);
+            return new MerchantOffer(
+                    waterBottle(),
+                    Optional.of(tradedCurrency()),
+                    sellStack(potion),
+                    this.maxUses,
+                    this.experience,
+                    this.multiplier
+            );
         }
 
         /// The potion pool is a fixed registry scan, so every brewable result gets its own row.
@@ -80,21 +98,32 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     out.countSkipped(1);
                     continue;
                 }
-                out.add(waterBottle().itemStack(), currency, sellStack(potion), this.maxUses, this.experience,
-                        this.multiplier, 0);
+
+                out.add(
+                        waterBottle().itemStack(),
+                        currency,
+                        sellStack(potion),
+                        this.maxUses,
+                        this.experience,
+                        this.multiplier,
+                        0
+                );
             }
             out.popShare();
         }
 
         private static List<Holder<Potion>> brewable(Level world) {
             MinecraftServer server = world.getServer();
+
             if (server == null) {
                 return List.of();
             }
+
             Set<Holder<Potion>> outputs = new HashSet<>();
             for (RecipeHolder<?> holder : server.getRecipeManager().getRecipes()) {
                 if (holder.value() instanceof BrewingRecipe recipe) {
                     PotionContents contents = recipe.getOutput().get(DataComponents.POTION_CONTENTS);
+
                     if (contents != null) {
                         contents.potion().ifPresent(outputs::add);
                     }
@@ -107,8 +136,9 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
 
         private ItemCost waterBottle() {
             return new ItemCost(this.buy.getItem(), this.buy.getCount())
-                    .withComponents(builder -> builder.expect(DataComponents.POTION_CONTENTS,
-                            new PotionContents(Potions.WATER)));
+                    .withComponents(
+                            builder -> builder.expect(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER))
+                    );
         }
 
         private ItemCost tradedCurrency() {

@@ -10,8 +10,7 @@ import java.util.function.Consumer;
 
 public final class NetworkHelperImpl {
 
-    private NetworkHelperImpl() {
-    }
+    private NetworkHelperImpl() {}
 
     /// Both sides register payload types from common init. An unregistered type is dropped as unknown.
     public static void init() {
@@ -24,7 +23,9 @@ public final class NetworkHelperImpl {
 
     public static void registerCatalogReceiver(Consumer<TradeCatalogPayload> receiver) {
         // The payload is a decoded immutable record. No copy is needed.
-        ClientPlayNetworking.registerGlobalReceiver(TradeCatalogPayload.ID,
-                (payload, context) -> context.client().execute(() -> receiver.accept(payload)));
+        ClientPlayNetworking.registerGlobalReceiver(
+                TradeCatalogPayload.ID,
+                (payload, context) -> context.client().execute(() -> receiver.accept(payload))
+        );
     }
 }
