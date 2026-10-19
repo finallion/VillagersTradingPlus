@@ -38,7 +38,11 @@ public class JsonSellItemTradeOffer extends JsonTradeOffer {
             this.demand = demand;
         }
 
-        public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, net.minecraft.util.RandomSource random) {
+        public MerchantOffer create(
+                net.minecraft.server.level.ServerLevel world,
+                Entity entity,
+                net.minecraft.util.RandomSource random
+        ) {
             return new MerchantOffer(traded(currency), tradedOrEmpty(net.minecraft.world.item.ItemStack.EMPTY), sell, 0, this.maxUses, this.experience, multiplier, this.demand);
         }
     }

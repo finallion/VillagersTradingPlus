@@ -12,8 +12,7 @@ import com.lion.villagertradingplus.tradeoffers.TradeFactory;
 /// Turns a trade factory into catalogue rows. It removes the wrappers one by one, then lists the offers.
 public final class CatalogExpansion {
 
-    private CatalogExpansion() {
-    }
+    private CatalogExpansion() {}
 
     public static void expandTrade(TradeFactory factory, Entity merchant, CatalogBuilder out) {
         out.reset();

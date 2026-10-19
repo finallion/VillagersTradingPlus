@@ -50,17 +50,31 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
             this.demand = demand;
         }
 
-        public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, net.minecraft.util.RandomSource random) {
+        public MerchantOffer create(
+                net.minecraft.server.level.ServerLevel world,
+                Entity entity,
+                net.minecraft.util.RandomSource random
+        ) {
             List<Holder<Enchantment>> list = available(entity.level());
+
             if (list.isEmpty()) {
                 return null;
             }
+
             Holder<Enchantment> enchantment = list.get(random.nextInt(list.size()));
             int level = Mth.nextInt(random, enchantment.value().getMinLevel(), enchantment.value().getMaxLevel());
             int price = clampPrice(2 + random.nextInt(5 + level * 10) + 3 * level, enchantment);
 
-            return new MerchantOffer(traded(new ItemStack(currency.getItem(), price)), tradedOrEmpty(new ItemStack(Items.BOOK)),
-                    book(enchantment, level), 0, this.maxUses, this.experience, this.multiplier, this.demand);
+            return new MerchantOffer(
+                    traded(new ItemStack(currency.getItem(), price)),
+                    tradedOrEmpty(new ItemStack(Items.BOOK)),
+                    book(enchantment, level),
+                    0,
+                    this.maxUses,
+                    this.experience,
+                    this.multiplier,
+                    this.demand
+            );
         }
 
         /// Lists every pair at its cheapest price. The tooltip carries the range.
@@ -76,13 +90,22 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
                         out.countSkipped(1);
                         continue;
                     }
+
                     // create() rolls 2 + nextInt(5 + 10*level) + 3*level. Extremes: 2 + 3*level and 6 + 13*level.
                     int minPrice = clampPrice(2 + 3 * level, enchantment);
                     int maxPrice = clampPrice(6 + 13 * level, enchantment);
 
-                    out.add(new ItemStack(currency.getItem(), minPrice), new ItemStack(Items.BOOK),
-                            book(enchantment, level), maxUses, experience, multiplier, demand,
-                            minPrice, maxPrice);
+                    out.add(
+                            new ItemStack(currency.getItem(), minPrice),
+                            new ItemStack(Items.BOOK),
+                            book(enchantment, level),
+                            maxUses,
+                            experience,
+                            multiplier,
+                            demand,
+                            minPrice,
+                            maxPrice
+                    );
                 }
                 out.popShare();
             }
@@ -104,6 +127,7 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
             if (enchantment.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
                 price *= 2;
             }
+
             return Math.min(price, 64);
         }
     }

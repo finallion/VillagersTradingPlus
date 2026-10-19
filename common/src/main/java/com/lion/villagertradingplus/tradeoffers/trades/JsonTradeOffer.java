@@ -40,13 +40,12 @@ public abstract class JsonTradeOffer {
     protected static ItemCost traded(ItemStack stack) {
         ItemCost tradedItem = new ItemCost(stack.getItem(), stack.getCount());
         DataComponentPatch changes = stack.getComponentsPatch();
+
         if (changes.isEmpty()) {
             return tradedItem;
         }
-        return tradedItem.withComponents(builder -> {
-            addChanges(builder, changes);
-            return builder;
-        });
+
+        return tradedItem.withComponents(builder -> { addChanges(builder, changes); return builder; });
     }
 
     protected static Optional<ItemCost> tradedOrEmpty(ItemStack stack) {
