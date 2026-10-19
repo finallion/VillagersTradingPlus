@@ -32,8 +32,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.IntPredicate;
 
-/// Parses the `conditions` block. Conditions combine with AND, or with OR when `logic` is `or`.
-/// An unknown type fails closed and withholds the trade.
 public final class TradeConditions {
 
     private static final Map<String, ConditionType> REGISTRY = new HashMap<>();
@@ -103,7 +101,6 @@ public final class TradeConditions {
                 continue;
             }
 
-            // Parse before describing, so a malformed condition logs one message.
             TradeCondition condition = conditionType.parser().apply(obj);
             parsed.add(new ParsedConditions.Entry(describeSafely(conditionType, obj, type), condition));
         }
@@ -111,7 +108,6 @@ public final class TradeConditions {
         return new ParsedConditions(List.copyOf(parsed), orLogic);
     }
 
-    /// Falls back to the type name when the describer throws.
     private static Component describeSafely(ConditionType type, JsonObject json, String typeName) {
         try {
             return type.describer().apply(json);
@@ -185,7 +181,7 @@ public final class TradeConditions {
         return villager -> villager.level().isBrightOutside() == wantDay;
     }
 
-    /// The phase index names the lunar day only, so by default the condition also requires night.
+    /// The lunar day also covers daylight, so night is required by default.
     private static TradeCondition parseMoonPhase(JsonObject json) {
         Set<Integer> phases = new HashSet<>();
         for (JsonElement element : JsonFields.requireArray(json, "\"moon_phase\" condition", "phases")) {
@@ -225,7 +221,6 @@ public final class TradeConditions {
         }
     }
 
-    /// Boolean rule name from a datapack and the registry path it maps to.
     private record LegacyRule(String path, boolean inverted) {
         static LegacyRule of(String path) {
             return new LegacyRule(path, false);
@@ -309,7 +304,7 @@ public final class TradeConditions {
                 && serverWorld.getGameRules().get(key) == wanted;
     }
 
-    // Fire rules use one int radius: 0 is off, -1 is everywhere, else near players only.
+    /// Fire rules use one int radius: 0 is off, -1 is everywhere, else near players only.
     private static TradeCondition fireSpreadCondition(IntPredicate test, boolean expected) {
         GameRule<Integer> radius = GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER;
         return villager -> villager.level() instanceof ServerLevel serverWorld

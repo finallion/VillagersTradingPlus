@@ -14,7 +14,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 
-/// Holds the trade files of a reload and builds the snapshots once the item components exist.
 public class TradeOfferRegistryLoader {
     private static final Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> COLLECTED = new LinkedHashMap<>();
     private static Map<Identifier, JsonElement> defaultFiles = Map.of();
@@ -28,7 +27,6 @@ public class TradeOfferRegistryLoader {
         additionFiles = new TreeMap<>(files);
     }
 
-    /// Parses the staged files and publishes the snapshots. A parse error does not stop the world load.
     public static void finish() {
         try {
             loadVillagerFiles();

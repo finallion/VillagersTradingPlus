@@ -9,7 +9,6 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 
-/// The `sell` stack may carry component sugar via [ItemStackSerializer].
 public class JsonMultiInputTradeOffer extends JsonTradeOffer {
 
     @Override

@@ -12,13 +12,10 @@ import com.lion.villagertradingplus.tradeoffers.TradeFactory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 
-/// Collects catalogue rows while [CatalogExpansion] walks a pool.
-/// A pool knows the weights and a leaf knows the items, so each row copies three scope stacks.
 public final class CatalogBuilder {
 
     public static final int MAX_ENTRIES = 512;
 
-    /// Fixed seed for the unenumerable-factory fallback, so those rows never change between opens.
     private static final long CATALOG_SEED = 0L;
 
     private record ConditionGroup(List<ConditionInfo> infos, boolean satisfied) {
@@ -26,11 +23,10 @@ public final class CatalogBuilder {
 
     private final List<CatalogEntry> entries = new ArrayList<>();
 
-    /// {weight, totalWeight} of each enclosing weighted_pool, innermost last.
     private final Deque<int[]> weightStack = new ArrayDeque<>();
     private final List<ConditionGroup> conditionStack = new ArrayList<>();
 
-    /// Saved values restored on pop. Division would accumulate float drift.
+    /// Division would accumulate float drift.
     private final Deque<Float> shareStack = new ArrayDeque<>();
     private final Deque<Float> priceFactorStack = new ArrayDeque<>();
 
@@ -41,7 +37,6 @@ public final class CatalogBuilder {
     private float composedPriceFactor = 1.0f;
     private int skipped;
 
-    /// Flattened view of [#conditionStack], rebuilt only when the stack actually changes.
     private List<ConditionInfo> flatConditions = List.of();
     private boolean conditionsMet = true;
 
@@ -70,7 +65,6 @@ public final class CatalogBuilder {
         popShare();
     }
 
-    /// Narrows the probability without a JSON weight, for uniform splits such as one enchantment of forty.
     public void pushShare(float share) {
         this.shareStack.addLast(this.composedShare);
         this.composedShare *= share;
@@ -122,7 +116,6 @@ public final class CatalogBuilder {
         add(firstBuy, secondBuy, sell, maxUses, villagerExperience, priceMultiplier, demand, price, price);
     }
 
-    /// Raw prices are before the pricing factor. The stack shows the low end.
     public void add(
             ItemStack firstBuy,
             ItemStack secondBuy,
@@ -190,7 +183,6 @@ public final class CatalogBuilder {
         );
     }
 
-    /// Rolls the factory once with a fixed seed, so the row stays stable between openings.
     public void addSampled(TradeFactory factory, Entity merchant) {
         if (factory instanceof VanillaTradeFactory vanilla && vanilla.rollsStructureSearch()) {
             countSkipped(1);

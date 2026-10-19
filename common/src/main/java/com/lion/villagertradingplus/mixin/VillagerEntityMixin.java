@@ -39,7 +39,6 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
 
     @Shadow public abstract void refreshBrain(ServerLevel world);
 
-    /// Offer count per level (index = level 1..5), so one level can be re-rolled in place.
     @Unique private int[] villagertradingplus$levelCounts = null;
 
     @Inject(method = "updateTrades", at = @At("HEAD"), cancellable = true)
@@ -111,7 +110,6 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
         MerchantOffers offers = getOffers();
         int[] counts = villagertradingplus$levelCounts;
 
-        // Without a per-level mapping the whole list re-rolls.
         if (counts == null || counts.length <= level || villagertradingplus$sum(counts, 1, level) != offers.size()) {
             villagertradingplus$rerollAll();
             return;

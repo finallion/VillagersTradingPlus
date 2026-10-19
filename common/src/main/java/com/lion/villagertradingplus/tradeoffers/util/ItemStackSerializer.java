@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/// Parses item stacks from trade JSON. Optional keys set components. Raw `nbt` applies last.
+/// Raw `nbt` applies last.
 public final class ItemStackSerializer {
 
     private ItemStackSerializer() {}
@@ -87,7 +87,6 @@ public final class ItemStackSerializer {
             applyEnchantments(stack, json.getAsJsonArray("enchantments"));
         }
 
-        // Dyeing is a component, so any item can carry a color.
         if (json.has("color")) {
             stack.set(DataComponents.DYED_COLOR, new DyedItemColor(parseColor(json.get("color").getAsString())));
         }
@@ -121,7 +120,6 @@ public final class ItemStackSerializer {
             applyBook(stack, json.getAsJsonObject("book"));
         }
 
-        // Raw SNBT applies last, so it can override the keys above.
         if (json.has("nbt")) {
             applyRawNbt(stack, json.get("nbt").getAsString());
         }
@@ -138,7 +136,6 @@ public final class ItemStackSerializer {
             return;
         }
 
-        // Build on the existing components, so repeated application accumulates.
         ItemEnchantments.Mutable builder =
                 new ItemEnchantments.Mutable(EnchantmentHelper.getEnchantmentsForCrafting(stack));
         boolean applied = false;
@@ -196,7 +193,6 @@ public final class ItemStackSerializer {
         );
     }
 
-    /// The raw SNBT hatch applies item data such as `{Unbreakable:1b}`.
     private static void applyRawNbt(ItemStack stack, String snbt) {
         try {
             CompoundTag parsed = TagParser.parseCompoundFully(snbt);
@@ -223,7 +219,6 @@ public final class ItemStackSerializer {
 
         CompoundTag old = new CompoundTag();
         old.putString("id", BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
-        // The patch does not carry the count. A fixed 1 stays inside the codec range.
         old.putInt("Count", 1);
         old.put("tag", tag);
 
@@ -244,7 +239,6 @@ public final class ItemStackSerializer {
                 .map(ItemStack::getComponentsPatch);
     }
 
-    /// Parses plain text or a JSON text component given as a string.
     private static Component parseText(JsonElement element) {
         if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
             String raw = element.getAsString();

@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-/// Reads required fields. A missing field throws a [TradeParseException] that names it.
 public final class JsonFields {
 
     private JsonFields() {}
@@ -59,7 +58,6 @@ public final class JsonFields {
 
     private static JsonElement require(JsonObject json, String owner, String field) {
         JsonElement value = json.get(field);
-        // A JSON null is as unusable as a missing key.
         if (value == null || value.isJsonNull()) {
             throw new TradeParseException(owner + " needs a \"" + field + "\" field: " + json);
         }

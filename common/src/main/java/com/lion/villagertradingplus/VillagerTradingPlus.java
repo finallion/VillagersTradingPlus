@@ -7,9 +7,6 @@ import com.lion.villagertradingplus.tradeoffers.TradeOfferManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Entry point of the library. A consumer mod ships JSON under its own namespace.
-/// The resource listeners load it on every reload. The format is in
-/// `data/villagertradingplus/available_trade_examples`.
 public class VillagerTradingPlus {
 	public static final String MOD_ID = "villagertradingplus";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);

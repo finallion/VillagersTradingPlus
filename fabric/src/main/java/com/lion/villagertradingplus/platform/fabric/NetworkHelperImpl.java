@@ -22,7 +22,6 @@ public final class NetworkHelperImpl {
     }
 
     public static void registerCatalogReceiver(Consumer<TradeCatalogPayload> receiver) {
-        // The payload is a decoded immutable record. No copy is needed.
         ClientPlayNetworking.registerGlobalReceiver(
                 TradeCatalogPayload.ID,
                 (payload, context) -> context.client().execute(() -> receiver.accept(payload))

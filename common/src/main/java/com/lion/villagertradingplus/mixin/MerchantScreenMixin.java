@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MerchantScreenMixin extends AbstractContainerScreen<MerchantMenu> {
 
     private MerchantScreenMixin() {
-        super(null, null, null); // never executed; present only to satisfy the compiler
+        super(null, null, null);
     }
 
     @Shadow
@@ -53,7 +53,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
         if (allowView && this.villagertradingplus$catalog == null) {
             this.villagertradingplus$catalog = new TradeCatalogPanel(Minecraft.getInstance());
-            // Reset on the first init only. A window resize runs init again and keeps the data.
+            // A window resize runs init again, so reset only once.
             TradeCatalogClientState.clear();
         }
 
@@ -83,10 +83,8 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
         row = Math.max(margin, row);
 
-        // Below this width the full labels clip, so the short labels apply.
         this.villagertradingplus$shortLabels = w < 90;
 
-        // The arrows shrink with the labels to keep the readout wide enough.
         int arrowWidth = villagertradingplus$shortLabels ? 16 : 20;
         villagertradingplus$levelDisplay = addRenderableWidget(
                 Button.builder(villagertradingplus$levelText(), b -> {})
@@ -225,7 +223,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
         cir.setReturnValue(true);
     }
 
-    /// Vanilla scrolls the trade list from anywhere on screen, so the panel claims the wheel itself.
+    /// Vanilla scrolls the trade list from anywhere on screen, so the panel claims the wheel.
     @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
     private void villagertradingplus$catalogScroll(
             double mouseX,
