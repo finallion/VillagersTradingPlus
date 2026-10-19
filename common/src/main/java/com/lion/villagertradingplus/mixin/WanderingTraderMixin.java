@@ -36,6 +36,7 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
         if (common != null) {
             fillRecipesFromPool(offers, common, VillagerTradingPlus.CONFIG.trade_offers_wandering_trader);
         }
+
         if (rare != null) {
             fillRecipesFromPool(offers, rare, 1);
         }

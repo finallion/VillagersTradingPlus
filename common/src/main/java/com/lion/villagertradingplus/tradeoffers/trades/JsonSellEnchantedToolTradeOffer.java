@@ -50,18 +50,31 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
         public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
             int power = MIN_POWER + random.nextInt(MAX_POWER - MIN_POWER + 1);
             // The in_enchanting_table tag defines the pool. The copy keeps count and name, lore or component sugar.
-            ItemStack itemStack = EnchantmentHelper.enchant(random, this.sell.copy(), power,
-                    entity.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT)
-                            .getOrCreateEntryList(EnchantmentTags.IN_ENCHANTING_TABLE).stream());
+            ItemStack itemStack = EnchantmentHelper.enchant(
+                    random,
+                    this.sell.copy(),
+                    power,
+                    entity.getWorld()
+                            .getRegistryManager()
+                            .get(RegistryKeys.ENCHANTMENT)
+                            .getOrCreateEntryList(EnchantmentTags.IN_ENCHANTING_TABLE)
+                            .stream()
+            );
 
-            return new TradeOffer(traded(new ItemStack(currency.getItem(), price(power))), itemStack,
-                    this.maxUses, this.experience, multiplier);
+            return new TradeOffer(
+                    traded(new ItemStack(currency.getItem(), price(power))),
+                    itemStack,
+                    this.maxUses,
+                    this.experience,
+                    multiplier
+            );
         }
 
         /// Not enumerable: enchant picks an opaque combination, so one fixed-seed sample stands in.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             TradeOffer sample = create(merchant, Random.create(0L));
+
             if (sample != null) {
                 out.addOffer(sample, price(MIN_POWER), price(MAX_POWER));
             }

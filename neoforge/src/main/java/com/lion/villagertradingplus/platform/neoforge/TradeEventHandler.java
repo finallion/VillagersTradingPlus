@@ -8,8 +8,7 @@ import net.neoforged.neoforge.event.village.WandererTradesEvent;
 /// NeoForge rebuilds the vanilla trades from these events.
 public final class TradeEventHandler {
 
-    private TradeEventHandler() {
-    }
+    private TradeEventHandler() {}
 
     public static void onVillagerTrades(VillagerTradesEvent event) {
         TradeMerger.applyStaged(event.getType(), event.getTrades());

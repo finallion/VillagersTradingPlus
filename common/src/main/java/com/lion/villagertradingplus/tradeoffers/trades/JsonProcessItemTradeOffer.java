@@ -31,7 +31,15 @@ public class JsonProcessItemTradeOffer extends JsonTradeOffer {
         private final float multiplier;
         private final int demand;
 
-        public Factory(ItemStack buy, ItemStack sell, ItemStack currency, int maxUses, int experience, float multiplier, int demand) {
+        public Factory(
+                ItemStack buy,
+                ItemStack sell,
+                ItemStack currency,
+                int maxUses,
+                int experience,
+                float multiplier,
+                int demand
+        ) {
             this.buy = buy;
             this.sell = sell;
             this.currency = currency;

@@ -25,8 +25,7 @@ public final class TradeMerger {
     private static volatile Map<VillagerProfession, ? extends Int2ObjectMap<TradeOffers.Factory[]>> stagedDefaults = Map.of();
     private static volatile Map<VillagerProfession, ? extends Int2ObjectMap<TradeOffers.Factory[]>> stagedAll = Map.of();
 
-    private TradeMerger() {
-    }
+    private TradeMerger() {}
 
     /// The first call only takes the vanilla snapshot.
     public static void resetToVanilla() {
@@ -49,7 +48,9 @@ public final class TradeMerger {
         TOUCHED.clear();
     }
 
-    public static void installDefaults(Map<VillagerProfession, ? extends Int2ObjectMap<TradeOffers.Factory[]>> defaults) {
+    public static void installDefaults(
+            Map<VillagerProfession, ? extends Int2ObjectMap<TradeOffers.Factory[]>> defaults
+    ) {
         defaults.forEach((profession, levels) -> {
             TOUCHED.add(profession);
             TradeOffers.PROFESSION_TO_LEVELED_TRADE.put(profession, levels);

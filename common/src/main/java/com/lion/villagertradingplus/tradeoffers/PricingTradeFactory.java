@@ -30,11 +30,13 @@ public final class PricingTradeFactory implements TradeOffers.Factory {
     @Override
     public TradeOffer create(Entity entity, Random random) {
         TradeOffer offer = delegate.create(entity, random);
+
         if (offer == null) {
             return null;
         }
 
         float factor = priceFactor(entity);
+
         if (factor == 1.0f) {
             return offer;
         }
@@ -44,11 +46,19 @@ public final class PricingTradeFactory implements TradeOffers.Factory {
         TradedItem first = new TradedItem(
                 originalFirst.item(),
                 scaleCount(originalFirst.count(), originalFirst.itemStack().getMaxCount(), factor),
-                originalFirst.components());
+                originalFirst.components()
+        );
 
-        return new TradeOffer(first, offer.getSecondBuyItem(), offer.getSellItem(),
-                offer.getUses(), offer.getMaxUses(), offer.getMerchantExperience(),
-                offer.getPriceMultiplier(), offer.getDemandBonus());
+        return new TradeOffer(
+                first,
+                offer.getSecondBuyItem(),
+                offer.getSellItem(),
+                offer.getUses(),
+                offer.getMaxUses(),
+                offer.getMerchantExperience(),
+                offer.getPriceMultiplier(),
+                offer.getDemandBonus()
+        );
     }
 
     /// Exposed so the catalogue can enumerate the delegate and re-apply pricing.
@@ -63,12 +73,14 @@ public final class PricingTradeFactory implements TradeOffers.Factory {
 
     public float priceFactor(Entity entity) {
         float factor = VillagerTradingPlus.CONFIG.trade_cost_scale;
+
         if (VillagerTradingPlus.CONFIG.enable_time_of_day_pricing) {
             float variance = VillagerTradingPlus.CONFIG.time_of_day_price_variance;
             long timeOfDay = entity.getWorld().getTimeOfDay() % 24000L;
             double swing = Math.sin(2.0 * Math.PI * (timeOfDay / 24000.0));
             factor *= (float) (1.0 + variance * swing);
         }
+
         return factor;
     }
 }

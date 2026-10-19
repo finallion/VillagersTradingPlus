@@ -16,8 +16,7 @@ public final class DatapackRegistries {
 
     private static volatile WeakReference<DynamicRegistryManager> current = new WeakReference<>(null);
 
-    private DatapackRegistries() {
-    }
+    private DatapackRegistries() {}
 
     public static void set(DynamicRegistryManager registryManager) {
         current = new WeakReference<>(registryManager);

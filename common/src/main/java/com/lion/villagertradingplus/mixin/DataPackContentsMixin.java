@@ -22,7 +22,8 @@ public class DataPackContentsMixin {
             FeatureSet enabledFeatures,
             CommandManager.RegistrationEnvironment environment,
             int functionPermissionLevel,
-            CallbackInfo ci) {
+            CallbackInfo ci
+    ) {
         DatapackRegistries.set(dynamicRegistryManager);
     }
 }
