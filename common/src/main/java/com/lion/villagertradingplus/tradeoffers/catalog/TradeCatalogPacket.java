@@ -9,13 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/// Wire format of the catalogue, sent from server to client on CHANNEL.
-/// A whole tier ships in one packet. The payload limit is 1 MiB, measured before compression.
-/// Rows go into a scratch buffer and are cut at MAX_PAYLOAD_BYTES, because heavy-NBT items vary in size.
-/// The packet reports dropped rows to the player.
 public final class TradeCatalogPacket {
 
-    /// Payload budget per slice. It stays under the 1 MiB packet limit and keeps the framing cost small.
     public static final int MAX_SLICE_BYTES = 32 * 1024;
 
     private static final int MAX_TOTAL_BYTES = 4 * 1024 * 1024;
@@ -25,7 +20,7 @@ public final class TradeCatalogPacket {
     public record Payload(int level, int maxLevel, List<CatalogEntry> entries, int omitted) {
     }
 
-    /// Rows go into a scratch buffer first, because the count precedes them and a varint cannot be patched.
+    /// Rows go to a scratch buffer. A varint count cannot be patched.
     public static List<TradeCatalogPayload> write(
             DynamicRegistryManager registries,
             int level,
@@ -73,7 +68,6 @@ public final class TradeCatalogPacket {
         return slices;
     }
 
-    /// Reassembles slices on the client thread. It needs no locking, because one trade screen is open at a time.
     public static final class Reassembler {
 
         private final List<byte[]> received = new ArrayList<>();

@@ -14,15 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/// A tag-or-item holder for the input side of a trade.
-/// A tag resolves to a random member at resolve time. An item is a fixed stack.
 /// Vanilla TradeOffer matches one concrete stack, so a tag input is not an any-of match.
 public final class Ingredient {
 
-    private final ItemStack fixed;          // non-null when built from "item"
-    private final TagKey<net.minecraft.item.Item> tag; // non-null when built from "tag"
+    private final ItemStack fixed;
+    private final TagKey<net.minecraft.item.Item> tag;
     private final int count;
-    private final JsonObject componentSugar; // reapplied to each tag pick
+    private final JsonObject componentSugar;
 
     private Ingredient(ItemStack fixed, TagKey<net.minecraft.item.Item> tag, int count, JsonObject componentSugar) {
         this.fixed = fixed;
@@ -49,7 +47,6 @@ public final class Ingredient {
         return tag != null;
     }
 
-    /// Fixed ingredients copy. Tag ingredients pick a random member.
     public ItemStack resolve(Random random) {
         if (tag == null) {
             return fixed.copy();
@@ -65,7 +62,6 @@ public final class Ingredient {
         return build(list.get(random.nextInt(list.size())));
     }
 
-    /// Lists one stack for a fixed ingredient, or one per tag member, for the catalogue.
     public List<ItemStack> resolveAll() {
         if (tag == null) {
             return List.of(fixed.copy());

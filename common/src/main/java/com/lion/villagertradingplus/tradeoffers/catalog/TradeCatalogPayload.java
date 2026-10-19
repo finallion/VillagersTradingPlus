@@ -7,10 +7,7 @@ import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
-/// One slice of a trade catalogue on the wire.
 /// A CustomPayloadS2CPacket may not exceed 1 MiB before compression, so the catalogue is cut into slices.
-/// Slices arrive in order on a reliable channel. Index 0 starts a new catalogue and discards partial data.
-/// See TradeCatalogPacket.Reassembler.
 public record TradeCatalogPayload(int index, int count, byte[] data) implements CustomPayload {
 
     public static final CustomPayload.Id<TradeCatalogPayload> ID =

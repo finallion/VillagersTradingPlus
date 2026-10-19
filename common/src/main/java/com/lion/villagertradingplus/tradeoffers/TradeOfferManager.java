@@ -51,13 +51,10 @@ public class TradeOfferManager {
         tradeOfferRegistry.put(Identifier.of(VillagerTradingPlus.MOD_ID,"multi_input"), new JsonMultiInputTradeOffer());
     }
 
-    /// Legacy namespace of the trade types. Datapack files that use it keep resolving.
     private static final String LEGACY_NAMESPACE = "villagersplus";
 
-    /// Legacy ids already warned about, so each logs once.
     private static final Set<String> REPORTED_LEGACY_TYPES = ConcurrentHashMap.newKeySet();
 
-    /// Accepts the canonical, bare and legacy spellings of a trade type.
     @Nullable
     private static JsonTradeOffer findAdapter(String type) {
         Identifier id = Identifier.tryParse(type);
@@ -72,7 +69,7 @@ public class TradeOfferManager {
             return adapter;
         }
 
-        // A bare "sell_item" parses as minecraft:sell_item, which is never what the author meant.
+        // A bare id resolves to the minecraft namespace.
         if (type.indexOf(':') < 0) {
             return tradeOfferRegistry.get(Identifier.of(VillagerTradingPlus.MOD_ID, id.getPath()));
         }
@@ -119,13 +116,11 @@ public class TradeOfferManager {
     }
 
     public static void deserializeJson(JsonObject jsonRoot) {
-        // One unusable file costs that file, not the reload. The listener logs the file name before this call.
         try {
             Identifier professionId = Identifier.tryParse(
                     JsonFields.requireString(jsonRoot, "villager trade file", "profession")
             );
 
-            // The registry check rejects an unknown profession. A typo key would otherwise register silently.
             if (professionId == null || Registries.VILLAGER_PROFESSION.getOptionalValue(professionId).isEmpty()) {
                 VillagerTradingPlus.LOGGER.error("Unknown villager profession in trade file: {}", professionId);
                 return;
@@ -144,7 +139,6 @@ public class TradeOfferManager {
         }
     }
 
-    /// Parses a wandering-trader file keyed by tier (common = 1, rare = 2). The replace key swaps out vanilla trades.
     public static void deserializeWanderingTraderJson(JsonObject jsonRoot) {
         try {
             if (jsonRoot.has("replace")) {
@@ -160,7 +154,6 @@ public class TradeOfferManager {
                     continue;
                 }
 
-                // A tier that is not an array is lost as a whole. An unusable entry costs only that entry.
                 JsonArray tierTrades;
                 try {
                     tierTrades = JsonFields.requireArray(trades, "tier '" + entry.getKey() + "'", entry.getKey());
@@ -212,7 +205,6 @@ public class TradeOfferManager {
                 continue;
             }
 
-            // A tier that is not an array is lost as a whole. An unusable entry costs only that entry.
             JsonArray tierTrades;
             try {
                 tierTrades = JsonFields.requireArray(trades, "tier '" + entry.getKey() + "'", entry.getKey());
@@ -232,7 +224,6 @@ public class TradeOfferManager {
 
                 TradeOffers.Factory factory = deserializeTrade(trade);
 
-                // deserializeTrade already logged why; just record which tier lost a trade.
                 if (factory == null) {
                     VillagerTradingPlus.LOGGER.warn("Dropped a broken trade from tier '{}': {}", entry.getKey(), trade);
                 } else {
@@ -242,7 +233,6 @@ public class TradeOfferManager {
         }
     }
 
-    /// Every trade passes here. It layers conditions and global pricing on the adapter. Returns null for unknown types.
     @Nullable
     public static TradeOffers.Factory deserializeTrade(JsonObject trade) {
         String type = readString(trade, "type");
@@ -254,7 +244,7 @@ public class TradeOfferManager {
         }
 
         try {
-            // Wrapped innermost, so weighted_pool still recognizes the PricingTradeFactory it strips.
+            // The wrapper sits innermost, so `weighted_pool` still finds the PricingTradeFactory.
             TradeOffers.Factory factory = RegistryRebindFactory.wrap(adapter.deserialize(trade));
 
             if (VillagerTradingPlus.CONFIG.enable_conditional_trades && trade.has("conditions")) {
@@ -267,11 +257,9 @@ public class TradeOfferManager {
 
             return PricingTradeFactory.wrapIfNeeded(factory, trade);
         } catch (TradeParseException e) {
-            // Skip only this trade: one bad item id must not take the rest of the datapack with it.
             VillagerTradingPlus.LOGGER.warn("Skipping '{}' trade{}: {}", type, fileSuffix(), e.getMessage());
             return null;
         } catch (RuntimeException e) {
-            // Backstop: a malformed file costs one trade, not the world. The stack trace shows an unguarded read.
             VillagerTradingPlus.LOGGER.error("Skipping malformed '{}' trade{}: {}", type, fileSuffix(), trade, e);
             return null;
         }

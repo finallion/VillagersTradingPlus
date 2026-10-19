@@ -8,9 +8,7 @@ import net.minecraft.registry.RegistryWrapper;
 import java.lang.ref.WeakReference;
 import java.util.Optional;
 
-/// Access to the dynamic registries while trade files parse.
 /// DataPackContents.reload fills every dynamic registry before it builds the reloaders.
-/// The DataPackContents constructor captures the manager, see DataPackContentsMixin.
 /// The reference is weak, because a strong static one would keep the whole registry set alive.
 public final class DatapackRegistries {
 
@@ -22,13 +20,11 @@ public final class DatapackRegistries {
         current = new WeakReference<>(registryManager);
     }
 
-    /// Empty means a trade parse outside a datapack load. Callers report it and skip the feature.
     public static <T> Optional<Registry<T>> registry(RegistryKey<? extends Registry<? extends T>> key) {
         DynamicRegistryManager manager = current.get();
         return manager == null ? Optional.empty() : manager.getOptional(key);
     }
 
-    /// The same object that registry reads, handed out whole for RegistryOps.
     public static Optional<RegistryWrapper.WrapperLookup> lookup() {
         return Optional.ofNullable(current.get());
     }

@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/// Villager buys one member of an item tag, chosen per offer, for a fixed reward.
 public class JsonBuyTaggedItemTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -54,7 +53,6 @@ public class JsonBuyTaggedItemTradeOffer extends JsonTradeOffer {
             return new TradeOffer(traded(resolved), tradedOrEmpty(ItemStack.EMPTY), reward.copy(), 0, maxUses, experience, multiplier, demand);
         }
 
-        /// A tag input is a random member per offer, so the catalogue lists all members.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<ItemStack> variants = buy.resolveAll();

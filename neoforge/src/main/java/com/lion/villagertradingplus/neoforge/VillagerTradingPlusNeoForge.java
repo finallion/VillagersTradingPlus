@@ -34,7 +34,7 @@ public class VillagerTradingPlusNeoForge {
         NeoForge.EVENT_BUS.addListener(TradeEventHandler::onWandererTrades);
     }
 
-    // Listeners are keyed, so NeoForge can order them. The ids mirror the Fabric ids from getFabricId().
+    /// Listeners are keyed, so NeoForge can order them. The ids mirror the Fabric ids from getFabricId().
     private static void registerResourceReloader(AddServerReloadListenersEvent event) {
         event.addListener(
                 Identifier.of(VillagerTradingPlus.MOD_ID, "default_villager_data_loader"),

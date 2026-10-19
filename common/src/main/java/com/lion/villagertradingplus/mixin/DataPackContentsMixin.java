@@ -15,13 +15,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/// Hands the dynamic registries of the loading world to DatapackRegistries.
-/// The constructor has them before any resource reloader runs, so trade files parse with full enchantment registries.
 /// A mod reloader cannot receive the manager, hence the capture.
 @Mixin(DataPackContents.class)
 public class DataPackContentsMixin {
 
-    /// The descriptor must match the constructor exactly. Mixin checks it only at apply time, so a stale one crashes.
     @Inject(method = "<init>", at = @At("RETURN"))
     private void villagertradingplus$captureDatapackRegistries(
             CombinedDynamicRegistries<ServerDynamicRegistryType> dynamicRegistries,
