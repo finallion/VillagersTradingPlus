@@ -81,14 +81,14 @@ public final class TradeCatalogPacket {
                         "Discarding an out-of-sequence trade catalogue slice ({} of {}, expected {} of {}).",
                         slice.index(), slice.count(), this.received.size(), this.expected);
                 reset();
-                return null;
+                return emptyPayload();
             }
 
             this.size += slice.data().length;
             if (this.size > MAX_TOTAL_BYTES) {
                 VillagerTradingPlus.LOGGER.warn("Discarding an oversized trade catalogue ({} bytes).", this.size);
                 reset();
-                return null;
+                return emptyPayload();
             }
 
             this.received.add(slice.data());
@@ -109,8 +109,12 @@ public final class TradeCatalogPacket {
                 return read(buf);
             } catch (Exception e) {
                 VillagerTradingPlus.LOGGER.error("Could not read the trade catalogue.", e);
-                return null;
+                return emptyPayload();
             }
+        }
+
+        private static Payload emptyPayload() {
+            return new Payload(1, 1, List.of(), 0);
         }
 
         private void reset() {

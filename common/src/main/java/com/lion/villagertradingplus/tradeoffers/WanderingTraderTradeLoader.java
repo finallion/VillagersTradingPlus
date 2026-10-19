@@ -58,8 +58,8 @@ public final class WanderingTraderTradeLoader {
 
         stagedFiles.forEach((identifier, json) -> {
             if (json.isJsonObject()) {
-                VillagerTradingPlus.LOGGER.info("Deserializing wandering trader trades from: {}", identifier);
-                TradeOfferManager.deserializeWanderingTraderJson(json.getAsJsonObject());
+                VillagerTradingPlus.LOGGER.debug("Deserializing wandering trader trades from: {}", identifier);
+                TradeOfferManager.deserializeWanderingTraderJson(identifier, json.getAsJsonObject());
             }
         });
 

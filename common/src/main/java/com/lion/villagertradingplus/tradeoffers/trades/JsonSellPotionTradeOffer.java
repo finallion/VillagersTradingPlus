@@ -99,7 +99,7 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         }
 
         private ItemStack sellStack(Holder<Potion> potion) {
-            ItemStack stack = new ItemStack(this.sell.getItem(), 1);
+            ItemStack stack = new ItemStack(this.sell.getItem(), Math.max(1, this.sell.getCount()));
             stack.set(DataComponents.POTION_CONTENTS, new PotionContents(potion));
             return stack;
         }

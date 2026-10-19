@@ -62,6 +62,7 @@ public final class TradePools {
             pool.addAll(snapshot.defaultsAt(key.get(), tier));
         } else {
             pool.addAll(vanillaPool(level.registryAccess(), profession.value().getTrades(tier)));
+            key.ifPresent(k -> pool.addAll(snapshot.defaultsAt(k, tier)));
         }
         key.ifPresent(k -> pool.addAll(snapshot.additionsAt(k, tier)));
         return pool;
@@ -73,7 +74,15 @@ public final class TradePools {
         int added = 0;
         while (added < amount && !remaining.isEmpty()) {
             TradeFactory factory = remaining.remove(random.nextInt(remaining.size()));
-            MerchantOffer offer = factory.create(level, trader, random);
+            MerchantOffer offer;
+
+            try {
+                offer = factory.create(level, trader, random);
+            } catch (RuntimeException e) {
+                VillagerTradingPlus.LOGGER.error("A trade failed to create an offer and was skipped.", e);
+                continue;
+            }
+
             if (offer != null) {
                 target.add(offer);
                 added++;
