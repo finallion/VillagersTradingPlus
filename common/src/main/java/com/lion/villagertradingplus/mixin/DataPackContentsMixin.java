@@ -16,16 +16,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Hands the dynamic registries of the world being loaded to {@link DatapackRegistries}.
- *
- * <p>This constructor is the one point that has them and runs before any resource reloader:
- * {@code DataPackContents.reload} completes {@code ReloadableRegistries.reload} first, builds the
- * contents second, and starts the reload third. Trade files are therefore parsed with a fully
- * populated enchantment registry available. Vanilla passes the same manager to its own registry-aware
- * loaders here ({@code RecipeManager}, {@code ServerAdvancementLoader}); a mod reloader has no way to
- * be handed it, hence the capture.
- */
+/// Hands the dynamic registries of the loading world to DatapackRegistries.
+/// The constructor has them before any resource reloader runs, so trade files parse with full enchantment registries.
+/// A mod reloader cannot receive the manager, hence the capture.
 @Mixin(DataPackContents.class)
 public class DataPackContentsMixin {
 

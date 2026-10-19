@@ -71,10 +71,7 @@ public final class ItemStackSerializer {
         return stack;
     }
 
-    /**
-     * Applies the optional component sugar onto an already-built stack. Public so tag-resolved
-     * stacks ({@link Ingredient}) can reuse the same sugar per random pick.
-     */
+    /// Public so tag-resolved stacks reuse the same sugar per random pick.
     public static void applyComponents(ItemStack stack, JsonObject json) {
         if (stack.isEmpty()) {
             return;
@@ -92,8 +89,7 @@ public final class ItemStackSerializer {
             applyEnchantments(stack, json.getAsJsonArray("enchantments"));
         }
 
-        // No DyeableItem check any more: dyeing is a component, so any item can carry a colour and
-        // the game simply ignores it on items that do not render one.
+        // No dyeable check: any item can carry a color, and the game ignores it where it does not render one.
         if (json.has("color")) {
             stack.set(DataComponentTypes.DYED_COLOR,
                     new DyedColorComponent(parseColor(json.get("color").getAsString())));
@@ -134,8 +130,7 @@ public final class ItemStackSerializer {
             return;
         }
 
-        // Built on top of what the stack already carries so repeated application accumulates instead
-        // of overwriting - a tag-resolved Ingredient re-applies this sugar per random pick.
+        // Builds on the existing stack, so repeated application accumulates. A tag Ingredient reapplies it per pick.
         ItemEnchantmentsComponent.Builder builder =
                 new ItemEnchantmentsComponent.Builder(EnchantmentHelper.getEnchantments(stack));
         boolean applied = false;
@@ -162,8 +157,7 @@ public final class ItemStackSerializer {
         }
 
         if (applied) {
-            // Routes to stored_enchantments on an enchanted book and to enchantments on anything else,
-            // which is the split the old EnchantedBookItem fork did by hand.
+            // Enchanted books take stored_enchantments. Other items take enchantments.
             EnchantmentHelper.set(stack, builder.build());
         }
     }
@@ -191,26 +185,7 @@ public final class ItemStackSerializer {
                 new WrittenBookContentComponent(RawFilteredPair.of(title), author, 0, pages, true));
     }
 
-    /**
-     * The raw SNBT hatch keeps working exactly as it did before components: {@code {Unbreakable:1b}}
-     * still makes the item unbreakable, {@code {Damage:100}} still damages it, {@code display}, an
-     * {@code AttributeModifiers} list, {@code CustomModelData}, {@code HideFlags},
-     * {@code BlockEntityTag} and the rest all still land where they belong.
-     *
-     * <p>Not by a hand-written translation table - by running the tag through <em>Mojang's own data
-     * fixer</em>, the same {@code ItemStackComponentizationFix} that converts a 1.20.4 world on first
-     * load. The input is dressed up as a pre-component item stack
-     * ({@code {id, Count, tag}}, the shape {@code StackData.fromDynamic} expects), updated to the
-     * current data version, and read back with {@link ItemStack#CODEC}. Whatever the fixer does not
-     * recognise it leaves in {@code custom_data} by itself, which is where unknown keys used to end up
-     * anyway.
-     *
-     * <p>Two consequences worth knowing: the translation is always as complete and as correct as
-     * vanilla's own, including every future version's rules; and old item ids in the tag get renamed
-     * along the way, because the fixer chain from 1.20.1 onwards runs in full.
-     *
-     * <p>Applied as a component patch on top of the sugar above, so this hatch keeps overriding it.
-     */
+    /// Runs the raw tag through the vanilla data fixer, so legacy SNBT keys land in the right components.
     private static void applyRawNbt(ItemStack stack, String snbt) {
         try {
             NbtCompound parsed = StringNbtReader.readCompound(snbt);
@@ -222,12 +197,7 @@ public final class ItemStackSerializer {
         }
     }
 
-    /**
-     * Base version the raw tag is interpreted as. 1.20.1 is where this JSON format was last written
-     * against a game that still read item NBT directly, so that is what the strings in the wild mean.
-     * The exact value is not critical - anything below the componentization schema (3818) runs it -
-     * but a lower one also picks up the item renames from 1.20.2 through 1.20.4.
-     */
+    /// Base data version of the raw tag. Anything below the componentization schema (3818) runs the fixer.
     private static final int RAW_NBT_DATA_VERSION = 3465;
 
     private static Optional<ComponentChanges> componentize(ItemStack stack, NbtCompound tag) {
@@ -241,8 +211,7 @@ public final class ItemStackSerializer {
 
         NbtCompound old = new NbtCompound();
         old.putString("id", Registries.ITEM.getId(stack.getItem()).toString());
-        // The count is carried by the stack, not by this patch - a fixed 1 keeps it inside the range
-        // ItemStack.CODEC accepts no matter how large the trade's own count is.
+        // A fixed count of 1 stays within the range that ItemStack.CODEC accepts. The stack carries the real count.
         old.putInt("Count", 1);
         old.put("tag", tag);
 
@@ -252,8 +221,7 @@ public final class ItemStackSerializer {
                 RAW_NBT_DATA_VERSION,
                 SharedConstants.getGameVersion().dataVersion().id());
 
-        // Components can reference dynamic registries (an enchantment, a potion), so plain NbtOps is
-        // not enough to read the fixed stack back.
+        // Components can reference dynamic registries, so plain NbtOps cannot read the fixed stack back.
         RegistryOps<NbtElement> ops = RegistryOps.of(NbtOps.INSTANCE, lookup.get());
         return ItemStack.CODEC.parse(ops, fixed.getValue())
                 .resultOrPartial(error -> {
@@ -262,12 +230,7 @@ public final class ItemStackSerializer {
                 .map(ItemStack::getComponentChanges);
     }
 
-    /**
-     * Parses text that may be a plain literal string, a JSON text component given as a string
-     * (e.g. {@code "{\"text\":\"Hi\",\"color\":\"gold\"}"}), or a raw JSON object/array component.
-     * A bare string that is not JSON is treated as literal text; strict component parsing is only
-     * attempted when the string looks like JSON, and any parse failure falls back to a literal.
-     */
+    /// Plain strings are literal. JSON-like strings parse as components, and a parse failure falls back to literal.
     private static Text parseText(JsonElement element) {
         if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
             String raw = element.getAsString();
@@ -285,7 +248,6 @@ public final class ItemStackSerializer {
         return parsed != null ? parsed : Text.empty();
     }
 
-    /** Text.Serializer is gone; component text goes through its codec now. */
     private static Text decodeText(JsonElement element) {
         try {
             return TextCodecs.CODEC.parse(JsonOps.INSTANCE, element).result().orElse(null);
@@ -294,7 +256,6 @@ public final class ItemStackSerializer {
         }
     }
 
-    /** Parses a color as an integer or a {@code #RRGGBB} hex string. */
     private static int parseColor(String value) {
         String trimmed = value.trim();
         if (trimmed.startsWith("#")) {

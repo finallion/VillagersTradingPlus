@@ -17,23 +17,10 @@ import net.minecraft.village.TradeOffers;
 
 import java.util.Optional;
 
-/**
- * Binds an offer's enchantments to the registry of the world it is being traded in.
- *
- * <p>An enchantment on an item is a {@link RegistryEntry}, and the packet codec that writes it looks
- * that entry up <em>by identity</em> in the receiving connection's registry. An entry resolved
- * against some other instance of the enchantment registry is therefore not merely stale, it is
- * unencodable: {@code merchant_offers} fails to serialise and the server drops the player.
- *
- * <p>Item sugar ({@code "enchantments"}, and {@code "nbt"} carrying an enchantment tag) is applied
- * while the trade file is parsed, so the stack a factory holds keeps whichever entries existed then
- * - for the whole life of the factory. Re-resolving here, per created offer, is what keeps that from
- * outliving its registry.
- *
- * <p>Only the sell stack is rebound. The buy side is a {@code ComponentMapPredicate} rather than a
- * stack, and there is no lossless way to rebuild one, so a buy-side enchantment written in JSON is
- * still bound at parse time.
- */
+/// Binds the enchantments of an offer to the registry of the world it is traded in.
+/// An enchantment entry encodes by identity in the receiving connection's registry, so a stale entry is unencodable.
+/// Item sugar binds entries at parse time. This factory re-resolves them for each created offer.
+/// Only the sell stack is rebound, because the buy side is a ComponentMapPredicate that cannot be rebuilt losslessly.
 public final class RegistryRebindFactory implements TradeOffers.Factory {
 
     private final TradeOffers.Factory delegate;
@@ -46,7 +33,7 @@ public final class RegistryRebindFactory implements TradeOffers.Factory {
         return delegate == null ? null : new RegistryRebindFactory(delegate);
     }
 
-    /** The wrapped factory, so the catalogue can walk past this wrapper to enumerate it. */
+    /// Exposed so the catalogue can walk past this wrapper.
     public TradeOffers.Factory delegate() {
         return this.delegate;
     }
@@ -70,13 +57,7 @@ public final class RegistryRebindFactory implements TradeOffers.Factory {
                 offer.getPriceMultiplier(), offer.getDemandBonus());
     }
 
-    /**
-     * Re-resolves one enchantment component against {@code live}. An enchantment this world does not
-     * have is dropped rather than kept: a missing enchantment costs the trade its shine, an
-     * unencodable one costs the player the connection.
-     *
-     * @return whether anything about the component changed
-     */
+    /// Drops an enchantment that the world lacks, because an unencodable entry disconnects the player.
     private static boolean rebind(ItemStack stack, ComponentType<ItemEnchantmentsComponent> type,
                                   Registry<Enchantment> live) {
         ItemEnchantmentsComponent current = stack.get(type);

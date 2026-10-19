@@ -9,21 +9,8 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * A trade taking two inputs for one output, using vanilla's two buy slots. The {@code sell} stack
- * may carry NBT sugar (name, enchantments, etc.) via {@link com.lion.villagertradingplus.tradeoffers.util.ItemStackSerializer}.
- *
- * <p>Note: vanilla {@link TradeOffer} has exactly two buy slots, so "two items plus a separate
- * emerald currency" is not possible; one of the two inputs is the currency.
- *
- * <pre>
- * { "type": "villagertradingplus:multi_input",
- *   "input_a": { "item": "minecraft:emerald", "count": 5 },
- *   "input_b": { "item": "minecraft:book", "count": 1 },
- *   "sell":    { "item": "minecraft:enchanted_book",
- *                "enchantments": [ { "id": "minecraft:mending", "lvl": 1 } ] } }
- * </pre>
- */
+/// A trade with two inputs for one output, using both vanilla buy slots.
+/// Vanilla has only two buy slots, so one of the two inputs is the currency.
 public class JsonMultiInputTradeOffer extends JsonTradeOffer {
 
     @Override

@@ -17,19 +17,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A rarity wrapper: picks one of N sub-trades by weight at create() time. Each sub-trade is a full
- * trade object routed back through {@link TradeOfferManager#deserializeTrade}, so nested conditions
- * and pricing apply automatically. A picked sub-trade may itself yield {@code null} (e.g. its own
- * condition failed); that is the intended rarity behaviour.
- *
- * <pre>
- * { "type": "villagertradingplus:weighted_pool",
- *   "pool": [
- *     { "weight": 10, "trade": { "type": "villagertradingplus:sell_item", ... } },
- *     { "weight": 1,  "trade": { "type": "villagertradingplus:sell_enchanted_book_from_list", ... } } ] }
- * </pre>
- */
+/// Picks one of N sub-trades by weight in create. Sub-trades route through TradeOfferManager#deserializeTrade.
+/// A picked sub-trade can return null, for example when its condition fails.
 public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -42,12 +31,7 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
             int weight = readInt(entry, "weight", 1);
             TradeOffers.Factory factory = TradeOfferManager.deserializeTrade(entry.getAsJsonObject("trade"));
 
-            // deserializeTrade wraps everything it returns in a PricingTradeFactory, and this pool is
-            // itself about to be wrapped by whoever called us. Left alone, the global cost scale would
-            // hit a pooled trade twice: at trade_cost_scale 1.5 a price of 10 would come out at 23
-            // instead of 15, while the same trade outside a pool came out correctly. Strip the inner
-            // wrapper so pricing applies exactly once, at the outermost level. The conditional wrapper
-            // sits underneath it and is preserved.
+            // Strips the inner PricingTradeFactory, so the global cost scale applies once, at the outermost level.
             if (factory instanceof PricingTradeFactory pricing) {
                 factory = pricing.delegate();
             }
@@ -72,10 +56,7 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
             this.totalWeight = totalWeight;
         }
 
-        /**
-         * Every sub-trade gets its own catalogue row rather than the pool showing as one row: the
-         * whole point of listing a pool is seeing what is in it and how likely each member is.
-         */
+        /// Each sub-trade gets its own row, so the catalogue shows every member and its odds.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             for (Entry entry : entries) {

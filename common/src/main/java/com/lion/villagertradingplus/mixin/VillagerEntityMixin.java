@@ -23,8 +23,7 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
-// Extends MerchantEntity so the inherited members this mixin uses (fillRecipesFromPool, getOffers,
-// getWorld) resolve through the real hierarchy; @Shadow only sees members declared on the target itself.
+// Extends MerchantEntity, because @Shadow sees only members declared on the target itself.
 @Mixin(VillagerEntity.class)
 public abstract class VillagerEntityMixin extends MerchantEntity implements TradeControl {
 
@@ -40,7 +39,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
 
     @Shadow public abstract void reinitializeBrain(ServerWorld world);
 
-    /** Per-level offer counts (index = level 1..5), so a single tier can be re-rolled in place. */
+    /// Offer counts per level (index = level 1..5), so one tier can be re-rolled in place.
     @Unique private int[] villagertradingplus$levelCounts = null;
 
     @ModifyConstant(method = "fillRecipes", constant = @Constant(intValue = 2))
@@ -48,9 +47,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
         return VillagerTradingPlus.CONFIG.trade_offers_per_level;
     }
 
-    // Entity NBT went through ReadView/WriteView in 1.21.6: writeCustomDataToNbt/readCustomDataFromNbt
-    // no longer exist. Renaming only the @Inject target would have compiled and then silently never
-    // fired, which is exactly the failure mode the 1.21.1 port ran into.
+    // Entity data goes through ReadView and WriteView. An @Inject on the NBT methods compiles but never fires.
     @Inject(method = "writeCustomData", at = @At("TAIL"))
     private void villagertradingplus$writeLevelCounts(WriteView view, CallbackInfo ci) {
         if (villagertradingplus$levelCounts != null) {
@@ -144,11 +141,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
         }
     }
 
-    /**
-     * The trade table is keyed by {@link RegistryKey} since 1.21.6, and a villager's profession is a
-     * {@link net.minecraft.registry.entry.RegistryEntry} that need not carry one - an inline entry
-     * has a value but no key. Such a villager simply has no vanilla trade pool, hence the null.
-     */
+    /// An inline profession entry has no key, so such a villager has no vanilla trade pool and the result is null.
     @Unique
     private Int2ObjectMap<TradeOffers.Factory[]> villagertradingplus$tradesForProfession() {
         return getVillagerData().profession().getKey()

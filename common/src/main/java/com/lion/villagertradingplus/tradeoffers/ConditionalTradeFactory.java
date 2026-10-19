@@ -6,11 +6,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 
-/**
- * Wraps another trade factory and yields its offer only when the condition passes. Returning
- * {@code null} plugs directly into vanilla's existing null-filtering during offer selection, so a
- * failed condition simply means the trade is not offered by that villager.
- */
+/// Wraps a trade factory and yields its offer only when the condition passes. A null offer drops the trade.
 public final class ConditionalTradeFactory implements TradeOffers.Factory {
 
     private final TradeOffers.Factory delegate;
@@ -29,11 +25,7 @@ public final class ConditionalTradeFactory implements TradeOffers.Factory {
         return delegate.create(world, entity, random);
     }
 
-    /**
-     * The wrapped factory. The trade catalogue reaches past the gate deliberately: it lists gated
-     * trades whatever their condition currently says, and marks them, rather than showing a list
-     * that silently shrinks when it starts raining.
-     */
+    /// The catalogue reads past the gate on purpose and marks gated trades.
     public TradeOffers.Factory delegate() {
         return this.delegate;
     }

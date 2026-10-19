@@ -65,7 +65,7 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     this.maxUses, this.experience, this.multiplier);
         }
 
-        /** The potion pool is a fixed registry scan, so every brewable result gets its own row. */
+        /// The potion pool is a fixed registry scan, so each brewable result gets a row.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<RegistryEntry<Potion>> brewable = brewable(merchant.getEntityWorld());
@@ -81,10 +81,7 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             out.popShare();
         }
 
-        /**
-         * Brewability moved off the registry and onto the world in 1.21: recipes are data-driven now,
-         * so the answer depends on the loaded datapacks rather than on the potion alone.
-         */
+        /// Brewability depends on the loaded datapacks, because brewing recipes are data-driven.
         private static List<RegistryEntry<Potion>> brewable(World world) {
             return Registries.POTION.streamEntries()
                     .filter(entry -> !entry.value().getEffects().isEmpty()
@@ -92,11 +89,7 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     .collect(Collectors.toList());
         }
 
-        /**
-         * What the player hands in. As a {@link TradedItem} this is a match rule rather than a stack,
-         * so the water potion has to be spelled out as a component predicate - the same way vanilla
-         * builds its own potion trades.
-         */
+        /// A TradedItem is a match rule, so the water potion is spelled out as a component predicate.
         private TradedItem waterBottle() {
             return new TradedItem(this.buy.getItem(), this.buy.getCount())
                     .withComponents(builder -> builder.add(DataComponentTypes.POTION_CONTENTS,

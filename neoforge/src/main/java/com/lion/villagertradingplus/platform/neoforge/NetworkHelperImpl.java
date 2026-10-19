@@ -10,14 +10,10 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import java.util.function.Consumer;
 
-/**
- * NeoForge networking. Payload types are registered from {@code RegisterPayloadHandlersEvent} on the
- * mod event bus, which is why {@link #init()} does nothing itself: unlike Fabric, the registration
- * cannot happen whenever the mod feels like it, only while that event is being fired.
- */
+/// NeoForge networking. Payload types register in RegisterPayloadHandlersEvent on the mod bus, so init() does nothing.
 public final class NetworkHelperImpl {
 
-    /** Bumped when the payload format changes incompatibly; NeoForge refuses mismatched clients. */
+    /// Bump it when the payload format changes incompatibly. NeoForge refuses mismatched clients.
     private static final String PROTOCOL_VERSION = "1";
 
     private static Consumer<TradeCatalogPayload> catalogReceiver;
@@ -25,7 +21,7 @@ public final class NetworkHelperImpl {
     private NetworkHelperImpl() {
     }
 
-    /** Nothing to do here; see {@link #register(RegisterPayloadHandlersEvent)}. */
+    /// Registration happens in register(RegisterPayloadHandlersEvent).
     public static void init() {
     }
 
@@ -37,11 +33,7 @@ public final class NetworkHelperImpl {
         catalogReceiver = receiver;
     }
 
-    /**
-     * Called from the mod event bus. The handler is registered on both sides because NeoForge negotiates
-     * the channel and would reject a client that never declared it, but only a client ever has a
-     * receiver to dispatch to, which keeps client-only classes off a server's classpath.
-     */
+    /// Both sides register the handler, because NeoForge rejects a client without it. Only a client gets a receiver.
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
         registrar.playToClient(TradeCatalogPayload.ID, TradeCatalogPayload.CODEC,

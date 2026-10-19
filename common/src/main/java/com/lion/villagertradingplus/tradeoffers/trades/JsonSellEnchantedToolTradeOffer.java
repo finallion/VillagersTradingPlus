@@ -28,7 +28,7 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
     }
 
     private static class Factory implements TradeOffers.Factory, CatalogExpandable {
-        /** Bounds of the {@code 5 + nextInt(15)} enchanting power roll that also sets the price. */
+        /// Bounds of the 5 + nextInt(15) enchanting power roll, which also sets the price.
         private static final int MIN_POWER = 5;
         private static final int MAX_POWER = 19;
 
@@ -48,10 +48,7 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
 
         public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
             int power = MIN_POWER + random.nextInt(MAX_POWER - MIN_POWER + 1);
-            // The pool of candidate enchantments is passed in explicitly now instead of being implied by
-            // a boolean: #minecraft:in_enchanting_table is what "as an enchanting table would" means.
-            // Copied rather than rebuilt from the item alone, so the JSON's count and any name, lore
-            // or component sugar on the sell stack survive the random enchanting pass.
+            // The in_enchanting_table tag defines the pool. The copy keeps count and name, lore or component sugar.
             ItemStack itemStack = EnchantmentHelper.enchant(random, this.sell.copy(), power,
                     entity.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT)
                             .getOrThrow(EnchantmentTags.IN_ENCHANTING_TABLE).stream());
@@ -60,12 +57,7 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
                     this.maxUses, this.experience, multiplier);
         }
 
-        /**
-         * Not enumerable: {@link EnchantmentHelper#enchant} picks an opaque combination of
-         * enchantments, so there is no finite variant list to walk. One fixed-seed sample stands in,
-         * which at least keeps the row identical between openings, and the price range is stated
-         * exactly since it follows from the power roll.
-         */
+        /// Not enumerable: enchant picks an opaque combination, so one fixed-seed sample stands in.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             if (!(merchant.getEntityWorld() instanceof net.minecraft.server.world.ServerWorld world)) {

@@ -19,11 +19,7 @@ import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 @Mod(VillagerTradingPlus.MOD_ID)
 public class VillagerTradingPlusNeoForge {
 
-    /**
-     * NeoForge hands the mod bus to the constructor. The two buses are not interchangeable: payload
-     * registration is a mod-bus event fired once during startup, while the reload listener hook is a
-     * game-bus event fired on every datapack load.
-     */
+    /// The mod bus fires payload registration once. The game bus fires the reload listener hook on every datapack load.
     public VillagerTradingPlusNeoForge(IEventBus modEventBus) {
         VillagerTradingPlus.init();
         WanderingTraderTradeLoader.setServedByLoaderEvent(true);
@@ -38,8 +34,7 @@ public class VillagerTradingPlusNeoForge {
         NeoForge.EVENT_BUS.addListener(TradeEventHandler::onWandererTrades);
     }
 
-    // Renamed from AddReloadListenerEvent, and listeners are now keyed so NeoForge can order them.
-    // The ids mirror the getFabricId() values the Fabric side registers under.
+    // Listeners are keyed, so NeoForge can order them. The ids mirror the Fabric ids from getFabricId().
     private static void registerResourceReloader(AddServerReloadListenersEvent event) {
         event.addListener(Identifier.of(VillagerTradingPlus.MOD_ID, "default_villager_data_loader"),
                 new DefaultTradeOfferResourceListener());

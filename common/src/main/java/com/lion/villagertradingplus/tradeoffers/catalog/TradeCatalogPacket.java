@@ -9,49 +9,24 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wire format for the catalogue, sent server-to-client as a sequence of {@link TradeCatalogPayload}
- * slices.
- *
- * <p>The whole tier ships at once so the panel can page and scroll locally with no round-trip, which
- * makes size the thing to watch: a single {@code CustomPayloadS2CPacket} is capped at 1 MiB and a tier
- * of heavy modded items can pass that alone. So the catalogue is serialised into one buffer and then
- * cut into {@link #MAX_SLICE_BYTES} pieces; the client puts them back together.
- *
- * <p>{@link #MAX_TOTAL_BYTES} still bounds the whole thing - not because the transport demands it any
- * more, but because a client should not be made to hold an unbounded catalogue in memory. Rows that
- * do not fit are counted, never silently swallowed: the count reaches the panel as {@code omitted}
- * and becomes its "showing N of M" line.
- */
+/// Wire format of the catalogue, sent from server to client on CHANNEL.
+/// A whole tier ships in one packet. The payload limit is 1 MiB, measured before compression.
+/// Rows go into a scratch buffer and are cut at MAX_PAYLOAD_BYTES, because heavy-NBT items vary in size.
+/// The packet reports dropped rows to the player.
 public final class TradeCatalogPacket {
 
-    /**
-     * Payload budget per slice. Comfortably under the 1 MiB packet ceiling, and small enough that the
-     * per-slice framing cost stays irrelevant.
-     */
+    /// Payload budget per slice. It stays under the 1 MiB packet limit and keeps the framing cost small.
     public static final int MAX_SLICE_BYTES = 32 * 1024;
 
-    /** Ceiling on one catalogue across all its slices. */
     private static final int MAX_TOTAL_BYTES = 4 * 1024 * 1024;
 
     private TradeCatalogPacket() {
     }
 
-    /**
-     * @param level     the tier this catalogue describes
-     * @param maxLevel  how many tiers the merchant has (5 for villagers, 2 for the wandering trader)
-     * @param entries   the rows that fit
-     * @param omitted   how many rows exist beyond those, for the "showing N of M" line
-     */
     public record Payload(int level, int maxLevel, List<CatalogEntry> entries, int omitted) {
     }
 
-    /**
-     * Serialises a catalogue and cuts it into slices ready to send.
-     *
-     * <p>Rows go into a scratch buffer before the header, because the count has to precede them and a
-     * varint cannot be back-patched once written.
-     */
+    /// Rows go into a scratch buffer first, because the count precedes them and a varint cannot be patched.
     public static List<TradeCatalogPayload> write(DynamicRegistryManager registries, int level, int maxLevel,
                                                   List<CatalogEntry> entries, int alreadySkipped) {
         RegistryByteBuf scratch = new RegistryByteBuf(Unpooled.buffer(), registries);
@@ -80,8 +55,7 @@ public final class TradeCatalogPacket {
     }
 
     private static List<TradeCatalogPayload> slice(byte[] all) {
-        // An empty catalogue is still one slice: the header alone is meaningful, and the client would
-        // otherwise wait forever for a transfer that never starts.
+        // An empty catalogue is one slice, or the client waits for a transfer that never starts.
         int count = Math.max(1, (all.length + MAX_SLICE_BYTES - 1) / MAX_SLICE_BYTES);
         List<TradeCatalogPayload> slices = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
@@ -94,25 +68,14 @@ public final class TradeCatalogPacket {
         return slices;
     }
 
-    /**
-     * Puts the slices of one catalogue back together on the client.
-     *
-     * <p>Not thread-safe and does not need to be: slices are handed over on the client thread, one
-     * catalogue at a time, because a player has exactly one trade screen open.
-     */
+    /// Reassembles slices on the client thread. It needs no locking, because one trade screen is open at a time.
     public static final class Reassembler {
 
         private final List<byte[]> received = new ArrayList<>();
         private int expected;
         private int size;
 
-        /**
-         * {@return the finished catalogue once its last slice has arrived, otherwise {@code null}}
-         *
-         * <p>A slice with index 0 always starts over. Anything out of sequence is dropped along with
-         * the partial transfer it belongs to - the alternative is decoding a spliced buffer, which
-         * fails far less legibly.
-         */
+        /// Index 0 restarts the transfer. Out-of-sequence slices drop the partial transfer.
         @Nullable
         public Payload accept(TradeCatalogPayload slice, DynamicRegistryManager registries) {
             if (slice.index() == 0) {

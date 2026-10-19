@@ -20,50 +20,24 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-/**
- * The read-only trade catalogue, drawn as a panel docked against the vanilla trade screen rather
- * than as a screen of its own.
- *
- * <p>Everything here is hand-drawn and hand-hit-tested instead of using {@code ButtonWidget}s. The
- * panel is painted from a {@code render} TAIL hook on {@code MerchantScreen}, which runs after
- * {@code Screen.render} has already drawn the screen's widgets, so any widget placed in this area
- * would be painted over. Doing the whole panel by hand also puts its tooltip last, above vanilla's.
- *
- * <p><b>The panel is width-adaptive</b>, because the space beside the trade screen varies enormously
- * with GUI scale. {@code MerchantScreen} is 276 units wide and centred, so at 1920x1080 with GUI
- * scale 4 the whole screen is only 480 units across and each side gutter is 102, too narrow for a fixed 176-wide
- * panel simply does not fit and used to get clamped on top of the trades. {@link #layout} therefore
- * sizes the panel to the gutter and switches to a tighter row layout when it is narrow.
- *
- * <p>Paging and scrolling are entirely local: the server ships a whole tier in one packet, so moving
- * through a librarian's hundred-odd enchanted books costs nothing.
- */
+/// Read-only trade catalogue panel, docked beside the vanilla trade screen.
+/// The panel is hand-drawn, because it is painted from a TAIL hook after the screen widgets.
+/// Its width adapts to the free gutter, which depends on the GUI scale.
+/// Paging and scrolling stay on the client, because the server sends a whole tier in one packet.
 public final class TradeCatalogPanel {
 
-    /** Full width, used whenever the gutter can take it. */
     private static final int MAX_WIDTH = 176;
-    /**
-     * Narrowest the panel may get: three 16px slots plus the arrow and padding. Below this the rows
-     * would start clipping, so the panel stops shrinking and is allowed to overlap instead (drawn
-     * raised, see {@link #overlapping}).
-     */
+    /// Below this width the rows clip, so the panel overlaps the trade screen instead.
     private static final int MIN_WIDTH = 73;
-    /** Below this the tighter row layout kicks in. */
     private static final int COMPACT_WIDTH = 120;
-    /** Matches {@code MerchantScreen.backgroundHeight} so the two panels line up along the top. */
+    /// Equals the vanilla trade screen height, so both panels align at the top.
     private static final int HEIGHT = 166;
 
-    /** Gap between the catalogue and the trade screen it docks against. */
     private static final int DOCK_GAP = 2;
     private static final int SCREEN_MARGIN = 1;
 
-    /**
-     * A slot's real footprint: {@link #drawSlot} paints a border ring from {@code x - 1} to
-     * {@code x + 17}. Spacing two slots by only 16 makes their borders share a column and the pair
-     * reads as one merged box, so all row spacing is measured in footprints, not icon widths.
-     */
+    /// A slot border spans 18 units, so row spacing counts footprints, not icon widths.
     private static final int SLOT_FOOTPRINT = 18;
-    /** Width reserved for the "->" glyph between the inputs and the result. */
     private static final int ARROW_WIDTH = 12;
 
     private static final int ROWS_PER_PAGE = 5;
@@ -85,13 +59,13 @@ public final class TradeCatalogPanel {
     private static final int ROW_GATED = 0x30FF7F27;
     private static final int BUTTON_FILL = 0xFF8B8B8B;
     private static final int BUTTON_HOVER = 0xFFA8A8A8;
-    /** Text colours are ARGB: without the alpha byte the glyphs are drawn fully transparent. */
+    /// Text colors are ARGB. Without the alpha byte the glyphs are fully transparent.
     private static final int TEXT = 0xFF404040;
     private static final int TEXT_DIM = 0xFF707070;
     private static final int TEXT_GATED = 0xFFB06000;
     private static final int BUTTON_LABEL = 0xFFFFFFFF;
 
-    /** Button ids, matching the tier ids the merchant screen already sends (130 + level). */
+    /// Matches the button ids that the merchant screen sends (130 + level).
     private static final int CATALOG_REQUEST_BASE = 130;
 
     private final MinecraftClient client;
@@ -116,7 +90,7 @@ public final class TradeCatalogPanel {
     private boolean showMarker;
     private boolean showChance;
 
-    /** Row the cursor was over on the last render, or -1. Reused by the tooltip pass. */
+    /// Hovered row from the last render, or -1. The tooltip pass reuses it.
     private int hoveredRow = -1;
 
     public TradeCatalogPanel(MinecraftClient client) {
@@ -124,19 +98,11 @@ public final class TradeCatalogPanel {
         applyWidth(MAX_WIDTH);
     }
 
-    // --- visibility ----------------------------------------------------------------------------
-
     public boolean isVisible() {
         return this.visible;
     }
 
-    /**
-     * Toggles the panel, requesting the tier from the server when it is shown.
-     *
-     * <p>No clamping here: the merchant-screen level selector always offers 1-5 and the panel does
-     * not yet know how many tiers this merchant has. The server clamps against the real count and
-     * reports back the tier it actually served, which {@link #render} then adopts.
-     */
+    /// Toggles the panel and requests the tier when it opens. The server clamps the tier.
     public int toggle(int requestedLevel) {
         this.visible = !this.visible;
         if (!this.visible) {
@@ -149,7 +115,7 @@ public final class TradeCatalogPanel {
         this.visible = false;
     }
 
-    /** Returns the button id the caller should send, or -1 when nothing needs requesting. */
+    /// Returns the button id to send, or -1 when no request is needed.
     private int requestLevel(int newLevel) {
         this.level = newLevel;
         this.firstRow = 0;
@@ -157,16 +123,7 @@ public final class TradeCatalogPanel {
         return CATALOG_REQUEST_BASE + newLevel;
     }
 
-    // --- layout --------------------------------------------------------------------------------
-
-    /**
-     * Sizes and positions the panel against the trade screen.
-     *
-     * <p>The panel takes the left gutter and shrinks to fit it. The merchant-screen control buttons
-     * take the right gutter and shrink the same way, so the two never compete. Only when the gutter
-     * cannot even take {@link #MIN_WIDTH} does the panel overlap, and then it is drawn raised so it
-     * reads as a panel on top rather than as garbled geometry.
-     */
+    /// Sizes the panel to the left gutter. It overlaps the trade screen only below MIN_WIDTH.
     public void layout(int merchantX, int merchantY, int screenWidth, int screenHeight) {
         applyWidth(MathHelper.clamp(merchantX - DOCK_GAP - SCREEN_MARGIN, MIN_WIDTH, MAX_WIDTH));
 
@@ -180,15 +137,7 @@ public final class TradeCatalogPanel {
         }
     }
 
-    /**
-     * Derives the row geometry from a panel width.
-     *
-     * <p>The slot block is <em>centred</em> rather than pinned to the left edge. The panel's width
-     * varies with GUI scale while the block does not, so a fixed left inset left an increasingly
-     * lopsided gap on the right. Decorations that have nowhere to go are dropped before the slots
-     * themselves would start clipping, and they are subtracted from the centring so the block does
-     * not drift left when they appear.
-     */
+    /// Centres the slot block and drops decorations before the slots clip.
     private void applyWidth(int panelWidth) {
         this.width = panelWidth;
         this.compact = panelWidth < COMPACT_WIDTH;
@@ -220,12 +169,7 @@ public final class TradeCatalogPanel {
                 && mouseY >= this.y && mouseY < this.y + HEIGHT;
     }
 
-    // --- input ---------------------------------------------------------------------------------
-
-    /**
-     * Handles a click inside the panel. Returns the button id to send to the server, or -1 when the
-     * click was handled locally (paging) or hit nothing.
-     */
+    /// Returns the button id to send to the server, or -1 when the click is local or misses.
     public int mouseClicked(double mouseX, double mouseY) {
         int localX = (int) (mouseX - this.x);
         int localY = (int) (mouseY - this.y);
@@ -256,15 +200,7 @@ public final class TradeCatalogPanel {
         scrollRows(amount > 0 ? -1 : 1);
     }
 
-    /**
-     * Scrolls by whole rows, stopping at the start of the last page.
-     *
-     * <p>Not at {@code size - ROWS_PER_PAGE}: that keeps the view full but makes the final page
-     * unreachable whenever the entry count is not a multiple of the page size. With 13 entries it
-     * capped {@code firstRow} at 8, and since the readout is {@code firstRow / ROWS_PER_PAGE + 1}
-     * the counter stuck at "2 / 3" no matter how far you scrolled. Stopping at
-     * {@code (pageCount - 1) * ROWS_PER_PAGE} reaches "3 / 3" and simply shows a short last page.
-     */
+    /// Scrolls by whole rows and stops at the start of the last page, so the last page stays reachable.
     private void scrollRows(int delta) {
         int size = entries().size();
         int lastPageStart = Math.max(0, (MathHelper.ceilDiv(size, ROWS_PER_PAGE) - 1) * ROWS_PER_PAGE);
@@ -279,20 +215,12 @@ public final class TradeCatalogPanel {
         this.client.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
     }
 
-    // --- rendering -----------------------------------------------------------------------------
-
     public void render(DrawContext context, int mouseX, int mouseY) {
         if (!this.visible) {
             return;
         }
 
-        // Only needed when the panel had to overlap, so it layers cleanly over vanilla's trade items
-        // and arrow instead of being pierced by them.
-        //
-        // This used to be a Z translate over vanilla's z 250 (items) and z 300 (arrow). Since 1.21.6
-        // DrawContext.getMatrices() is a 2D Matrix3x2fStack with no Z axis at all; the GUI is
-        // composited per layer in submission order instead. Starting a new root layer is what "above
-        // everything drawn so far" means now, and it does not depend on guessing vanilla's depths.
+        // A new root layer draws above everything before it. DrawContext has no Z axis.
         if (this.overlapping) {
             context.createNewRootLayer();
         }
@@ -304,8 +232,7 @@ public final class TradeCatalogPanel {
         TextRenderer font = this.client.textRenderer;
         drawFrame(context);
 
-        // Adopt whatever tier the server actually served, which may be a clamped version of the one
-        // requested (a wandering trader has two pools, the level selector offers five).
+        // Adopt the tier the server served, because it may clamp the requested tier.
         TradeCatalogPacket.Payload payload = TradeCatalogClientState.current();
         if (payload != null && !TradeCatalogClientState.isLoading()) {
             this.level = payload.level();
@@ -415,11 +342,7 @@ public final class TradeCatalogPanel {
         drawCentered(context, footer, FOOTER_Y + 6, TEXT);
     }
 
-    /**
-     * Picks the full or short variant of a label. The short forms exist because at small GUI scales
-     * the panel is barely wider than its three slots, and a centred string that overflows would spill
-     * out over the trade screen.
-     */
+    /// Picks the short label when the panel is too narrow for the full one.
     private Text label(String key, Object... args) {
         return Text.translatable("gui.villagertradingplus." + key + (this.compact ? "_short" : ""), args);
     }
@@ -443,7 +366,6 @@ public final class TradeCatalogPanel {
                 mouseX, mouseY);
     }
 
-    /** Which of the row's three stacks the cursor is on, or empty when it is between them. */
     private ItemStack stackAt(CatalogEntry entry, int mouseX, int mouseY, int rowY) {
         if (mouseY < rowY || mouseY >= rowY + 16) {
             return ItemStack.EMPTY;
@@ -464,11 +386,7 @@ public final class TradeCatalogPanel {
         return mouseX >= slotX && mouseX < slotX + 16;
     }
 
-    /**
-     * Appends the metadata the JSON defined but a {@code TradeOffer} cannot carry: how likely the
-     * trade is to be rolled, what gates it, and the numbers behind its pricing. Everything the row
-     * itself had to drop for width still shows up here.
-     */
+    /// Appends probability, gating and pricing metadata that a TradeOffer cannot carry.
     private void appendMetadata(List<Text> lines, CatalogEntry entry) {
         if (!lines.isEmpty()) {
             lines.add(Text.empty());
@@ -522,13 +440,7 @@ public final class TradeCatalogPanel {
         }
     }
 
-    // --- helpers -------------------------------------------------------------------------------
-
-    /**
-     * Chance the merchant draws this trade's slot at all. Vanilla picks {@code tierPicks} distinct
-     * indices out of the tier pool uniformly, so every entry in the pool has the same odds; the
-     * per-trade weights in the JSON only ever apply inside a {@code weighted_pool}.
-     */
+    /// Vanilla picks tier entries uniformly. JSON weights apply only inside a weighted_pool.
     private static float tierChance(CatalogEntry entry) {
         if (entry.tierPoolSize() <= 0) {
             return 1.0f;
@@ -570,7 +482,6 @@ public final class TradeCatalogPanel {
         context.drawText(font, label, left + (NAV_SIZE - font.getWidth(label)) / 2, top + 6, BUTTON_LABEL, true);
     }
 
-    /** Draws a vanilla-looking 18x18 slot hole around the 16x16 item area at (x, y). */
     private void drawSlot(DrawContext context, int slotX, int slotY) {
         context.fill(slotX - 1, slotY - 1, slotX + 17, slotY + 17, SLOT_BORDER);
         context.fill(slotX, slotY, slotX + 16, slotY + 16, SLOT_FILL);

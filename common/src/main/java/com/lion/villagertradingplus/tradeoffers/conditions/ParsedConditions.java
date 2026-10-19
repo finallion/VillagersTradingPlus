@@ -7,15 +7,8 @@ import net.minecraft.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The parsed {@code "conditions"} block: the combined predicate plus, alongside it, a readable
- * description of each individual condition.
- *
- * <p>Implements {@link TradeCondition} itself so it drops straight into
- * {@link com.lion.villagertradingplus.tradeoffers.ConditionalTradeFactory} with the same semantics as
- * before. The per-condition breakdown exists so the trade catalogue can show <em>why</em> a trade is
- * gated and whether the gate is currently open, instead of the trade simply vanishing.
- */
+/// The parsed conditions block: the combined predicate and a description of each condition.
+/// The descriptions let the catalogue show why a trade is gated and whether the gate is open.
 public record ParsedConditions(List<Entry> entries, boolean orLogic) implements TradeCondition {
 
     public record Entry(Text description, TradeCondition condition) {
@@ -41,7 +34,7 @@ public record ParsedConditions(List<Entry> entries, boolean orLogic) implements 
         return true;
     }
 
-    /** Evaluates every condition individually against {@code merchant} for catalogue display. */
+    /// Evaluates each condition on its own for the catalogue.
     public List<ConditionInfo> describe(Entity merchant) {
         List<ConditionInfo> infos = new ArrayList<>(this.entries.size());
         for (Entry entry : this.entries) {
