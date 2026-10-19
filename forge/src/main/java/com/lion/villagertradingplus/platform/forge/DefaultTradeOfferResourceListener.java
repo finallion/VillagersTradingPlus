@@ -29,6 +29,7 @@ public class DefaultTradeOfferResourceListener extends JsonDataLoader implements
             if (!jsonElement.isJsonObject()) {
                 return;
             }
+
             // Use the file name, because reading JSON here would put an unguarded access before the guard.
             VillagerTradingPlus.LOGGER.debug("Deserializing default trades from: {}", identifier);
 

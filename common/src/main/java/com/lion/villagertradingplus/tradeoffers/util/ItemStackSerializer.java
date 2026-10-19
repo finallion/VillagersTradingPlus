@@ -23,8 +23,7 @@ import java.util.Optional;
 /// Raw `nbt` applies last. Bad input throws `TradeParseException`.
 public final class ItemStackSerializer {
 
-    private ItemStackSerializer() {
-    }
+    private ItemStackSerializer() {}
 
     public static ItemStack fromJson(JsonObject json) {
         return fromJson(json, true);
@@ -32,15 +31,16 @@ public final class ItemStackSerializer {
 
     public static ItemStack fromJson(JsonObject json, boolean withCount) {
         JsonElement idElement = json.get("item");
+
         if (idElement == null) {
             throw new TradeParseException("trade item is missing the \"item\" key: " + json);
         }
 
         String id = idElement.getAsString();
         Optional<Item> item = Registries.ITEM.getOrEmpty(Identifier.tryParse(id));
+
         if (item.isEmpty()) {
-            throw new TradeParseException("unknown item id \"" + id
-                    + "\" (is the mod that provides it installed?)");
+            throw new TradeParseException("unknown item id \"" + id + "\" (is the mod that provides it installed?)");
         }
 
         int count = withCount && json.has("count") ? json.get("count").getAsInt() : 1;
@@ -109,11 +109,13 @@ public final class ItemStackSerializer {
         for (JsonElement element : enchantments) {
             JsonObject obj = element.getAsJsonObject();
             Enchantment enchantment = Registries.ENCHANTMENT.get(Identifier.tryParse(obj.get("id").getAsString()));
+
             if (enchantment == null) {
                 throw new TradeParseException("unknown enchantment \"" + obj.get("id").getAsString() + "\" on a trade item");
             }
 
             int level = obj.has("lvl") ? obj.get("lvl").getAsInt() : 1;
+
             if (isBook) {
                 EnchantedBookItem.addEnchantment(stack, new EnchantmentLevelEntry(enchantment, level));
             } else {
@@ -124,12 +126,15 @@ public final class ItemStackSerializer {
 
     private static void applyBook(ItemStack stack, JsonObject book) {
         NbtCompound nbt = stack.getOrCreateNbt();
+
         if (book.has("title")) {
             nbt.putString("title", book.get("title").getAsString());
         }
+
         if (book.has("author")) {
             nbt.putString("author", book.get("author").getAsString());
         }
+
         if (book.has("pages")) {
             NbtList pages = new NbtList();
             for (JsonElement page : book.getAsJsonArray("pages")) {
@@ -153,9 +158,11 @@ public final class ItemStackSerializer {
         if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
             String raw = element.getAsString();
             String trimmed = raw.trim();
+
             if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
                 try {
                     Text parsed = Text.Serializer.fromJson(raw);
+
                     if (parsed != null) {
                         return parsed;
                     }
@@ -163,11 +170,13 @@ public final class ItemStackSerializer {
                     // fall through to literal
                 }
             }
+
             return Text.literal(raw);
         }
 
         try {
             Text parsed = Text.Serializer.fromJson(element);
+
             if (parsed != null) {
                 return parsed;
             }
@@ -179,12 +188,15 @@ public final class ItemStackSerializer {
 
     private static int parseColor(String value) {
         String trimmed = value.trim();
+
         if (trimmed.startsWith("#")) {
             return Integer.parseInt(trimmed.substring(1), 16);
         }
+
         if (trimmed.startsWith("0x") || trimmed.startsWith("0X")) {
             return Integer.parseInt(trimmed.substring(2), 16);
         }
+
         return Integer.parseInt(trimmed);
     }
 }

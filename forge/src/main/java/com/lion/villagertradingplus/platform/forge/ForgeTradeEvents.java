@@ -13,8 +13,7 @@ public final class ForgeTradeEvents {
 
     private static volatile boolean serverRunning;
 
-    private ForgeTradeEvents() {
-    }
+    private ForgeTradeEvents() {}
 
     public static boolean isServerRunning() {
         return serverRunning;

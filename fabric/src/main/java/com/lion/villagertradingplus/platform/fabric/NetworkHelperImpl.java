@@ -13,8 +13,7 @@ import java.util.function.Consumer;
 
 public final class NetworkHelperImpl {
 
-    private NetworkHelperImpl() {
-    }
+    private NetworkHelperImpl() {}
 
     /// Fabric channels need no up-front registration.
     public static void init() {

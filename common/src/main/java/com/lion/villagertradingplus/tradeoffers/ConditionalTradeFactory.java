@@ -22,6 +22,7 @@ public final class ConditionalTradeFactory implements TradeOffers.Factory {
         if (!condition.test(entity)) {
             return null;
         }
+
         return delegate.create(entity, random);
     }
 

@@ -23,10 +23,13 @@ public abstract class MerchantScreenHandlerMixin {
         if (!((Object) this instanceof MerchantScreenHandler handler)) {
             return;
         }
+
         Merchant merchant = ((MerchantScreenHandlerAccessor) handler).getMerchant();
+
         if (!(merchant instanceof MerchantEntity entity) || !(player instanceof ServerPlayerEntity serverPlayer)) {
             return;
         }
+
         if (TradeGuiActions.handle(serverPlayer, entity, id)) {
             cir.setReturnValue(true);
         }

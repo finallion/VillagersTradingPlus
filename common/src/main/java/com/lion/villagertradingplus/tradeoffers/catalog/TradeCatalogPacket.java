@@ -17,8 +17,7 @@ public final class TradeCatalogPacket {
 
     private static final int MAX_PAYLOAD_BYTES = 700_000;
 
-    private TradeCatalogPacket() {
-    }
+    private TradeCatalogPacket() {}
 
     public record Payload(int level, int maxLevel, List<CatalogEntry> entries, int omitted) {
     }
@@ -31,6 +30,7 @@ public final class TradeCatalogPacket {
             if (scratch.writerIndex() > MAX_PAYLOAD_BYTES) {
                 break;
             }
+
             entry.write(scratch);
             written++;
         }

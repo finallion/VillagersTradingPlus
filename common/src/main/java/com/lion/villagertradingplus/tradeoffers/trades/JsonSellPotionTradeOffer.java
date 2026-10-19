@@ -41,7 +41,14 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack buy, ItemStack sell, ItemStack currency, int maxUses, int experience, float multiplier) {
+        public Factory(
+                ItemStack buy,
+                ItemStack sell,
+                ItemStack currency,
+                int maxUses,
+                int experience,
+                float multiplier
+        ) {
             this.buy = buy;
             this.sell = sell;
             this.currency = currency;
@@ -68,8 +75,8 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     out.countSkipped(1);
                     continue;
                 }
-                out.add(waterBottle(), currency, sellStack(potion), this.maxUses, this.experience,
-                        this.multiplier, 0);
+
+                out.add(waterBottle(), currency, sellStack(potion), this.maxUses, this.experience, this.multiplier, 0);
             }
             out.popShare();
         }

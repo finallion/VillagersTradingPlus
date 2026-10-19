@@ -23,8 +23,7 @@ public final class NetworkHelperImpl {
     /// Client only. A server never has a receiver, so client-only classes stay off its classpath.
     private static final Map<Identifier, Consumer<PacketByteBuf>> CLIENT_RECEIVERS = new HashMap<>();
 
-    private NetworkHelperImpl() {
-    }
+    private NetworkHelperImpl() {}
 
     public static void init() {
         for (Identifier channel : NetworkHelper.CHANNELS) {
@@ -34,9 +33,11 @@ public final class NetworkHelperImpl {
 
     public static void sendToPlayer(ServerPlayerEntity player, Identifier channel, PacketByteBuf buf) {
         SimpleChannel simpleChannel = CHANNELS.get(channel);
+
         if (simpleChannel == null) {
             throw new IllegalStateException("Unregistered channel " + channel + "; add it to NetworkHelper.CHANNELS");
         }
+
         simpleChannel.send(PacketDistributor.PLAYER.with(() -> player), new Payload(readAll(buf)));
     }
 
@@ -45,8 +46,12 @@ public final class NetworkHelperImpl {
     }
 
     private static SimpleChannel createChannel(Identifier id) {
-        SimpleChannel channel = NetworkRegistry.newSimpleChannel(id, () -> PROTOCOL_VERSION,
-                PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
+        SimpleChannel channel = NetworkRegistry.newSimpleChannel(
+                id,
+                () -> PROTOCOL_VERSION,
+                PROTOCOL_VERSION::equals,
+                PROTOCOL_VERSION::equals
+        );
 
         channel.registerMessage(0, Payload.class,
                 (payload, out) -> out.writeBytes(payload.data()),
@@ -55,6 +60,7 @@ public final class NetworkHelperImpl {
                     NetworkEvent.Context ctx = context.get();
                     ctx.enqueueWork(() -> {
                         Consumer<PacketByteBuf> receiver = CLIENT_RECEIVERS.get(id);
+
                         if (receiver != null) {
                             receiver.accept(new PacketByteBuf(Unpooled.wrappedBuffer(payload.data())));
                         }

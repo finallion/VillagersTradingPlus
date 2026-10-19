@@ -17,8 +17,7 @@ public final class TradeCatalogClientState {
 
     private static boolean awaitingReply;
 
-    private TradeCatalogClientState() {
-    }
+    private TradeCatalogClientState() {}
 
     public static void register() {
         NetworkHelper.registerClientReceiver(TradeCatalogPacket.CHANNEL, buf -> {

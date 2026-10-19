@@ -45,7 +45,14 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack currency, Enchantment enchantment, int level, int maxUses, int experience, float multiplier) {
+        public Factory(
+                ItemStack currency,
+                Enchantment enchantment,
+                int level,
+                int maxUses,
+                int experience,
+                float multiplier
+        ) {
             this.currency = currency;
             this.enchantment = enchantment;
             this.level = level;

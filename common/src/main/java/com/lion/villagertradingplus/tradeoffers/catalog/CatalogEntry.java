@@ -26,7 +26,8 @@ public record CatalogEntry(
         int minPrice,
         int maxPrice,
         List<ConditionInfo> conditions,
-        boolean conditionsMet) {
+        boolean conditionsMet
+) {
 
     public boolean isPooled() {
         return this.poolTotalWeight > 0;

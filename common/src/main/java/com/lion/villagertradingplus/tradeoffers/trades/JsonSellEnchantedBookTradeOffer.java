@@ -53,8 +53,16 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
             int level = MathHelper.nextInt(random, enchantment.getMinLevel(), enchantment.getMaxLevel());
             int price = clampPrice(2 + random.nextInt(5 + level * 10) + 3 * level, enchantment);
 
-            return new TradeOffer(new ItemStack(currency.getItem(), price), new ItemStack(Items.BOOK),
-                    book(enchantment, level), 0, this.maxUses, this.experience, this.multiplier, this.demand);
+            return new TradeOffer(
+                    new ItemStack(currency.getItem(), price),
+                    new ItemStack(Items.BOOK),
+                    book(enchantment, level),
+                    0,
+                    this.maxUses,
+                    this.experience,
+                    this.multiplier,
+                    this.demand
+            );
         }
 
         /// Every pair gets a row with the lowest price. The tooltip shows the full range.
@@ -70,13 +78,22 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
                         out.countSkipped(1);
                         continue;
                     }
+
                     // Extremes of the roll 2 + nextInt(5 + 10*level) + 3*level, before doubling and the cap.
                     int minPrice = clampPrice(2 + 3 * level, enchantment);
                     int maxPrice = clampPrice(6 + 13 * level, enchantment);
 
-                    out.add(new ItemStack(currency.getItem(), minPrice), new ItemStack(Items.BOOK),
-                            book(enchantment, level), maxUses, experience, multiplier, demand,
-                            minPrice, maxPrice);
+                    out.add(
+                            new ItemStack(currency.getItem(), minPrice),
+                            new ItemStack(Items.BOOK),
+                            book(enchantment, level),
+                            maxUses,
+                            experience,
+                            multiplier,
+                            demand,
+                            minPrice,
+                            maxPrice
+                    );
                 }
                 out.popShare();
             }
@@ -96,6 +113,7 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
             if (enchantment.isTreasure()) {
                 price *= 2;
             }
+
             return Math.min(price, 64);
         }
     }

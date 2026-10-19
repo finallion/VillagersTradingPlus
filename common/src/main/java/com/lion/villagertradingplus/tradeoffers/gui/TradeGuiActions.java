@@ -28,8 +28,7 @@ public final class TradeGuiActions {
     private static final Map<ServerPlayerEntity, Integer> LAST_CATALOG_TICK = new WeakHashMap<>();
     private static final Map<ServerPlayerEntity, PacketByteBuf> LAST_CATALOG = new WeakHashMap<>();
 
-    private TradeGuiActions() {
-    }
+    private TradeGuiActions() {}
 
     public static boolean handle(ServerPlayerEntity player, MerchantEntity merchant, int id) {
         VTPConfig cfg = VillagerTradingPlus.CONFIG;
@@ -56,6 +55,7 @@ public final class TradeGuiActions {
             if (!cfg.allow_trade_reroll || !(merchant instanceof TradeControl tc)) {
                 return false;
             }
+
             if (!mayControlTrades(player)) {
                 return false;
             }
@@ -73,6 +73,7 @@ public final class TradeGuiActions {
             if (!cfg.allow_trade_reroll || !(merchant instanceof TradeControl tc)) {
                 return false;
             }
+
             if (!mayControlTrades(player)) {
                 return false;
             }
@@ -90,6 +91,7 @@ public final class TradeGuiActions {
             if (!cfg.allow_view_all_trades) {
                 return false;
             }
+
             if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)) {
                 resendLastCatalog(player);
                 return true;
@@ -107,7 +109,11 @@ public final class TradeGuiActions {
         return required == 0 || player.hasPermissionLevel(required);
     }
 
-    private static boolean isCoolingDown(ServerPlayerEntity player, Map<ServerPlayerEntity, Integer> lastTicks, int cooldownTicks) {
+    private static boolean isCoolingDown(
+            ServerPlayerEntity player,
+            Map<ServerPlayerEntity, Integer> lastTicks,
+            int cooldownTicks
+    ) {
         int now = player.getServer().getTicks();
         Integer previous = lastTicks.get(player);
 
@@ -122,8 +128,14 @@ public final class TradeGuiActions {
     private static void refresh(ServerPlayerEntity player, MerchantEntity merchant) {
         if (player.currentScreenHandler instanceof MerchantScreenHandler handler) {
             int level = merchant instanceof VillagerEntity villager ? villager.getVillagerData().getLevel() : 1;
-            player.sendTradeOffers(handler.syncId, merchant.getOffers(), level, merchant.getExperience(),
-                    merchant.isLeveledMerchant(), merchant.canRefreshTrades());
+            player.sendTradeOffers(
+                    handler.syncId,
+                    merchant.getOffers(),
+                    level,
+                    merchant.getExperience(),
+                    merchant.isLeveledMerchant(),
+                    merchant.canRefreshTrades()
+            );
         }
     }
 
@@ -156,6 +168,7 @@ public final class TradeGuiActions {
         int poolSize = pool == null ? 0 : pool.length;
 
         CatalogBuilder builder = new CatalogBuilder(poolSize, picksPerLevel(merchant, level));
+
         if (pool == null) {
             return builder;
         }
@@ -170,6 +183,7 @@ public final class TradeGuiActions {
         if (merchant instanceof VillagerEntity) {
             return VillagerTradingPlus.CONFIG.trade_offers_per_level;
         }
+
         // Wandering trader: the common pool contributes several offers, the rare pool exactly one.
         return level == 1 ? VillagerTradingPlus.CONFIG.trade_offers_wandering_trader : 1;
     }
@@ -180,6 +194,7 @@ public final class TradeGuiActions {
                     TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(villager.getVillagerData().getProfession());
             return map == null ? null : map.get(level);
         }
+
         // Wandering trader: level 1 = common, level 2 = rare.
         return TradeOffers.WANDERING_TRADER_TRADES.get(level);
     }

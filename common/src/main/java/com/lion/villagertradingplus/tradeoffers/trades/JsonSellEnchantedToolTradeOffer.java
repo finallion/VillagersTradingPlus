@@ -50,14 +50,20 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
             // Copied, so the count and the name, lore or NBT sugar of the sell stack survive the enchanting pass.
             ItemStack itemStack = EnchantmentHelper.enchant(random, this.sell.copy(), power, false);
 
-            return new TradeOffer(new ItemStack(currency.getItem(), price(power)), itemStack,
-                    this.maxUses, this.experience, multiplier);
+            return new TradeOffer(
+                    new ItemStack(currency.getItem(), price(power)),
+                    itemStack,
+                    this.maxUses,
+                    this.experience,
+                    multiplier
+            );
         }
 
         /// Not enumerable: enchant picks an opaque combination, so one fixed-seed sample stands in.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             TradeOffer sample = create(merchant, Random.create(0L));
+
             if (sample != null) {
                 out.addOffer(sample, price(MIN_POWER), price(MAX_POWER));
             }
