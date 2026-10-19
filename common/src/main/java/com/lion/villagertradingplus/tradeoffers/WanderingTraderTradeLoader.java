@@ -89,7 +89,7 @@ public final class WanderingTraderTradeLoader {
             List<TradeOffers.Factory> extra = accumulator.getOrDefault(level, List.of());
             TradeOffers.Factory[] merged = ArrayUtils.addAll(base, extra.toArray(new TradeOffers.Factory[0]));
 
-            // Vanilla picks from the rare pool with nextInt(length), so a tier must never be empty.
+            // Vanilla picks from the rare pool with nextInt(length). An empty tier throws.
             if (merged.length == 0) {
                 merged = vanillaBaseline.getOrDefault(level, new TradeOffers.Factory[0]);
             }

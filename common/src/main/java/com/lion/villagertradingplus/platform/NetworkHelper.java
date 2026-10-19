@@ -9,10 +9,9 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 import java.util.function.Consumer;
 
-/// Minimal server-to-client messaging. Uses the same @ExpectPlatform split as RegistryHelper and ConfigDirectory.
 public class NetworkHelper {
 
-    /// Forge must create its channels before the registry locks.
+    /// Forge creates channels before the registry locks.
     public static final List<Identifier> CHANNELS = List.of(TradeCatalogPacket.CHANNEL);
 
     @ExpectPlatform

@@ -47,7 +47,6 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
 
         public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
             int power = MIN_POWER + random.nextInt(MAX_POWER - MIN_POWER + 1);
-            // Copied, so the count and the name, lore or NBT sugar of the sell stack survive the enchanting pass.
             ItemStack itemStack = EnchantmentHelper.enchant(random, this.sell.copy(), power, false);
 
             return new TradeOffer(

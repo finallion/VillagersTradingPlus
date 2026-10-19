@@ -17,9 +17,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.village.TradeOffers;
 
-/// Server-side handler for the trade-screen control buttons, addressed by ScreenHandler.onButtonClick ids.
 /// 100+level sets the villager level. 110+level re-rolls one tier. 120 re-rolls all tiers.
-/// 130+level sends the catalogue for a tier. The reply needs its own packet.
+/// 130+level sends the catalogue for a tier.
 public final class TradeGuiActions {
 
     private static final int ACTION_COOLDOWN_TICKS = 10;
@@ -157,12 +156,10 @@ public final class TradeGuiActions {
         }
     }
 
-    /// Villagers have five tiers. The wandering trader has two pools.
     public static int maxLevel(MerchantEntity merchant) {
         return merchant instanceof VillagerEntity ? 5 : 2;
     }
 
-    /// Derives rows from the JSON definition, so a tier always yields the same rows.
     public static CatalogBuilder buildCatalog(MerchantEntity merchant, int level) {
         TradeOffers.Factory[] pool = poolFor(merchant, level);
         int poolSize = pool == null ? 0 : pool.length;
@@ -195,7 +192,6 @@ public final class TradeGuiActions {
             return map == null ? null : map.get(level);
         }
 
-        // Wandering trader: level 1 = common, level 2 = rare.
         return TradeOffers.WANDERING_TRADER_TRADES.get(level);
     }
 }

@@ -65,12 +65,10 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
             );
         }
 
-        /// Every pair gets a row with the lowest price. The tooltip shows the full range.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<Enchantment> available = available();
             for (Enchantment enchantment : available) {
-                // create() picks an enchantment uniformly, then a level uniformly within it.
                 int levels = enchantment.getMaxLevel() - enchantment.getMinLevel() + 1;
                 out.pushShare(1.0f / (available.size() * levels));
                 for (int level = enchantment.getMinLevel(); level <= enchantment.getMaxLevel(); level++) {
@@ -79,7 +77,7 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
                         continue;
                     }
 
-                    // Extremes of the roll 2 + nextInt(5 + 10*level) + 3*level, before doubling and the cap.
+                    // The bounds are the extremes of the vanilla price roll.
                     int minPrice = clampPrice(2 + 3 * level, enchantment);
                     int maxPrice = clampPrice(6 + 13 * level, enchantment);
 

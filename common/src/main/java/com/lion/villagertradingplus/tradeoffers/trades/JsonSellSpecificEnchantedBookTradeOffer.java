@@ -14,7 +14,6 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 import org.jetbrains.annotations.NotNull;
 
-/// Sells an enchanted book with a fixed enchantment and level. sell_enchanted_book picks randomly instead.
 public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
 
     @Override

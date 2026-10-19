@@ -9,8 +9,6 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 
-/// Applies global price tuning to any produced offer: a currency count scale and optional time-of-day variance.
-/// The price is fixed at generation, so the variance differs between offers.
 public final class PricingTradeFactory implements TradeOffers.Factory {
 
     private final TradeOffers.Factory delegate;
@@ -19,7 +17,6 @@ public final class PricingTradeFactory implements TradeOffers.Factory {
         this.delegate = delegate;
     }
 
-    /// Wraps only when pricing tuning is active.
     public static TradeOffers.Factory wrapIfNeeded(TradeOffers.Factory delegate, JsonObject trade) {
         boolean costScale = VillagerTradingPlus.CONFIG.trade_cost_scale != 1.0f;
         boolean timeOfDay = VillagerTradingPlus.CONFIG.enable_time_of_day_pricing;
@@ -55,12 +52,10 @@ public final class PricingTradeFactory implements TradeOffers.Factory {
         );
     }
 
-    /// Exposed so the catalogue can enumerate the delegate and re-apply pricing.
     public TradeOffers.Factory delegate() {
         return this.delegate;
     }
 
-    /// Shared so catalogue rows use the same pricing as real offers.
     public static int scaleCount(int count, int maxCount, float factor) {
         return MathHelper.clamp(Math.round(count * factor), 1, maxCount);
     }

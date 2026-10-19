@@ -3,7 +3,6 @@ package com.lion.villagertradingplus.config;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.config.annotations.Description;
 
-/// Settings that apply to every trade the library builds, whatever mod or datapack defined it.
 public class VTPConfig implements Config {
 
     @Override
@@ -21,7 +20,6 @@ public class VTPConfig implements Config {
         return "villagertradingplus";
     }
 
-    /// The clamp applies in memory, not in the file.
     public void clampToValidRanges() {
         trade_offers_per_level = clamp("trade_offers_per_level", trade_offers_per_level, 0, 64);
         trade_offers_wandering_trader = clamp("trade_offers_wandering_trader", trade_offers_wandering_trader, 0, 64);

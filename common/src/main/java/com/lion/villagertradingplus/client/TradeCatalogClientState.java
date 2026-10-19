@@ -6,9 +6,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import org.jetbrains.annotations.Nullable;
 
-/// Holds the catalogue that the server sent last.
-/// The state is static, because the packet handler and the screen do not reference each other.
-/// One slot is enough, because a player has one trade screen open at a time.
 @Environment(EnvType.CLIENT)
 public final class TradeCatalogClientState {
 
@@ -31,7 +28,6 @@ public final class TradeCatalogClientState {
         return current;
     }
 
-    /// An outstanding-request flag, because the reply level can differ from the requested level.
     public static boolean isLoading() {
         return current == null || awaitingReply;
     }

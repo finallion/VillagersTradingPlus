@@ -7,8 +7,6 @@ import net.minecraft.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-/// The parsed conditions block: the combined predicate and a description of each condition.
-/// The descriptions let the catalogue show why a trade is gated and whether the gate is open.
 public record ParsedConditions(List<Entry> entries, boolean orLogic) implements TradeCondition {
 
     public record Entry(Text description, TradeCondition condition) {
@@ -22,7 +20,7 @@ public record ParsedConditions(List<Entry> entries, boolean orLogic) implements 
                     return true;
                 }
             }
-            // An empty OR block gates nothing, matching the AND case below.
+            // An empty OR block gates nothing.
             return this.entries.isEmpty();
         }
 
@@ -34,7 +32,6 @@ public record ParsedConditions(List<Entry> entries, boolean orLogic) implements 
         return true;
     }
 
-    /// Evaluates each condition on its own for the catalogue.
     public List<ConditionInfo> describe(Entity merchant) {
         List<ConditionInfo> infos = new ArrayList<>(this.entries.size());
         for (Entry entry : this.entries) {

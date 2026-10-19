@@ -20,7 +20,7 @@ import net.minecraft.util.Identifier;
 
 import java.util.Optional;
 
-/// Raw `nbt` applies last. Bad input throws `TradeParseException`.
+/// Raw `nbt` applies last.
 public final class ItemStackSerializer {
 
     private ItemStackSerializer() {}
@@ -49,7 +49,6 @@ public final class ItemStackSerializer {
         return stack;
     }
 
-    /// Public so tag-resolved stacks reuse the same sugar per random pick.
     public static void applyComponents(ItemStack stack, JsonObject json) {
         if (stack.isEmpty()) {
             return;
@@ -90,7 +89,6 @@ public final class ItemStackSerializer {
             applyBook(stack, json.getAsJsonObject("book"));
         }
 
-        // Raw SNBT escape hatch, applied LAST so it can override or add anything above.
         if (json.has("nbt")) {
             applyRawNbt(stack, json.get("nbt").getAsString());
         }
@@ -153,7 +151,7 @@ public final class ItemStackSerializer {
         }
     }
 
-    /// Plain strings are literal. JSON-like strings parse as components, and a parse failure falls back to literal.
+    /// JSON-like strings parse as components. A failed parse keeps the literal.
     private static Text parseText(JsonElement element) {
         if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
             String raw = element.getAsString();
@@ -167,7 +165,6 @@ public final class ItemStackSerializer {
                         return parsed;
                     }
                 } catch (Exception ignored) {
-                    // fall through to literal
                 }
             }
 
@@ -181,7 +178,6 @@ public final class ItemStackSerializer {
                 return parsed;
             }
         } catch (Exception ignored) {
-            // fall through to empty
         }
         return Text.empty();
     }

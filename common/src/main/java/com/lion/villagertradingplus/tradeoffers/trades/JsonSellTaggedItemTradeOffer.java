@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/// Sells one member of an item tag, chosen per offer, for a fixed currency.
 public class JsonSellTaggedItemTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -55,7 +54,6 @@ public class JsonSellTaggedItemTradeOffer extends JsonTradeOffer {
             return new TradeOffer(currency.copy(), ItemStack.EMPTY, resolved, 0, maxUses, experience, multiplier, demand);
         }
 
-        /// A tag input is a random member per offer, so the catalogue lists all members.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<ItemStack> variants = sell.resolveAll();

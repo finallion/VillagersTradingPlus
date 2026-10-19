@@ -22,7 +22,6 @@ public abstract class JsonTradeOffer {
         this.maxUses = readInt(jsonObject, "max_uses", 12);
         this.experience = readInt(jsonObject, "villager_experience", 5);
         this.demand = readInt(jsonObject, "demand", 0);
-        // Global price-multiplier scale from config (1.0 keeps the JSON value unchanged).
         float base = readFloat(jsonObject, "price_multiplier", 0.05f);
         this.priceMultiplier = base * VillagerTradingPlus.CONFIG.trade_price_multiplier_scale;
     }

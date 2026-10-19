@@ -21,7 +21,6 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
-// Extends MerchantEntity, because @Shadow sees only members declared on the target itself.
 @Mixin(VillagerEntity.class)
 public abstract class VillagerEntityMixin extends MerchantEntity implements TradeControl {
 
@@ -37,7 +36,6 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
 
     @Shadow public abstract void reinitializeBrain(ServerWorld world);
 
-    /// Offer counts per level (index = level 1..5), so one tier can be re-rolled in place.
     @Unique private int[] villagertradingplus$levelCounts = null;
 
     @ModifyConstant(method = "fillRecipes", constant = @Constant(intValue = 2))
@@ -103,7 +101,6 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
         TradeOfferList offers = getOffers();
         int[] counts = villagertradingplus$levelCounts;
 
-        // Fall back to a full re-roll if we have no reliable per-level mapping (e.g. pre-existing villager).
         if (counts == null || counts.length <= level || villagertradingplus$sum(counts, 1, level) != offers.size()) {
             villagertradingplus$rerollAll();
             return;

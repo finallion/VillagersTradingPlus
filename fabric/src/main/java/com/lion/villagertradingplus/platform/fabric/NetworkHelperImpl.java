@@ -15,7 +15,6 @@ public final class NetworkHelperImpl {
 
     private NetworkHelperImpl() {}
 
-    /// Fabric channels need no up-front registration.
     public static void init() {
     }
 

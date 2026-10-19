@@ -12,9 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/// Routes custom trade-screen button clicks to TradeGuiActions on the server.
-/// It targets ScreenHandler, because onButtonClick exists only on the superclass.
-/// The instanceof guard narrows the target back to merchant screens.
 @Mixin(ScreenHandler.class)
 public abstract class MerchantScreenHandlerMixin {
 

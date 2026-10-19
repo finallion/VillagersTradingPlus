@@ -65,7 +65,6 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             return new TradeOffer(waterBottle(), currency, sellStack(potion), this.maxUses, this.experience, this.multiplier);
         }
 
-        /// The potion pool is a fixed registry scan, so each brewable result gets a row.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<Potion> brewable = brewable();

@@ -21,15 +21,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/// Adds the config-gated trade controls and hosts the catalogue panel at the left edge.
-/// Control buttons use the vanilla ButtonClick packet. Only the catalogue reply needs a custom packet.
-/// The mixin extends HandledScreen to use inherited members without shadows.
 @Environment(EnvType.CLIENT)
 @Mixin(MerchantScreen.class)
 public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHandler> {
 
     private MerchantScreenMixin() {
-        super(null, null, null); // never executed; present only to satisfy the compiler
+        super(null, null, null);
     }
 
     /// MerchantScreen.mouseClicked is the only place that clears this flag, so cancelling it strands a drag.
@@ -60,7 +57,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
 
         if (allowView && this.villagertradingplus$catalog == null) {
             this.villagertradingplus$catalog = new TradeCatalogPanel(MinecraftClient.getInstance());
-            // Init also re-runs on window resize, so reset only when the panel is absent.
+            // A window resize runs init again, so reset only once.
             TradeCatalogClientState.clear();
         }
 
@@ -70,7 +67,6 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         int maxWidth = 110;
         int minWidth = 68;
 
-        // The control column takes the right gutter and adapts to it, because the gutter varies with the GUI scale.
         int gutter = this.width - (this.x + this.backgroundWidth) - gap - margin;
         int rows = 1 + (allowSetLevel ? 1 : 0) + (allowReroll ? 2 : 0) + (allowView ? 1 : 0);
 
@@ -83,7 +79,6 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
             baseX = this.x + this.backgroundWidth + gap;
             row = this.y;
         } else {
-            // Sit below the trade panel, or ride the bottom edge. Covering the hotbar harms less than covering trades.
             w = maxWidth;
             baseX = Math.max(margin, Math.min(this.x, this.width - w - margin));
             row = Math.min(this.y + this.backgroundHeight + 4, this.height - rows * step - margin);
@@ -94,7 +89,6 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         // The full labels clip below about 74px, so the short variants apply.
         this.villagertradingplus$shortLabels = w < 90;
 
-        // The arrows shrink with the labels, so the readout between them keeps a usable width.
         int arrowWidth = villagertradingplus$shortLabels ? 16 : 20;
         villagertradingplus$levelDisplay = addDrawableChild(
                 ButtonWidget.builder(villagertradingplus$levelText(), b -> {})
@@ -169,7 +163,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         );
     }
 
-    /// MerchantScreen.render has no bounds check, and a shorter offer list can leave the selection past the end.
+    /// A re-roll can shorten the offer list, and render has no bounds check.
     @Inject(method = "render", at = @At("HEAD"))
     private void villagertradingplus$clampSelectedIndex(
             DrawContext context,
@@ -185,7 +179,6 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         }
     }
 
-    /// Drawn at TAIL, after the vanilla tooltip and the control buttons.
     @Inject(method = "render", at = @At("TAIL"))
     private void villagertradingplus$renderCatalog(
             DrawContext context,
@@ -232,7 +225,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         cir.setReturnValue(true);
     }
 
-    /// Vanilla scrolls the trade list from anywhere on screen and never calls super, so the panel claims the wheel.
+    /// Vanilla scrolls the trade list from anywhere on screen, so the panel claims the wheel.
     @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
     private void villagertradingplus$catalogScroll(
             double mouseX,

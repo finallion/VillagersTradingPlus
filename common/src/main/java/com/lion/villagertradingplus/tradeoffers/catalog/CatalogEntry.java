@@ -6,10 +6,6 @@ import net.minecraft.network.PacketByteBuf;
 import java.util.ArrayList;
 import java.util.List;
 
-/// One catalogue row: three display stacks plus metadata that TradeOffer drops.
-/// The server builds it in CatalogBuilder and sends it whole to the client.
-/// poolShare is the probability composed over all nesting levels.
-/// tierPicks is the number of trades the merchant rolls (trade_offers_per_level).
 public record CatalogEntry(
         ItemStack firstBuy,
         ItemStack secondBuy,
@@ -33,7 +29,6 @@ public record CatalogEntry(
         return this.poolTotalWeight > 0;
     }
 
-    /// The displayed price is only a floor when the price varies.
     public boolean hasPriceRange() {
         return this.maxPrice > this.minPrice;
     }

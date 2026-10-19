@@ -24,8 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-/// Sells an enchanted book with a weighted random pick from a curated list, each with its own level range.
-/// The price scales with the level, doubles for treasure enchantments and caps at 64.
 public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -131,7 +129,6 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
             );
         }
 
-        /// Every (enchantment, level) pair gets a row, because the price follows from them.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             for (Entry entry : entries) {

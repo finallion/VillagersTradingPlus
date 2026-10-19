@@ -10,8 +10,6 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 import org.jetbrains.annotations.NotNull;
 
-/// A trade with two inputs for one output, using both vanilla buy slots.
-/// Vanilla has only two buy slots, so one of the two inputs is the currency.
 public class JsonMultiInputTradeOffer extends JsonTradeOffer {
 
     @Override

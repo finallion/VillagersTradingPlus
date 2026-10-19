@@ -22,15 +22,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-/// Read-only trade catalogue panel, docked beside the vanilla trade screen.
-/// The panel is hand-drawn, because it is painted from a TAIL hook after the screen widgets.
-/// Its width adapts to the free gutter, which depends on the GUI scale.
-/// Paging and scrolling stay on the client, because the server sends a whole tier in one packet.
+/// The panel paints from a TAIL hook, after the screen widgets.
 @Environment(EnvType.CLIENT)
 public final class TradeCatalogPanel {
 
     private static final int MAX_WIDTH = 176;
-    /// Below this width the rows clip, so the panel overlaps the trade screen instead.
     private static final int MIN_WIDTH = 73;
     private static final int COMPACT_WIDTH = 120;
     /// Equals the vanilla trade screen height, so both panels align at the top.
@@ -39,7 +35,7 @@ public final class TradeCatalogPanel {
     private static final int DOCK_GAP = 2;
     private static final int SCREEN_MARGIN = 1;
 
-    /// A slot border spans 18 units, so row spacing counts footprints, not icon widths.
+    /// Row spacing uses the 18-unit slot border.
     private static final int SLOT_FOOTPRINT = 18;
     private static final int ARROW_WIDTH = 12;
 
@@ -69,7 +65,6 @@ public final class TradeCatalogPanel {
     private static final int TEXT_DIM = 0x707070;
     private static final int TEXT_GATED = 0xB06000;
 
-    /// Matches the button ids that the merchant screen sends (130 + level).
     private static final int CATALOG_REQUEST_BASE = 130;
 
     private final MinecraftClient client;
@@ -81,7 +76,6 @@ public final class TradeCatalogPanel {
     private int x;
     private int y;
 
-    // Recomputed by layout() for the space actually available.
     private int width = MAX_WIDTH;
     private boolean compact;
     private boolean overlapping;
@@ -94,7 +88,6 @@ public final class TradeCatalogPanel {
     private boolean showMarker;
     private boolean showChance;
 
-    /// Hovered row from the last render, or -1. The tooltip pass reuses it.
     private int hoveredRow = -1;
 
     public TradeCatalogPanel(MinecraftClient client) {
@@ -106,7 +99,6 @@ public final class TradeCatalogPanel {
         return this.visible;
     }
 
-    /// Toggles the panel and requests the tier when it opens. The server clamps the tier.
     public int toggle(int requestedLevel) {
         this.visible = !this.visible;
 
@@ -121,7 +113,6 @@ public final class TradeCatalogPanel {
         this.visible = false;
     }
 
-    /// Returns the button id to send, or -1 when no request is needed.
     private int requestLevel(int newLevel) {
         this.level = newLevel;
         this.firstRow = 0;
@@ -129,7 +120,6 @@ public final class TradeCatalogPanel {
         return CATALOG_REQUEST_BASE + newLevel;
     }
 
-    /// Sizes the panel to the left gutter. It overlaps the trade screen only below MIN_WIDTH.
     public void layout(int merchantX, int merchantY, int screenWidth, int screenHeight) {
         applyWidth(MathHelper.clamp(merchantX - DOCK_GAP - SCREEN_MARGIN, MIN_WIDTH, MAX_WIDTH));
 
@@ -146,7 +136,6 @@ public final class TradeCatalogPanel {
         }
     }
 
-    /// Centres the slot block and drops decorations before the slots clip.
     private void applyWidth(int panelWidth) {
         this.width = panelWidth;
         this.compact = panelWidth < COMPACT_WIDTH;
@@ -178,7 +167,6 @@ public final class TradeCatalogPanel {
                 && mouseY >= this.y && mouseY < this.y + HEIGHT;
     }
 
-    /// Returns the button id to send to the server, or -1 when the click is local or misses.
     public int mouseClicked(double mouseX, double mouseY) {
         int localX = (int) (mouseX - this.x);
         int localY = (int) (mouseY - this.y);
@@ -213,7 +201,6 @@ public final class TradeCatalogPanel {
         scrollRows(amount > 0 ? -1 : 1);
     }
 
-    /// Scrolls by whole rows and stops at the start of the last page, so the last page stays reachable.
     private void scrollRows(int delta) {
         int size = entries().size();
         int lastPageStart = Math.max(0, (MathHelper.ceilDiv(size, ROWS_PER_PAGE) - 1) * ROWS_PER_PAGE);
@@ -233,7 +220,6 @@ public final class TradeCatalogPanel {
             return;
         }
 
-        // Raised above vanilla trade items (z 250) and arrow (z 300), so an overlapping panel is not pierced.
         context.getMatrices().push();
 
         if (this.overlapping) {
@@ -249,7 +235,7 @@ public final class TradeCatalogPanel {
         TextRenderer font = this.client.textRenderer;
         drawFrame(context);
 
-        // Adopt the tier the server served, because it may clamp the requested tier.
+        // The server may clamp the tier, so adopt the served tier.
         TradeCatalogPacket.Payload payload = TradeCatalogClientState.current();
 
         if (payload != null && !TradeCatalogClientState.isLoading()) {
@@ -281,7 +267,7 @@ public final class TradeCatalogPanel {
         drawRows(context, entries, mouseX, mouseY);
         drawFooter(context, entries, mouseX, mouseY);
 
-        // Last, so it lands above the vanilla trade screen's own tooltip pass.
+        // Draw last, above the vanilla tooltip pass.
         drawTooltip(context, entries, mouseX, mouseY);
     }
 
@@ -378,7 +364,6 @@ public final class TradeCatalogPanel {
         drawCentered(context, footer, FOOTER_Y + 6, TEXT);
     }
 
-    /// Picks the short label when the panel is too narrow for the full one.
     private Text label(String key, Object... args) {
         return Text.translatable("gui.villagertradingplus." + key + (this.compact ? "_short" : ""), args);
     }
@@ -430,7 +415,6 @@ public final class TradeCatalogPanel {
         return mouseX >= slotX && mouseX < slotX + 16;
     }
 
-    /// Appends probability, gating and pricing metadata that a TradeOffer cannot carry.
     private void appendMetadata(List<Text> lines, CatalogEntry entry) {
         if (!lines.isEmpty()) {
             lines.add(Text.empty());
