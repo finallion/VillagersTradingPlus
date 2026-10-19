@@ -46,9 +46,11 @@ public class JsonBuyTaggedItemTradeOffer extends JsonTradeOffer {
         @Override
         public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, Random random) {
             ItemStack resolved = buy.resolve(random);
+
             if (resolved.isEmpty()) {
                 return null;
             }
+
             return new TradeOffer(traded(resolved), tradedOrEmpty(ItemStack.EMPTY), reward.copy(), 0, maxUses, experience, multiplier, demand);
         }
 
@@ -62,6 +64,7 @@ public class JsonBuyTaggedItemTradeOffer extends JsonTradeOffer {
                     out.countSkipped(1);
                     continue;
                 }
+
                 out.add(resolved, ItemStack.EMPTY, reward, maxUses, experience, multiplier, demand);
             }
             out.popShare();

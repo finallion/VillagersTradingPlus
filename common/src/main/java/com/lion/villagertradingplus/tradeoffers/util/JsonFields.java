@@ -10,39 +10,46 @@ import com.google.gson.JsonObject;
 /// Optional fields use the read helpers with a default on JsonTradeOffer.
 public final class JsonFields {
 
-    private JsonFields() {
-    }
+    private JsonFields() {}
 
     /// The owner names what is parsed, for example a weather condition. It goes into the error message.
     public static String requireString(JsonObject json, String owner, String field) {
         JsonElement value = require(json, owner, field);
+
         if (!value.isJsonPrimitive()) {
             throw wrongType(owner, field, "a string", value);
         }
+
         return value.getAsString();
     }
 
     public static JsonObject requireObject(JsonObject json, String owner, String field) {
         JsonElement value = require(json, owner, field);
+
         if (!value.isJsonObject()) {
             throw wrongType(owner, field, "an object", value);
         }
+
         return value.getAsJsonObject();
     }
 
     public static JsonArray requireArray(JsonObject json, String owner, String field) {
         JsonElement value = require(json, owner, field);
+
         if (!value.isJsonArray()) {
             throw wrongType(owner, field, "an array", value);
         }
+
         return value.getAsJsonArray();
     }
 
     public static int requireInt(JsonObject json, String owner, String field) {
         JsonElement value = require(json, owner, field);
+
         if (!value.isJsonPrimitive()) {
             throw wrongType(owner, field, "a number", value);
         }
+
         return value.getAsInt();
     }
 
@@ -51,6 +58,7 @@ public final class JsonFields {
         if (element == null || !element.isJsonObject()) {
             throw new TradeParseException(owner + " must contain objects, got: " + element);
         }
+
         return element.getAsJsonObject();
     }
 
@@ -60,6 +68,7 @@ public final class JsonFields {
         if (value == null || value.isJsonNull()) {
             throw new TradeParseException(owner + " needs a \"" + field + "\" field: " + json);
         }
+
         return value;
     }
 

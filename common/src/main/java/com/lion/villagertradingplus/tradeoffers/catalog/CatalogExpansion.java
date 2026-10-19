@@ -15,8 +15,7 @@ import java.util.List;
 /// It reaches past ConditionalTradeFactory, so a trade with a failing condition is listed and marked.
 public final class CatalogExpansion {
 
-    private CatalogExpansion() {
-    }
+    private CatalogExpansion() {}
 
     public static void expandTrade(TradeOffers.Factory factory, Entity merchant, CatalogBuilder out) {
         out.reset();

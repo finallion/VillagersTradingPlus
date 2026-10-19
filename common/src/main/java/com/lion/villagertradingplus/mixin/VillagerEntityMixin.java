@@ -71,6 +71,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
         if (!(getEntityWorld() instanceof ServerWorld serverWorld)) {
             return;
         }
+
         Int2ObjectMap<TradeOffers.Factory[]> map = villagertradingplus$tradesForProfession();
 
         TradeOfferList offers = getOffers();
@@ -82,9 +83,11 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
         if (map != null) {
             for (int tier = 1; tier <= level; tier++) {
                 TradeOffers.Factory[] pool = map.get(tier);
+
                 if (pool == null) {
                     continue;
                 }
+
                 int before = offers.size();
                 fillRecipesFromPool(serverWorld, offers, pool, VillagerTradingPlus.CONFIG.trade_offers_per_level);
                 counts[tier] = offers.size() - before;
@@ -99,7 +102,9 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
         if (!(getEntityWorld() instanceof ServerWorld serverWorld)) {
             return;
         }
+
         int level = getVillagerData().level();
+
         if (targetLevel < 1 || targetLevel > level) {
             return;
         }
@@ -123,9 +128,11 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
         }
 
         TradeOfferList fresh = new TradeOfferList();
+
         if (pool != null) {
             fillRecipesFromPool(serverWorld, fresh, pool, VillagerTradingPlus.CONFIG.trade_offers_per_level);
         }
+
         offers.addAll(start, fresh);
         counts[targetLevel] = fresh.size();
     }
@@ -136,6 +143,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
         setVillagerData(getVillagerData().withLevel(targetLevel));
         setExperience(VillagerData.getLowerLevelExperience(targetLevel));
         villagertradingplus$rerollAll();
+
         if (getEntityWorld() instanceof ServerWorld reinitWorld) {
             reinitializeBrain(reinitWorld);
         }

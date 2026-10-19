@@ -85,6 +85,7 @@ public final class CatalogBuilder {
 
     public void popShare() {
         Float saved = this.shareStack.pollLast();
+
         if (saved != null) {
             this.composedShare = saved;
         }
@@ -111,21 +112,37 @@ public final class CatalogBuilder {
 
     public void popPriceFactor() {
         Float saved = this.priceFactorStack.pollLast();
+
         if (saved != null) {
             this.composedPriceFactor = saved;
         }
     }
 
-    public void add(ItemStack firstBuy, ItemStack secondBuy, ItemStack sell,
-                    int maxUses, int villagerExperience, float priceMultiplier, int demand) {
+    public void add(
+            ItemStack firstBuy,
+            ItemStack secondBuy,
+            ItemStack sell,
+            int maxUses,
+            int villagerExperience,
+            float priceMultiplier,
+            int demand
+    ) {
         int price = firstBuy.getCount();
         add(firstBuy, secondBuy, sell, maxUses, villagerExperience, priceMultiplier, demand, price, price);
     }
 
     /// Raw prices are before the pricing factor. The displayed stack shows the low end.
-    public void add(ItemStack firstBuy, ItemStack secondBuy, ItemStack sell,
-                    int maxUses, int villagerExperience, float priceMultiplier, int demand,
-                    int rawMinPrice, int rawMaxPrice) {
+    public void add(
+            ItemStack firstBuy,
+            ItemStack secondBuy,
+            ItemStack sell,
+            int maxUses,
+            int villagerExperience,
+            float priceMultiplier,
+            int demand,
+            int rawMinPrice,
+            int rawMaxPrice
+    ) {
         if (isFull()) {
             this.skipped++;
             return;
@@ -141,10 +158,26 @@ public final class CatalogBuilder {
         int weight = innermost == null ? 0 : innermost[0];
         int totalWeight = innermost == null ? 0 : innermost[1];
 
-        this.entries.add(new CatalogEntry(shownFirstBuy, secondBuy.copy(), sell.copy(),
-                weight, totalWeight, this.composedShare, this.tierPoolSize, this.tierPicks,
-                maxUses, villagerExperience, priceMultiplier, demand, minPrice, maxPrice,
-                this.flatConditions, this.conditionsMet));
+        this.entries.add(
+                new CatalogEntry(
+                        shownFirstBuy,
+                        secondBuy.copy(),
+                        sell.copy(),
+                        weight,
+                        totalWeight,
+                        this.composedShare,
+                        this.tierPoolSize,
+                        this.tierPicks,
+                        maxUses,
+                        villagerExperience,
+                        priceMultiplier,
+                        demand,
+                        minPrice,
+                        maxPrice,
+                        this.flatConditions,
+                        this.conditionsMet
+                )
+        );
     }
 
     public void addOffer(TradeOffer offer) {
@@ -153,9 +186,17 @@ public final class CatalogBuilder {
     }
 
     public void addOffer(TradeOffer offer, int rawMinPrice, int rawMaxPrice) {
-        add(offer.getOriginalFirstBuyItem(), offer.getDisplayedSecondBuyItem(), offer.getSellItem(),
-                offer.getMaxUses(), offer.getMerchantExperience(), offer.getPriceMultiplier(),
-                offer.getDemandBonus(), rawMinPrice, rawMaxPrice);
+        add(
+                offer.getOriginalFirstBuyItem(),
+                offer.getDisplayedSecondBuyItem(),
+                offer.getSellItem(),
+                offer.getMaxUses(),
+                offer.getMerchantExperience(),
+                offer.getPriceMultiplier(),
+                offer.getDemandBonus(),
+                rawMinPrice,
+                rawMaxPrice
+        );
     }
 
     /// Rolls the factory once with a fixed seed, so the row stays stable when create is random.
@@ -168,7 +209,9 @@ public final class CatalogBuilder {
         if (!(merchant.getEntityWorld() instanceof net.minecraft.server.world.ServerWorld world)) {
             return;
         }
+
         TradeOffer offer = factory.create(world, merchant, Random.create(CATALOG_SEED));
+
         if (offer != null) {
             addOffer(offer);
         }

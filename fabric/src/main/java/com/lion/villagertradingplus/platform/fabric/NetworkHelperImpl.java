@@ -11,8 +11,7 @@ import java.util.function.Consumer;
 
 public final class NetworkHelperImpl {
 
-    private NetworkHelperImpl() {
-    }
+    private NetworkHelperImpl() {}
 
     /// Both sides register payload types, because a client without the codec drops the payload as unknown.
     public static void init() {
@@ -25,7 +24,9 @@ public final class NetworkHelperImpl {
 
     public static void registerCatalogReceiver(Consumer<TradeCatalogPayload> receiver) {
         // The payload is a decoded immutable record, so nothing needs a copy off the network thread.
-        ClientPlayNetworking.registerGlobalReceiver(TradeCatalogPayload.ID,
-                (payload, context) -> context.client().execute(() -> receiver.accept(payload)));
+        ClientPlayNetworking.registerGlobalReceiver(
+                TradeCatalogPayload.ID,
+                (payload, context) -> context.client().execute(() -> receiver.accept(payload))
+        );
     }
 }

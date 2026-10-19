@@ -31,7 +31,8 @@ public class DataPackContentsMixin {
             CommandManager.RegistrationEnvironment environment,
             List<Registry.PendingTagLoad<?>> pendingTagLoads,
             PermissionPredicate permissions,
-            CallbackInfo ci) {
+            CallbackInfo ci
+    ) {
         DatapackRegistries.set(dynamicRegistries.getCombinedRegistryManager());
     }
 }

@@ -31,7 +31,9 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
                     value = "FIELD",
                     target = "Lnet/minecraft/village/TradeOffers;WANDERING_TRADER_TRADES:Ljava/util/List;",
                     opcode = org.objectweb.asm.Opcodes.GETSTATIC))
-    private List<Pair<TradeOffers.Factory[], Integer>> villagertradingplus$mergedPools(List<Pair<TradeOffers.Factory[], Integer>> original) {
+    private List<Pair<TradeOffers.Factory[], Integer>> villagertradingplus$mergedPools(
+            List<Pair<TradeOffers.Factory[], Integer>> original
+    ) {
         if (WanderingTraderTradeLoader.isServedByLoaderEvent()) {
             return original;
         }
@@ -44,6 +46,7 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
         if (!(getEntityWorld() instanceof ServerWorld serverWorld)) {
             return;
         }
+
         TradeOfferList offers = getOffers();
         offers.clear();
 

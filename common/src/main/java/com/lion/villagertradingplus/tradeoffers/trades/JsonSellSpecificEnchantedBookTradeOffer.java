@@ -47,7 +47,14 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack currency, RegistryKey<Enchantment> enchantmentKey, int level, int maxUses, int experience, float multiplier) {
+        public Factory(
+                ItemStack currency,
+                RegistryKey<Enchantment> enchantmentKey,
+                int level,
+                int maxUses,
+                int experience,
+                float multiplier
+        ) {
             this.currency = currency;
             this.enchantmentKey = enchantmentKey;
             this.level = level;
@@ -56,16 +63,25 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
+        public TradeOffer create(
+                net.minecraft.server.world.ServerWorld world,
+                Entity entity,
+                net.minecraft.util.math.random.Random random
+        ) {
             return entity.getEntityWorld().getRegistryManager()
                     .getOrThrow(RegistryKeys.ENCHANTMENT)
                     .getOptional(this.enchantmentKey)
-                    .map(enchantment -> new TradeOffer(
-                            traded(this.currency.copy()),
-                            EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(enchantment, this.level)),
-                            this.maxUses,
-                            this.experience,
-                            this.multiplier))
+                    .map(
+                            enchantment -> new TradeOffer(
+                                    traded(this.currency.copy()),
+                                    EnchantmentHelper.getEnchantedBookWith(
+                                            new EnchantmentLevelEntry(enchantment, this.level)
+                                    ),
+                                    this.maxUses,
+                                    this.experience,
+                                    this.multiplier
+                            )
+                    )
                     .orElseGet(() -> {
                         VillagerTradingPlus.LOGGER.warn("Skipping a sell_specific_enchanted_book offer: unknown enchantment '{}'", this.enchantmentKey.getValue());
                         return null;

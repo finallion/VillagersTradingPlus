@@ -28,6 +28,7 @@ public class WanderingTraderTradeOfferResourceListener extends JsonDataLoader<Js
             if (!jsonElement.isJsonObject()) {
                 return;
             }
+
             VillagerTradingPlus.LOGGER.debug("Deserializing wandering trader trades from: " + identifier);
             TradeOfferManager.deserializeWanderingTraderJson(identifier, jsonElement.getAsJsonObject());
         });

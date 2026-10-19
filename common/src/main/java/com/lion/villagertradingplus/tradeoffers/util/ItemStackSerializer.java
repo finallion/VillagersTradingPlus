@@ -45,8 +45,7 @@ import java.util.Optional;
 /// Raw `nbt` applies last. Bad input throws `TradeParseException`.
 public final class ItemStackSerializer {
 
-    private ItemStackSerializer() {
-    }
+    private ItemStackSerializer() {}
 
     public static ItemStack fromJson(JsonObject json) {
         return fromJson(json, true);
@@ -54,15 +53,16 @@ public final class ItemStackSerializer {
 
     public static ItemStack fromJson(JsonObject json, boolean withCount) {
         JsonElement idElement = json.get("item");
+
         if (idElement == null) {
             throw new TradeParseException("trade item is missing the \"item\" key: " + json);
         }
 
         String id = idElement.getAsString();
         Optional<Item> item = Registries.ITEM.getOptionalValue(Identifier.tryParse(id));
+
         if (item.isEmpty()) {
-            throw new TradeParseException("unknown item id \"" + id
-                    + "\" (is the mod that provides it installed?)");
+            throw new TradeParseException("unknown item id \"" + id + "\" (is the mod that provides it installed?)");
         }
 
         int count = withCount && json.has("count") ? json.get("count").getAsInt() : 1;
@@ -91,8 +91,10 @@ public final class ItemStackSerializer {
 
         // No dyeable check: any item can carry a color, and the game ignores it where it does not render one.
         if (json.has("color")) {
-            stack.set(DataComponentTypes.DYED_COLOR,
-                    new DyedColorComponent(parseColor(json.get("color").getAsString())));
+            stack.set(
+                    DataComponentTypes.DYED_COLOR,
+                    new DyedColorComponent(parseColor(json.get("color").getAsString()))
+            );
         }
 
         if (json.has("potion")) {
@@ -101,13 +103,20 @@ public final class ItemStackSerializer {
             Optional<RegistryEntry.Reference<Potion>> potion = potionId == null
                     ? Optional.empty()
                     : Registries.POTION.getEntry(potionId);
-            stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(
-                    potion.orElseThrow(() -> new TradeParseException("unknown potion id \"" + rawPotion + "\" on a trade item"))));
+            stack.set(
+                    DataComponentTypes.POTION_CONTENTS,
+                    new PotionContentsComponent(
+                            potion.orElseThrow(
+                                    () -> new TradeParseException(
+                                            "unknown potion id \"" + rawPotion + "\" on a trade item"
+                                    )
+                            )
+                    )
+            );
         }
 
         if (json.has("skull_owner")) {
-            stack.set(DataComponentTypes.PROFILE,
-                    ProfileComponent.ofDynamic(json.get("skull_owner").getAsString()));
+            stack.set(DataComponentTypes.PROFILE, ProfileComponent.ofDynamic(json.get("skull_owner").getAsString()));
         }
 
         if (json.has("book")) {
@@ -123,10 +132,12 @@ public final class ItemStackSerializer {
     /// Enchantments are a dynamic registry, so the ids resolve against the registry loaded for this world.
     private static void applyEnchantments(ItemStack stack, JsonArray enchantments) {
         Optional<Registry<Enchantment>> registry = DatapackRegistries.registry(RegistryKeys.ENCHANTMENT);
+
         if (registry.isEmpty()) {
             VillagerTradingPlus.LOGGER.error(
                     "Cannot resolve \"enchantments\" on a trade item: no datapack registries are loaded. "
-                            + "The item stays unenchanted.");
+                            + "The item stays unenchanted."
+            );
             return;
         }
 
@@ -137,6 +148,7 @@ public final class ItemStackSerializer {
 
         for (JsonElement element : enchantments) {
             JsonObject entry = element.getAsJsonObject();
+
             if (!entry.has("id")) {
                 VillagerTradingPlus.LOGGER.error("Enchantment on a trade item is missing its \"id\": {}", entry);
                 continue;
@@ -175,14 +187,17 @@ public final class ItemStackSerializer {
         String author = book.has("author") ? book.get("author").getAsString() : "";
 
         List<RawFilteredPair<Text>> pages = new ArrayList<>();
+
         if (book.has("pages")) {
             for (JsonElement page : book.getAsJsonArray("pages")) {
                 pages.add(RawFilteredPair.of(parseText(page)));
             }
         }
 
-        stack.set(DataComponentTypes.WRITTEN_BOOK_CONTENT,
-                new WrittenBookContentComponent(RawFilteredPair.of(title), author, 0, pages, true));
+        stack.set(
+                DataComponentTypes.WRITTEN_BOOK_CONTENT,
+                new WrittenBookContentComponent(RawFilteredPair.of(title), author, 0, pages, true)
+        );
     }
 
     /// Runs the raw tag through the vanilla data fixer, so legacy SNBT keys land in the right components.
@@ -202,10 +217,12 @@ public final class ItemStackSerializer {
 
     private static Optional<ComponentChanges> componentize(ItemStack stack, NbtCompound tag) {
         Optional<RegistryWrapper.WrapperLookup> lookup = DatapackRegistries.lookup();
+
         if (lookup.isEmpty()) {
             VillagerTradingPlus.LOGGER.error(
                     "Cannot convert the \"nbt\" of a trade item: no datapack registries are loaded. "
-                            + "The item is used without it.");
+                            + "The item is used without it."
+            );
             return Optional.empty();
         }
 
@@ -215,11 +232,13 @@ public final class ItemStackSerializer {
         old.putInt("Count", 1);
         old.put("tag", tag);
 
-        Dynamic<NbtElement> fixed = Schemas.getFixer().update(
-                TypeReferences.ITEM_STACK,
-                new Dynamic<>(NbtOps.INSTANCE, old),
-                RAW_NBT_DATA_VERSION,
-                SharedConstants.getGameVersion().dataVersion().id());
+        Dynamic<NbtElement> fixed = Schemas.getFixer()
+                .update(
+                        TypeReferences.ITEM_STACK,
+                        new Dynamic<>(NbtOps.INSTANCE, old),
+                        RAW_NBT_DATA_VERSION,
+                        SharedConstants.getGameVersion().dataVersion().id()
+                );
 
         // Components can reference dynamic registries, so plain NbtOps cannot read the fixed stack back.
         RegistryOps<NbtElement> ops = RegistryOps.of(NbtOps.INSTANCE, lookup.get());
@@ -235,12 +254,15 @@ public final class ItemStackSerializer {
         if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
             String raw = element.getAsString();
             String trimmed = raw.trim();
+
             if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
                 Text parsed = decodeText(com.google.gson.JsonParser.parseString(raw));
+
                 if (parsed != null) {
                     return parsed;
                 }
             }
+
             return Text.literal(raw);
         }
 
@@ -258,12 +280,15 @@ public final class ItemStackSerializer {
 
     private static int parseColor(String value) {
         String trimmed = value.trim();
+
         if (trimmed.startsWith("#")) {
             return Integer.parseInt(trimmed.substring(1), 16);
         }
+
         if (trimmed.startsWith("0x") || trimmed.startsWith("0X")) {
             return Integer.parseInt(trimmed.substring(2), 16);
         }
+
         return Integer.parseInt(trimmed);
     }
 }

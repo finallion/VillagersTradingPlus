@@ -38,7 +38,11 @@ public class JsonSellItemTradeOffer extends JsonTradeOffer {
             this.demand = demand;
         }
 
-        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
+        public TradeOffer create(
+                net.minecraft.server.world.ServerWorld world,
+                Entity entity,
+                net.minecraft.util.math.random.Random random
+        ) {
             return new TradeOffer(traded(currency), tradedOrEmpty(net.minecraft.item.ItemStack.EMPTY), sell, 0, this.maxUses, this.experience, multiplier, this.demand);
         }
     }

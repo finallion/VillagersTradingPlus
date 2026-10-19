@@ -50,6 +50,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         boolean allowReroll = VillagerTradingPlus.CONFIG.allow_trade_reroll;
         boolean allowSetLevel = VillagerTradingPlus.CONFIG.allow_set_villager_level;
         boolean allowView = VillagerTradingPlus.CONFIG.allow_view_all_trades;
+
         if (!allowReroll && !allowSetLevel && !allowView) {
             return;
         }
@@ -73,6 +74,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         int w;
         int baseX;
         int row;
+
         if (gutter >= minWidth) {
             w = Math.min(maxWidth, gutter);
             baseX = this.x + this.backgroundWidth + gap;
@@ -83,6 +85,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
             baseX = Math.max(margin, Math.min(this.x, this.width - w - margin));
             row = Math.min(this.y + this.backgroundHeight + 4, this.height - rows * step - margin);
         }
+
         row = Math.max(margin, row);
 
         // The full labels clip below about 74px, so the short variants apply.
@@ -90,56 +93,90 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
 
         // The arrows shrink with the labels, so the readout between them keeps a usable width.
         int arrowWidth = villagertradingplus$shortLabels ? 16 : 20;
-        villagertradingplus$levelDisplay = addDrawableChild(ButtonWidget.builder(villagertradingplus$levelText(), b -> {})
-                .dimensions(baseX + arrowWidth + 4, row, w - 2 * arrowWidth - 8, 20).build());
+        villagertradingplus$levelDisplay = addDrawableChild(
+                ButtonWidget.builder(villagertradingplus$levelText(), b -> {})
+                        .dimensions(baseX + arrowWidth + 4, row, w - 2 * arrowWidth - 8, 20)
+                        .build()
+        );
         villagertradingplus$levelDisplay.active = false;
-        addDrawableChild(ButtonWidget.builder(Text.literal("<"),
-                b -> villagertradingplus$changeLevel(-1)).dimensions(baseX, row, arrowWidth, 20).build());
-        addDrawableChild(ButtonWidget.builder(Text.literal(">"),
-                b -> villagertradingplus$changeLevel(1)).dimensions(baseX + w - arrowWidth, row, arrowWidth, 20).build());
+        addDrawableChild(
+                ButtonWidget.builder(Text.literal("<"), b -> villagertradingplus$changeLevel(-1))
+                        .dimensions(baseX, row, arrowWidth, 20)
+                        .build()
+        );
+        addDrawableChild(
+                ButtonWidget.builder(Text.literal(">"), b -> villagertradingplus$changeLevel(1))
+                        .dimensions(baseX + w - arrowWidth, row, arrowWidth, 20)
+                        .build()
+        );
         row += step;
 
         if (allowSetLevel) {
-            villagertradingplus$setLevelButton = addDrawableChild(ButtonWidget.builder(
+            villagertradingplus$setLevelButton = addDrawableChild(
+                    ButtonWidget.builder(
                             villagertradingplus$label("set_level"),
-                            b -> villagertradingplus$click(100 + villagertradingplus$level))
-                    .dimensions(baseX, row, w, 20).build());
+                            b -> villagertradingplus$click(100 + villagertradingplus$level)
+                    )
+                            .dimensions(baseX, row, w, 20)
+                            .build()
+            );
             row += step;
         }
 
         if (allowReroll) {
-            villagertradingplus$rerollLevelButton = addDrawableChild(ButtonWidget.builder(
+            villagertradingplus$rerollLevelButton = addDrawableChild(
+                    ButtonWidget.builder(
                             villagertradingplus$label("reroll_level"),
-                            b -> villagertradingplus$click(110 + villagertradingplus$level))
-                    .dimensions(baseX, row, w, 20).build());
+                            b -> villagertradingplus$click(110 + villagertradingplus$level)
+                    )
+                            .dimensions(baseX, row, w, 20)
+                            .build()
+            );
             row += step;
-            addDrawableChild(ButtonWidget.builder(
+            addDrawableChild(
+                    ButtonWidget.builder(
                             villagertradingplus$shortLabels
                                     ? Text.translatable("gui.villagertradingplus.reroll_all_short")
                                     : Text.translatable("gui.villagertradingplus.reroll_all"),
-                            b -> villagertradingplus$click(120))
-                    .dimensions(baseX, row, w, 20).build());
+                            b -> villagertradingplus$click(120)
+                    )
+                            .dimensions(baseX, row, w, 20)
+                            .build()
+            );
             row += step;
         }
 
         if (allowView) {
-            villagertradingplus$catalogButton = addDrawableChild(ButtonWidget.builder(
+            villagertradingplus$catalogButton = addDrawableChild(
+                    ButtonWidget.builder(
                             villagertradingplus$label("catalog_button"),
-                            b -> villagertradingplus$toggleCatalog())
-                    .dimensions(baseX, row, w, 20).build());
+                            b -> villagertradingplus$toggleCatalog()
+                    )
+                            .dimensions(baseX, row, w, 20)
+                            .build()
+            );
         }
     }
 
     @Unique
     private Text villagertradingplus$label(String key) {
-        return Text.translatable("gui.villagertradingplus." + key + (villagertradingplus$shortLabels ? "_short" : ""),
-                villagertradingplus$level);
+        return Text.translatable(
+                "gui.villagertradingplus." + key + (villagertradingplus$shortLabels ? "_short" : ""),
+                villagertradingplus$level
+        );
     }
 
     /// MerchantScreen.render has no bounds check, and a shorter offer list can leave the selection past the end.
     @Inject(method = "render", at = @At("HEAD"))
-    private void villagertradingplus$clampSelectedIndex(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void villagertradingplus$clampSelectedIndex(
+            DrawContext context,
+            int mouseX,
+            int mouseY,
+            float delta,
+            CallbackInfo ci
+    ) {
         int size = this.getScreenHandler().getRecipes().size();
+
         if (this.selectedIndex >= size) {
             this.selectedIndex = Math.max(0, size - 1);
         }
@@ -147,20 +184,34 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
 
     /// Drawn at TAIL, after the vanilla tooltip and the control buttons.
     @Inject(method = "render", at = @At("TAIL"))
-    private void villagertradingplus$renderCatalog(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void villagertradingplus$renderCatalog(
+            DrawContext context,
+            int mouseX,
+            int mouseY,
+            float delta,
+            CallbackInfo ci
+    ) {
         if (this.villagertradingplus$catalog == null) {
             return;
         }
+
         villagertradingplus$layoutCatalog();
         this.villagertradingplus$catalog.render(context, mouseX, mouseY);
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void villagertradingplus$catalogClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+    private void villagertradingplus$catalogClick(
+            double mouseX,
+            double mouseY,
+            int button,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
         if (this.villagertradingplus$catalog == null) {
             return;
         }
+
         villagertradingplus$layoutCatalog();
+
         if (!this.villagertradingplus$catalog.isOver(mouseX, mouseY)) {
             return;
         }
@@ -170,20 +221,29 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         ((HandledScreenAccessor) this).villagertradingplus$setCancelNextRelease(true);
 
         int id = this.villagertradingplus$catalog.mouseClicked(mouseX, mouseY);
+
         if (id >= 0) {
             villagertradingplus$click(id);
         }
+
         cir.setReturnValue(true);
     }
 
     /// Vanilla scrolls the trade list from anywhere on screen and never calls super, so the panel claims the wheel.
     @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
-    private void villagertradingplus$catalogScroll(double mouseX, double mouseY, double horizontalAmount,
-                                                  double verticalAmount, CallbackInfoReturnable<Boolean> cir) {
+    private void villagertradingplus$catalogScroll(
+            double mouseX,
+            double mouseY,
+            double horizontalAmount,
+            double verticalAmount,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
         if (this.villagertradingplus$catalog == null) {
             return;
         }
+
         villagertradingplus$layoutCatalog();
+
         if (this.villagertradingplus$catalog.isOver(mouseX, mouseY)) {
             this.villagertradingplus$catalog.mouseScrolled(verticalAmount);
             cir.setReturnValue(true);
@@ -198,6 +258,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
     @Unique
     private void villagertradingplus$toggleCatalog() {
         int id = this.villagertradingplus$catalog.toggle(this.villagertradingplus$level);
+
         if (id >= 0) {
             villagertradingplus$click(id);
         }
@@ -206,15 +267,19 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
     @Unique
     private void villagertradingplus$changeLevel(int delta) {
         villagertradingplus$level = MathHelper.clamp(villagertradingplus$level + delta, 1, 5);
+
         if (villagertradingplus$levelDisplay != null) {
             villagertradingplus$levelDisplay.setMessage(villagertradingplus$levelText());
         }
+
         if (villagertradingplus$setLevelButton != null) {
             villagertradingplus$setLevelButton.setMessage(villagertradingplus$label("set_level"));
         }
+
         if (villagertradingplus$rerollLevelButton != null) {
             villagertradingplus$rerollLevelButton.setMessage(villagertradingplus$label("reroll_level"));
         }
+
         if (villagertradingplus$catalogButton != null) {
             villagertradingplus$catalogButton.setMessage(villagertradingplus$label("catalog_button"));
         }
@@ -228,6 +293,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
     @Unique
     private void villagertradingplus$click(int id) {
         MinecraftClient client = MinecraftClient.getInstance();
+
         if (client.interactionManager != null) {
             client.interactionManager.clickButton(this.getScreenHandler().syncId, id);
         }

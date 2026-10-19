@@ -50,7 +50,15 @@ public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack sell, ItemStack currency, RegistryKey<Enchantment> enchantmentKey, int level, int maxUses, int experience, float multiplier) {
+        public Factory(
+                ItemStack sell,
+                ItemStack currency,
+                RegistryKey<Enchantment> enchantmentKey,
+                int level,
+                int maxUses,
+                int experience,
+                float multiplier
+        ) {
             this.sell = sell;
             this.currency = currency;
             this.enchantmentKey = enchantmentKey;
@@ -60,7 +68,11 @@ public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
+        public TradeOffer create(
+                net.minecraft.server.world.ServerWorld world,
+                Entity entity,
+                net.minecraft.util.math.random.Random random
+        ) {
             Optional<RegistryEntry.Reference<Enchantment>> enchantment = entity.getEntityWorld().getRegistryManager()
                     .getOrThrow(RegistryKeys.ENCHANTMENT)
                     .getOptional(this.enchantmentKey);
