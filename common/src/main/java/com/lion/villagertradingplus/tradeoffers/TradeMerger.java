@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-/// Fabric writes the table on every reload.
 /// Forge and NeoForge stage the trades and hand them to the loader trade events instead.
 public final class TradeMerger {
 
@@ -28,7 +27,6 @@ public final class TradeMerger {
 
     private TradeMerger() {}
 
-    /// The first call only takes the vanilla snapshot.
     public static void resetToVanilla() {
         if (vanilla == null) {
             vanilla = new HashMap<>();

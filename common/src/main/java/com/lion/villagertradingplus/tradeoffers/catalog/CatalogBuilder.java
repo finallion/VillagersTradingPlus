@@ -16,16 +16,11 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-/// Accumulates catalogue rows while CatalogExpansion walks a tier's factory pool.
-/// Row metadata spans nesting levels, so the builder keeps three scope stacks.
-/// The stacks hold conditions, pool weight and price factor. Each row snapshots them.
-/// Expanders push on the way down and pop on the way back up.
 public final class CatalogBuilder {
 
     /// The 1 MiB CustomPayloadS2CPacket limit bounds the row count.
     public static final int MAX_ENTRIES = 512;
 
-    /// The fixed seed keeps fallback rows stable between opens.
     private static final long CATALOG_SEED = 0L;
 
     private record ConditionGroup(List<ConditionInfo> infos, boolean satisfied) {
@@ -33,11 +28,9 @@ public final class CatalogBuilder {
 
     private final List<CatalogEntry> entries = new ArrayList<>();
 
-    /// {weight, totalWeight} of each enclosing weighted_pool, innermost last.
     private final Deque<int[]> weightStack = new ArrayDeque<>();
     private final List<ConditionGroup> conditionStack = new ArrayList<>();
 
-    /// Saved composed values, restored on pop. Snapshots avoid float drift from division.
     private final Deque<Float> shareStack = new ArrayDeque<>();
     private final Deque<Float> priceFactorStack = new ArrayDeque<>();
 
@@ -66,7 +59,6 @@ public final class CatalogBuilder {
         refreshConditions();
     }
 
-    /// The weight is shown verbatim and folded into the row probability.
     public void pushWeight(int weight, int totalWeight) {
         this.weightStack.addLast(new int[]{weight, totalWeight});
         pushShare(totalWeight > 0 ? (float) weight / totalWeight : 1.0f);
@@ -77,7 +69,6 @@ public final class CatalogBuilder {
         popShare();
     }
 
-    /// Narrows the row probability without a JSON weight, for uniform splits such as one enchantment of forty.
     public void pushShare(float share) {
         this.shareStack.addLast(this.composedShare);
         this.composedShare *= share;
@@ -91,7 +82,6 @@ public final class CatalogBuilder {
         }
     }
 
-    /// Nested gates must all open, so a row lists the conditions of every enclosing group.
     public void pushConditions(List<ConditionInfo> infos, boolean satisfied) {
         this.conditionStack.add(new ConditionGroup(infos, satisfied));
         refreshConditions();
@@ -104,7 +94,6 @@ public final class CatalogBuilder {
         }
     }
 
-    /// Factors compose multiplicatively, so the catalogue matches a generated offer at any nesting depth.
     public void pushPriceFactor(float factor) {
         this.priceFactorStack.addLast(this.composedPriceFactor);
         this.composedPriceFactor *= factor;
@@ -131,7 +120,6 @@ public final class CatalogBuilder {
         add(firstBuy, secondBuy, sell, maxUses, villagerExperience, priceMultiplier, demand, price, price);
     }
 
-    /// Raw prices are before the pricing factor. The displayed stack shows the low end.
     public void add(
             ItemStack firstBuy,
             ItemStack secondBuy,
@@ -199,7 +187,6 @@ public final class CatalogBuilder {
         );
     }
 
-    /// Rolls the factory once with a fixed seed, so the row stays stable when create is random.
     public void addSampled(TradeOffers.Factory factory, Entity merchant) {
         if (isStructureMapFactory(factory)) {
             countSkipped(1);

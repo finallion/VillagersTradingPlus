@@ -52,7 +52,6 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
                 net.minecraft.util.math.random.Random random
         ) {
             int power = MIN_POWER + random.nextInt(MAX_POWER - MIN_POWER + 1);
-            // The in_enchanting_table tag defines the pool. The copy keeps count and name, lore or component sugar.
             ItemStack itemStack = EnchantmentHelper.enchant(
                     random,
                     this.sell.copy(),

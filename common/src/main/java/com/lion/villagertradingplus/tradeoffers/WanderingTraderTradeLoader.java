@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 
 /// Vanilla lists three pools in this order: buying, rare, common.
-/// Tier 1 is the common pool. Tier 2 is the rare pool.
 /// The vanilla list is immutable, so `WanderingTraderMixin` serves the merged pools instead.
 /// Reloads start from the vanilla snapshot, so trades never duplicate.
 public final class WanderingTraderTradeLoader {
@@ -139,7 +138,7 @@ public final class WanderingTraderTradeLoader {
             List<TradeOffers.Factory> extra = accumulator.getOrDefault(level, List.of());
             TradeOffers.Factory[] merged = ArrayUtils.addAll(base, extra.toArray(new TradeOffers.Factory[0]));
 
-            // Vanilla picks from the rare pool with nextInt(length), so a tier must never be empty.
+            // Vanilla picks from the rare pool with nextInt(length). An empty tier throws.
             if (merged.length == 0) {
                 merged = vanillaBaseline.getOrDefault(level, new TradeOffers.Factory[0]);
             }
@@ -191,7 +190,6 @@ public final class WanderingTraderTradeLoader {
         return buyingPair;
     }
 
-    /// The common tier follows the config.
     public static int countForLevel(int level) {
         ensureBaseline();
         return level == COMMON_LEVEL

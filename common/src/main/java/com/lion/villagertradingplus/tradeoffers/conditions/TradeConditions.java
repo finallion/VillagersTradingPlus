@@ -33,15 +33,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.IntPredicate;
 
-/// Registry and parser for the conditions block of a trade.
-/// Conditions combine with AND, or with OR when a logic marker precedes the array.
-/// An unknown type fails closed and logs, so the trade is withheld.
-/// Each type registers a describer, so the catalogue can name the gate.
 public final class TradeConditions {
 
     private static final Map<String, ConditionType> REGISTRY = new HashMap<>();
 
-    /// Entries named before the rest collapse into a count.
     private static final int DESCRIBE_LIST_LIMIT = 3;
 
     private static final Set<String> WEATHER_STATES = Set.of("clear", "rain", "thunder");
@@ -70,7 +65,6 @@ public final class TradeConditions {
 
     private TradeConditions() {}
 
-    /// Registers a type with a generic description. Prefer the three-argument overload.
     public static void register(String type, Function<JsonObject, TradeCondition> factory) {
         register(type, factory, json -> Text.translatable("condition.villagertradingplus.generic", type));
     }
@@ -83,7 +77,6 @@ public final class TradeConditions {
         REGISTRY.put(type, new ConditionType(factory, describer));
     }
 
-    /// Combines the conditions with AND by default. Setting logic to or on the owning trade switches to OR.
     public static ParsedConditions parse(JsonArray conditions) {
         return parse(conditions, false);
     }
@@ -96,15 +89,13 @@ public final class TradeConditions {
             ConditionType conditionType = REGISTRY.get(type);
 
             if (conditionType == null) {
-                // Withheld rather than skipped, because offering the trade ungated is the more harmful guess.
                 VillagerTradingPlus.LOGGER.error("Unknown trade condition type: " + type + " -- this trade will be withheld.");
                 parsed.add(new ParsedConditions.Entry(
                         Text.translatable("condition.villagertradingplus.unknown", type),
-                        villager -> false)); // fail closed
+                        villager -> false));
                 continue;
             }
 
-            // Parse first, so a malformed condition fails with one clean message.
             TradeCondition condition = conditionType.parser().apply(obj);
             parsed.add(new ParsedConditions.Entry(describeSafely(conditionType, obj, type), condition));
         }
@@ -112,7 +103,6 @@ public final class TradeConditions {
         return new ParsedConditions(List.copyOf(parsed), orLogic);
     }
 
-    /// A failing describer falls back to the bare type name, so trade loading survives.
     private static Text describeSafely(ConditionType type, JsonObject json, String typeName) {
         try {
             return type.describer().apply(json);
@@ -186,7 +176,7 @@ public final class TradeConditions {
         return villager -> villager.getEntityWorld().isDay() == wantDay;
     }
 
-    /// The phase index names the lunar day only, so by default the condition also requires night.
+    /// The lunar day also covers daylight, so night is required by default.
     private static TradeCondition parseMoonPhase(JsonObject json) {
         Set<Integer> phases = new HashSet<>();
         for (JsonElement element : JsonFields.requireArray(json, "\"moon_phase\" condition", "phases")) {
@@ -229,7 +219,6 @@ public final class TradeConditions {
         }
     }
 
-    /// Boolean rule name from a datapack and the registry path it maps to.
     private record LegacyRule(String path, boolean inverted) {
         static LegacyRule of(String path) {
             return new LegacyRule(path, false);
@@ -313,7 +302,7 @@ public final class TradeConditions {
                 && serverWorld.getGameRules().getValue(key) == wanted;
     }
 
-    // Fire rules use one int radius: 0 is off, -1 is everywhere, else near players only.
+    /// Fire rules use one int radius: 0 is off, -1 is everywhere, else near players only.
     private static TradeCondition fireSpreadCondition(IntPredicate test, boolean expected) {
         GameRule<Integer> radius = GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER;
         return villager -> villager.getEntityWorld() instanceof ServerWorld serverWorld

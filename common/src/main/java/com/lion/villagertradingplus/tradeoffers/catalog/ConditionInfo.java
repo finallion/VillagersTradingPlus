@@ -4,7 +4,6 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextCodecs;
 
-/// One condition of a catalogued trade: what it requires and whether it holds currently.
 /// The satisfied flag is a snapshot, because weather and time conditions change.
 public record ConditionInfo(Text description, boolean satisfied) {
 

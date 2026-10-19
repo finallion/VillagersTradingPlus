@@ -10,17 +10,15 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import java.util.function.Consumer;
 
-/// NeoForge networking. Payload types register in RegisterPayloadHandlersEvent on the mod bus, so init() does nothing.
+/// NeoForge registers payload types inside `RegisterPayloadHandlersEvent`, so [#init] does nothing.
 public final class NetworkHelperImpl {
 
-    /// Bump it when the payload format changes incompatibly. NeoForge refuses mismatched clients.
     private static final String PROTOCOL_VERSION = "1";
 
     private static Consumer<TradeCatalogPayload> catalogReceiver;
 
     private NetworkHelperImpl() {}
 
-    /// Registration happens in register(RegisterPayloadHandlersEvent).
     public static void init() {
     }
 

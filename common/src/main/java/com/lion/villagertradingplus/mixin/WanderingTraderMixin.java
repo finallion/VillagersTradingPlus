@@ -16,7 +16,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 
 import java.util.List;
 
-// Extends MerchantEntity for the same reason as VillagerEntityMixin.
 @Mixin(WanderingTraderEntity.class)
 public abstract class WanderingTraderMixin extends MerchantEntity implements TradeControl {
 

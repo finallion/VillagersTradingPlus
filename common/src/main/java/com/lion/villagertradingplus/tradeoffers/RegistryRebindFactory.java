@@ -17,9 +17,7 @@ import net.minecraft.village.TradeOffers;
 
 import java.util.Optional;
 
-/// Binds the enchantments of an offer to the registry of the world it is traded in.
 /// An enchantment entry encodes by identity in the receiving connection's registry, so a stale entry is unencodable.
-/// Item sugar binds entries at parse time. This factory re-resolves them for each created offer.
 /// Only the sell stack is rebound, because the buy side is a ComponentMapPredicate that cannot be rebuilt losslessly.
 public final class RegistryRebindFactory implements TradeOffers.Factory {
 
@@ -33,7 +31,6 @@ public final class RegistryRebindFactory implements TradeOffers.Factory {
         return delegate == null ? null : new RegistryRebindFactory(delegate);
     }
 
-    /// Exposed so the catalogue can walk past this wrapper.
     public TradeOffers.Factory delegate() {
         return this.delegate;
     }
@@ -66,7 +63,6 @@ public final class RegistryRebindFactory implements TradeOffers.Factory {
         );
     }
 
-    /// Drops an enchantment that the world lacks, because an unencodable entry disconnects the player.
     private static boolean rebind(
             ItemStack stack,
             ComponentType<ItemEnchantmentsComponent> type,
