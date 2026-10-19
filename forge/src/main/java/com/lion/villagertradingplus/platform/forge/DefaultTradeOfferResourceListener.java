@@ -3,6 +3,7 @@ package com.lion.villagertradingplus.platform.forge;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.lion.villagertradingplus.VillagerTradingPlus;
+import com.lion.villagertradingplus.tradeoffers.TradeMerger;
 import com.lion.villagertradingplus.tradeoffers.TradeOfferManager;
 import com.lion.villagertradingplus.tradeoffers.TradeOfferRegistryLoader;
 import net.minecraft.resource.JsonDataLoader;
@@ -10,7 +11,6 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraft.village.TradeOffers;
 
 import java.util.Map;
 
@@ -32,11 +32,15 @@ public class DefaultTradeOfferResourceListener extends JsonDataLoader implements
             // The file name, not a field out of the file. Reading the JSON here would put an
             // unguarded access in front of the guard inside deserializeJson - which is exactly how
             // a file without a "profession" key used to abort the whole resource reload.
-            VillagerTradingPlus.LOGGER.info("Deserializing default trades from: {}", identifier);
+            VillagerTradingPlus.LOGGER.debug("Deserializing default trades from: {}", identifier);
 
-            TradeOfferManager.deserializeJson(jsonElement.getAsJsonObject());
+            TradeOfferManager.deserializeJson(identifier, jsonElement.getAsJsonObject());
         });
 
-        TradeOffers.PROFESSION_TO_LEVELED_TRADE.putAll(TradeOfferRegistryLoader.getRegistryForLoading());
+        TradeMerger.stageDefaults(TradeOfferRegistryLoader.getRegistryForLoading());
+
+        if (ForgeTradeEvents.isServerRunning()) {
+            TradeMerger.installStagedDefaults();
+        }
     }
 }

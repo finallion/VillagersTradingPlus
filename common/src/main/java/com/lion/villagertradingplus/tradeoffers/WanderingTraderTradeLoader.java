@@ -12,20 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Merges mod-defined JSON trades into the vanilla wandering-trader pool
- * ({@link TradeOffers#WANDERING_TRADER_TRADES}). That pool has two tiers: level 1 ("common",
- * several are picked) and level 2 ("rare", one is picked).
- *
- * <p>Kept idempotent across resource reloads by snapshotting the vanilla pool once and rebuilding
- * from that snapshot every reload, so trades are never duplicated. A file may set {@code replace}
- * to swap out the vanilla trades for a tier instead of adding to them; a tier is never left empty
- * (that would crash vanilla's rare-pick), so replacing a tier you defined no trades for keeps
- * vanilla.
- */
+/// Level 1 is the common pool. Level 2 is the rare pool.
+/// Reloads start from the vanilla snapshot, so trades never duplicate.
 public final class WanderingTraderTradeLoader {
 
-    /** JSON tier names mapped to the vanilla wandering-trader pool levels. */
     public static final Map<String, Integer> LEVEL_MAPPING = new HashMap<>();
 
     static {
@@ -36,6 +26,8 @@ public final class WanderingTraderTradeLoader {
     private static Int2ObjectMap<TradeOffers.Factory[]> vanillaBaseline = null;
     private static final Map<Integer, List<TradeOffers.Factory>> accumulator = new HashMap<>();
     private static boolean replaceVanilla = false;
+    private static volatile Map<Integer, List<TradeOffers.Factory>> stagedTrades = Map.of();
+    private static volatile boolean stagedReplace = false;
 
     private WanderingTraderTradeLoader() {}
 
@@ -45,7 +37,6 @@ public final class WanderingTraderTradeLoader {
         }
     }
 
-    /** Resets accumulated state at the start of a reload. Call before deserializing files. */
     public static void begin() {
         ensureBaseline();
         accumulator.clear();
@@ -62,9 +53,30 @@ public final class WanderingTraderTradeLoader {
         accumulator.computeIfAbsent(level, k -> new ArrayList<>()).add(factory);
     }
 
-    /** Rebuilds the wandering-trader pool from the vanilla snapshot plus accumulated mod trades. */
+    public static void stage() {
+        Map<Integer, List<TradeOffers.Factory>> copy = new HashMap<>();
+        accumulator.forEach((level, factories) -> copy.put(level, List.copyOf(factories)));
+        stagedTrades = copy;
+        stagedReplace = replaceVanilla;
+    }
+
+    public static void applyStagedTo(int level, List<TradeOffers.Factory> target) {
+        List<TradeOffers.Factory> staged = stagedTrades.getOrDefault(level, List.of());
+
+        if (staged.isEmpty()) {
+            return;
+        }
+
+        if (stagedReplace) {
+            target.clear();
+        }
+
+        target.addAll(staged);
+    }
+
     public static void apply() {
         ensureBaseline();
+        stage();
 
         Set<Integer> levels = new HashSet<>(accumulator.keySet());
         vanillaBaseline.keySet().forEach(level -> levels.add((int) level));
@@ -77,7 +89,7 @@ public final class WanderingTraderTradeLoader {
             List<TradeOffers.Factory> extra = accumulator.getOrDefault(level, List.of());
             TradeOffers.Factory[] merged = ArrayUtils.addAll(base, extra.toArray(new TradeOffers.Factory[0]));
 
-            // Never leave a tier empty: vanilla's rare pick does random.nextInt(pool.length).
+            // Vanilla picks from the rare pool with nextInt(length), so a tier must never be empty.
             if (merged.length == 0) {
                 merged = vanillaBaseline.getOrDefault(level, new TradeOffers.Factory[0]);
             }

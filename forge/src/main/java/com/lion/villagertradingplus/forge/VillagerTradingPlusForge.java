@@ -3,6 +3,7 @@ package com.lion.villagertradingplus.forge;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.VillagerTradingPlusClient;
 import com.lion.villagertradingplus.platform.forge.DefaultTradeOfferResourceListener;
+import com.lion.villagertradingplus.platform.forge.ForgeTradeEvents;
 import com.lion.villagertradingplus.platform.forge.TradeOfferResourceListener;
 import com.lion.villagertradingplus.platform.forge.WanderingTraderTradeOfferResourceListener;
 import net.minecraftforge.api.distmarker.Dist;
@@ -23,6 +24,7 @@ public class VillagerTradingPlusForge {
 		}
 
 		MinecraftForge.EVENT_BUS.addListener(VillagerTradingPlusForge::registerResourceReloader);
+		ForgeTradeEvents.register();
 	}
 
 	private static void registerResourceReloader(AddReloadListenerEvent event) {

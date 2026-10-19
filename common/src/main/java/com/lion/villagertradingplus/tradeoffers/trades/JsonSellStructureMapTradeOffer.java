@@ -64,11 +64,17 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
                     ItemStack itemStack = FilledMapItem.createMap(serverWorld, blockPos.getX(), blockPos.getZ(), (byte)2, true, true);
                     FilledMapItem.fillExplorationMap(serverWorld, itemStack);
                     MapState.addDecorationsNbt(itemStack, blockPos, "+", MapIcon.Type.RED_X);
-                    itemStack.setCustomName(Text.translatable(this.nameKey));
+                    nameMap(itemStack);
                     return new TradeOffer(currency, buy, itemStack, this.maxUses, this.experience, this.multiplier);
                 } else {
                     return null;
                 }
+            }
+        }
+
+        private void nameMap(ItemStack map) {
+            if (!this.nameKey.isEmpty()) {
+                map.setCustomName(Text.translatable(this.nameKey));
             }
         }
 
@@ -82,7 +88,7 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             ItemStack map = new ItemStack(Items.FILLED_MAP);
-            map.setCustomName(Text.translatable(this.nameKey));
+            nameMap(map);
             out.add(this.currency, this.buy, map, this.maxUses, this.experience, this.multiplier, 0);
         }
     }

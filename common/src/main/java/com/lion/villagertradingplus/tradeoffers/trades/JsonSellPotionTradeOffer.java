@@ -86,7 +86,7 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         }
 
         private ItemStack sellStack(Potion potion) {
-            return PotionUtil.setPotion(new ItemStack(this.sell.getItem(), 1), potion);
+            return PotionUtil.setPotion(new ItemStack(this.sell.getItem(), Math.max(1, this.sell.getCount())), potion);
         }
     }
 }

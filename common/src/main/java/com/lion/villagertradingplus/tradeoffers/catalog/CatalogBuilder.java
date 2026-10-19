@@ -195,6 +195,11 @@ public final class CatalogBuilder {
      * seed, so the row is stable across openings even when {@code create} is random.
      */
     public void addSampled(TradeOffers.Factory factory, Entity merchant) {
+        if (factory instanceof TradeOffers.SellMapFactory) {
+            countSkipped(1);
+            return;
+        }
+
         TradeOffer offer = factory.create(merchant, Random.create(CATALOG_SEED));
         if (offer != null) {
             addOffer(offer);

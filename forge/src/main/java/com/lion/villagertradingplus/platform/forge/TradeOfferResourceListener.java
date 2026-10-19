@@ -35,11 +35,15 @@ public class TradeOfferResourceListener extends JsonDataLoader implements Resour
                 return;
             }
 
-            VillagerTradingPlus.LOGGER.info("Deserializing added trades from: " + identifier);
+            VillagerTradingPlus.LOGGER.debug("Deserializing added trades from: " + identifier);
 
-            TradeOfferManager.deserializeJson(jsonElement.getAsJsonObject());
+            TradeOfferManager.deserializeJson(identifier, jsonElement.getAsJsonObject());
         });
 
-        TradeMerger.mergeIntoVanilla();
+        TradeMerger.stageAdditions();
+
+        if (ForgeTradeEvents.isServerRunning()) {
+            TradeMerger.mergeIntoVanilla();
+        }
     }
 }

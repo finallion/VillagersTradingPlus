@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[37,)"
+loaderVersion = "[47,)"
 license = "CC0-1.0"
 
 [[mods]]
@@ -14,13 +14,13 @@ A library for defining villager and wandering trader trades in JSON, with condit
 [[dependencies.villagertradingplus]]
 modId = "forge"
 mandatory = true
-versionRange = "[41.0.22,)"
+versionRange = "[47.0.0,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.villagertradingplus]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20,)"
+versionRange = "[1.20.1,1.20.2)"
 ordering = "NONE"
 side = "BOTH"

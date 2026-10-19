@@ -3,7 +3,6 @@ package com.lion.villagertradingplus.tradeoffers.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.lion.villagertradingplus.VillagerTradingPlus;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.EnchantedBookItem;
@@ -14,7 +13,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
@@ -22,17 +20,7 @@ import net.minecraft.util.Identifier;
 
 import java.util.Optional;
 
-/**
- * Central item-stack parser for the JSON trade system. Backwards compatible with the original
- * {@code {"item": ..., "count": ...}} shape, plus optional NBT/component sugar:
- * {@code name}, {@code lore}, {@code enchantments}, {@code color}, {@code potion},
- * {@code skull_owner}, {@code book} and a raw {@code nbt} (SNBT) escape hatch applied last.
- *
- * <p>An unresolvable or missing item id raises {@link TradeParseException} so the whole trade is
- * skipped with a logged reason; a blank slot in a villager's trade list is worse than no trade.
- * Malformed sugar (e.g. a bad {@code nbt} string) is still logged and skipped rather than throwing,
- * since the stack itself remains usable.
- */
+/// Raw `nbt` applies last. Bad input throws `TradeParseException`.
 public final class ItemStackSerializer {
 
     private ItemStackSerializer() {
@@ -87,8 +75,14 @@ public final class ItemStackSerializer {
         }
 
         if (json.has("potion")) {
-            Potion potion = Registries.POTION.get(Identifier.tryParse(json.get("potion").getAsString()));
-            PotionUtil.setPotion(stack, potion);
+            String rawPotion = json.get("potion").getAsString();
+            Identifier potionId = Identifier.tryParse(rawPotion);
+
+            if (potionId == null || !Registries.POTION.containsId(potionId)) {
+                throw new TradeParseException("unknown potion id \"" + rawPotion + "\" on a trade item");
+            }
+
+            PotionUtil.setPotion(stack, Registries.POTION.get(potionId));
         }
 
         if (json.has("skull_owner")) {
@@ -119,9 +113,9 @@ public final class ItemStackSerializer {
             JsonObject obj = element.getAsJsonObject();
             Enchantment enchantment = Registries.ENCHANTMENT.get(Identifier.tryParse(obj.get("id").getAsString()));
             if (enchantment == null) {
-                VillagerTradingPlus.LOGGER.error("Unknown enchantment in trade item: " + obj.get("id").getAsString());
-                continue;
+                throw new TradeParseException("unknown enchantment \"" + obj.get("id").getAsString() + "\" on a trade item");
             }
+
             int level = obj.has("lvl") ? obj.get("lvl").getAsInt() : 1;
             if (isBook) {
                 EnchantedBookItem.addEnchantment(stack, new EnchantmentLevelEntry(enchantment, level));
@@ -153,7 +147,7 @@ public final class ItemStackSerializer {
             NbtCompound parsed = StringNbtReader.parse(snbt);
             stack.getOrCreateNbt().copyFrom(parsed);
         } catch (Exception e) {
-            VillagerTradingPlus.LOGGER.error("Failed to parse trade item nbt: " + snbt, e);
+            throw new TradeParseException("invalid \"nbt\" on a trade item: " + snbt + " (" + e.getMessage() + ")");
         }
     }
 

@@ -7,8 +7,11 @@ import com.lion.villagertradingplus.tradeoffers.catalog.CatalogBuilder;
 import com.lion.villagertradingplus.tradeoffers.catalog.CatalogExpansion;
 import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
@@ -30,6 +33,12 @@ import net.minecraft.village.TradeOffers;
  */
 public final class TradeGuiActions {
 
+    private static final int ACTION_COOLDOWN_TICKS = 10;
+    private static final int CATALOG_COOLDOWN_TICKS = 20;
+    private static final Map<ServerPlayerEntity, Integer> LAST_ACTION_TICK = new WeakHashMap<>();
+    private static final Map<ServerPlayerEntity, Integer> LAST_CATALOG_TICK = new WeakHashMap<>();
+    private static final Map<ServerPlayerEntity, PacketByteBuf> LAST_CATALOG = new WeakHashMap<>();
+
     private TradeGuiActions() {
     }
 
@@ -41,6 +50,15 @@ public final class TradeGuiActions {
             if (!cfg.allow_set_villager_level || !(merchant instanceof TradeControl tc) || !tc.villagertradingplus$supportsLevels()) {
                 return false;
             }
+
+            if (!mayControlTrades(player)) {
+                return false;
+            }
+
+            if (isCoolingDown(player, LAST_ACTION_TICK, ACTION_COOLDOWN_TICKS)) {
+                return true;
+            }
+
             tc.villagertradingplus$setLevel(id - 100);
             refresh(player, merchant);
             return true;
@@ -50,6 +68,14 @@ public final class TradeGuiActions {
             if (!cfg.allow_trade_reroll || !(merchant instanceof TradeControl tc)) {
                 return false;
             }
+            if (!mayControlTrades(player)) {
+                return false;
+            }
+
+            if (isCoolingDown(player, LAST_ACTION_TICK, ACTION_COOLDOWN_TICKS)) {
+                return true;
+            }
+
             tc.villagertradingplus$rerollLevel(id - 110);
             refresh(player, merchant);
             return true;
@@ -59,6 +85,14 @@ public final class TradeGuiActions {
             if (!cfg.allow_trade_reroll || !(merchant instanceof TradeControl tc)) {
                 return false;
             }
+            if (!mayControlTrades(player)) {
+                return false;
+            }
+
+            if (isCoolingDown(player, LAST_ACTION_TICK, ACTION_COOLDOWN_TICKS)) {
+                return true;
+            }
+
             tc.villagertradingplus$rerollAll();
             refresh(player, merchant);
             return true;
@@ -68,10 +102,32 @@ public final class TradeGuiActions {
             if (!cfg.allow_view_all_trades) {
                 return false;
             }
+            if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)) {
+                resendLastCatalog(player);
+                return true;
+            }
+
             sendCatalog(player, merchant, id - 130);
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean mayControlTrades(ServerPlayerEntity player) {
+        int required = MathHelper.clamp(VillagerTradingPlus.CONFIG.reroll_permission_level, 0, 4);
+        return required == 0 || player.hasPermissionLevel(required);
+    }
+
+    private static boolean isCoolingDown(ServerPlayerEntity player, Map<ServerPlayerEntity, Integer> lastTicks, int cooldownTicks) {
+        int now = player.getServer().getTicks();
+        Integer previous = lastTicks.get(player);
+
+        if (previous != null && now >= previous && now - previous < cooldownTicks) {
+            return true;
+        }
+
+        lastTicks.put(player, now);
         return false;
     }
 
@@ -90,8 +146,17 @@ public final class TradeGuiActions {
         int level = MathHelper.clamp(requestedLevel, 1, maxLevel);
 
         CatalogBuilder builder = buildCatalog(merchant, level);
-        NetworkHelper.sendToPlayer(player, TradeCatalogPacket.CHANNEL,
-                TradeCatalogPacket.write(level, maxLevel, builder.entries(), builder.skipped()));
+        PacketByteBuf payload = TradeCatalogPacket.write(level, maxLevel, builder.entries(), builder.skipped());
+        LAST_CATALOG.put(player, payload);
+        NetworkHelper.sendToPlayer(player, TradeCatalogPacket.CHANNEL, new PacketByteBuf(payload.copy()));
+    }
+
+    private static void resendLastCatalog(ServerPlayerEntity player) {
+        PacketByteBuf last = LAST_CATALOG.get(player);
+
+        if (last != null) {
+            NetworkHelper.sendToPlayer(player, TradeCatalogPacket.CHANNEL, new PacketByteBuf(last.copy()));
+        }
     }
 
     /** Villagers have five tiers; the wandering trader has two pools (common, rare). */
