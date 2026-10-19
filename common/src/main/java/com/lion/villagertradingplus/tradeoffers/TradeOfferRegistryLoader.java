@@ -47,16 +47,16 @@ public class TradeOfferRegistryLoader {
 
         defaultFiles.forEach((identifier, json) -> {
             if (json.isJsonObject()) {
-                VillagerTradingPlus.LOGGER.info("Deserializing default trades from: {}", identifier);
-                TradeOfferManager.deserializeJson(json.getAsJsonObject());
+                VillagerTradingPlus.LOGGER.debug("Deserializing default trades from: {}", identifier);
+                TradeOfferManager.deserializeJson(identifier, json.getAsJsonObject());
             }
         });
         Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> defaults = drain();
 
         additionFiles.forEach((identifier, json) -> {
             if (json.isJsonObject()) {
-                VillagerTradingPlus.LOGGER.info("Deserializing added trades from: {}", identifier);
-                TradeOfferManager.deserializeJson(json.getAsJsonObject());
+                VillagerTradingPlus.LOGGER.debug("Deserializing added trades from: {}", identifier);
+                TradeOfferManager.deserializeJson(identifier, json.getAsJsonObject());
             }
         });
         TradePools.publish(new TradeSnapshot(defaults, drain()));

@@ -1,6 +1,7 @@
 package com.lion.villagertradingplus.tradeoffers.catalog;
 
 import com.lion.villagertradingplus.tradeoffers.PricingTradeFactory;
+import com.lion.villagertradingplus.tradeoffers.VanillaTradeFactory;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -150,6 +151,11 @@ public final class CatalogBuilder {
 
     /// Rolls the factory once with a fixed seed, so the row stays stable between openings.
     public void addSampled(TradeFactory factory, Entity merchant) {
+        if (factory instanceof VanillaTradeFactory vanilla && vanilla.rollsStructureSearch()) {
+            countSkipped(1);
+            return;
+        }
+
         if (!(merchant.level() instanceof net.minecraft.server.level.ServerLevel world)) {
             return;
         }
