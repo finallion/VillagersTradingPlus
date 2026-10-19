@@ -15,8 +15,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/// Hands the dynamic registries of the world being loaded to [DatapackRegistries].
-/// Trade files parse after item components are bound, which is the end of a reload.
 @Mixin(ReloadableServerResources.class)
 public class DataPackContentsMixin {
 

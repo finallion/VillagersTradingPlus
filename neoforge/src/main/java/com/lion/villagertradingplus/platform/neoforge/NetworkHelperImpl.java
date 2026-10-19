@@ -10,8 +10,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import java.util.function.Consumer;
 
-/// NeoForge networking. Payload types register inside `RegisterPayloadHandlersEvent`,
-/// so [#init] does nothing.
+/// NeoForge registers payload types inside `RegisterPayloadHandlersEvent`, so [#init] does nothing.
 public final class NetworkHelperImpl {
 
     /// NeoForge refuses a client with a different protocol version.

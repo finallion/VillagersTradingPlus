@@ -8,7 +8,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 
-/// Applies the economy tuning to every offer. The price is fixed when the offer is generated.
 public final class PricingTradeFactory implements TradeFactory {
 
     private final TradeFactory delegate;
@@ -61,7 +60,6 @@ public final class PricingTradeFactory implements TradeFactory {
         return this.delegate;
     }
 
-    /// Shared so catalogue rows are priced exactly the way a real generated offer would be.
     public static int scaleCount(int count, int maxCount, float factor) {
         return Mth.clamp(Math.round(count * factor), 1, maxCount);
     }

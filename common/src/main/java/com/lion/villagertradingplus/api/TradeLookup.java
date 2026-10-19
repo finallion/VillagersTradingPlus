@@ -8,7 +8,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 
-/// Read-only view of the trades that VTP and vanilla offer to a profession.
 public final class TradeLookup {
 
     private TradeLookup() {}
@@ -28,7 +27,6 @@ public final class TradeLookup {
         return tradeCount(registries, profession, level) > 0;
     }
 
-    /// True when VTP data replaces the vanilla trade sets of the profession.
     public static boolean isOwnedByVtp(ResourceKey<VillagerProfession> profession) {
         return TradePools.replacesVanillaSet(TradePools.villagerSnapshot(), profession);
     }

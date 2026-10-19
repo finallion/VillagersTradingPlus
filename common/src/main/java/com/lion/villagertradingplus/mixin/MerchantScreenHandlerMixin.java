@@ -12,8 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/// Routes the custom trade-screen button ids to [TradeGuiActions]. Runs on the server only.
-/// Targets `AbstractContainerMenu`, because only that class declares `clickMenuButton`.
 @Mixin(AbstractContainerMenu.class)
 public abstract class MerchantScreenHandlerMixin {
 

@@ -16,7 +16,6 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 
-/// Sells a tool with one fixed enchantment. Unlike `sell_enchanted_tool`, it does not roll.
 public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -82,7 +81,6 @@ public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
                 return null;
             }
 
-            // Copy the sell stack, so name, lore and enchantments survive.
             ItemStack itemStack = this.sell.copy();
             itemStack.enchant(enchantment.get(), this.level);
             return new MerchantOffer(traded(this.currency.copy()), itemStack, this.maxUses, this.experience, this.multiplier);

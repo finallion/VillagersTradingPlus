@@ -15,8 +15,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.trading.MerchantOffer;
 
-/// Binds the enchantments of an offer to the registry of the trading world.
-/// The packet codec finds a [Holder] by identity. A foreign holder fails to encode and the server drops the player.
+/// The codec compares holders by identity. A foreign holder drops the player.
 public final class RegistryRebindFactory implements TradeFactory {
 
     private final TradeFactory delegate;

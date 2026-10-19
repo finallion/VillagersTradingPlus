@@ -52,7 +52,6 @@ public abstract class JsonTradeOffer {
     }
 
     private static void addChanges(DataComponentExactPredicate.Builder builder, DataComponentPatch changes) {
-        // A predicate cannot require that a component is absent, so removed components are skipped.
         for (TypedDataComponent<?> component : changes.split().added()) {
             builder.expect(component);
         }

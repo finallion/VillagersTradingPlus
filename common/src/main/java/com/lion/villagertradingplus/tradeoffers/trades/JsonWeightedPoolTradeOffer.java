@@ -17,7 +17,7 @@ import net.minecraft.world.entity.Entity;
 import com.lion.villagertradingplus.tradeoffers.TradeFactory;
 import net.minecraft.world.item.trading.MerchantOffer;
 
-/// Picks one sub-trade by weight in `create`. A picked sub-trade can yield null.
+/// A picked sub-trade can yield null.
 public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -30,7 +30,7 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
             int weight = readInt(entry, "weight", 1);
             TradeFactory factory = TradeOfferManager.deserializeTrade(entry.getAsJsonObject("trade"));
 
-            // Strip the inner PricingTradeFactory, or the cost scale applies twice.
+            // The inner PricingTradeFactory is stripped, so the cost scale applies once.
             if (factory instanceof PricingTradeFactory pricing) {
                 factory = pricing.delegate();
             }
@@ -55,7 +55,6 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
             this.totalWeight = totalWeight;
         }
 
-        /// Each sub-trade gets its own row, so the catalogue shows what the pool holds.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             for (Entry entry : entries) {

@@ -41,7 +41,6 @@ public final class TradePools {
         return profession.unwrapKey().map(villagers::defines).orElse(false);
     }
 
-    /// True when the VTP pool draws the offers. Otherwise vanilla draws them unchanged.
     public static boolean drawsFromPool(Holder<VillagerProfession> profession) {
         return hasVillagerData(profession)
                 || VillagerTradingPlus.CONFIG.trade_offers_per_level != VANILLA_OFFERS_PER_LEVEL;
@@ -128,7 +127,6 @@ public final class TradePools {
         return key.isPresent() && replacesVanillaSet(snapshot, key.get());
     }
 
-    /// Defaults replace the vanilla trade sets of `minecraft` professions only.
     public static boolean replacesVanillaSet(TradeSnapshot snapshot, ResourceKey<VillagerProfession> key) {
         return "minecraft".equals(key.identifier().getNamespace()) && snapshot.replacesVanilla(key);
     }
@@ -144,7 +142,6 @@ public final class TradePools {
         fillWanderingSet(level, trader, TradeSets.WANDERING_TRADER_COMMON, 1, target);
     }
 
-    /// The pool of a wandering trader tier: 1 is the common set, 2 the uncommon set.
     public static List<TradeFactory> forWanderingTrader(ServerLevel level, int tier) {
         return wanderingPool(level, tier == 2 ? TradeSets.WANDERING_TRADER_UNCOMMON : TradeSets.WANDERING_TRADER_COMMON, tier);
     }

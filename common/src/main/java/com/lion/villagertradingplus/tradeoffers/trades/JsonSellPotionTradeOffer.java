@@ -88,7 +88,6 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             );
         }
 
-        /// The potion pool is a fixed registry scan, so every brewable result gets its own row.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<Holder<Potion>> brewable = brewable(merchant.level());

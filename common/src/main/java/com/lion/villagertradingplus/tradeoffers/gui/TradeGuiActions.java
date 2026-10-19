@@ -144,7 +144,6 @@ public final class TradeGuiActions {
         int level = Mth.clamp(requestedLevel, 1, maxLevel);
 
         CatalogBuilder builder = buildCatalog(merchant, level);
-        // The client joins the packets of one catalogue in order.
         List<TradeCatalogPayload> slices = TradeCatalogPacket.write(
                 player.level().registryAccess(),
                 level,
@@ -164,7 +163,6 @@ public final class TradeGuiActions {
         }
     }
 
-    /// Villagers have five tiers. The wandering trader has two (common and uncommon).
     public static int maxLevel(AbstractVillager merchant) {
         return merchant instanceof Villager ? 5 : 2;
     }

@@ -11,7 +11,6 @@ import net.minecraft.resources.Identifier;
 
 public final class WanderingTraderTradeLoader {
 
-    /// JSON tier names mapped to the tiers of the pool: 1 is the common set, 2 the uncommon set.
     public static final Map<String, Integer> LEVEL_MAPPING = new HashMap<>();
 
     static {

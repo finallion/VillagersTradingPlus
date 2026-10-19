@@ -5,7 +5,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.trading.MerchantOffer;
 
-/// Yields the offer only when the condition passes. A null offer hides the trade.
 public final class ConditionalTradeFactory implements TradeFactory {
 
     private final TradeFactory delegate;
@@ -25,7 +24,6 @@ public final class ConditionalTradeFactory implements TradeFactory {
         return delegate.create(world, entity, random);
     }
 
-    /// The catalogue reads the delegate to list gated trades.
     public TradeFactory delegate() {
         return this.delegate;
     }

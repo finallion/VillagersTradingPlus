@@ -20,7 +20,6 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-/// Lets a vanilla trade from a trade set take part in a VTP pool.
 public final class VanillaTradeFactory implements TradeFactory {
 
     private static final Field GIVEN_ITEM_MODIFIER = findField(VillagerTrade.class, "givenItemModifier");
@@ -36,7 +35,6 @@ public final class VanillaTradeFactory implements TradeFactory {
         this.rollsStructureSearch = givenModifierSearchesStructures(trade.value());
     }
 
-    /// True when rolling this trade runs a structure search, like a vanilla map trade.
     public boolean rollsStructureSearch() {
         return rollsStructureSearch;
     }
@@ -96,7 +94,6 @@ public final class VanillaTradeFactory implements TradeFactory {
         return trade.value().getOffer(context(level, trader, random, randomSequence));
     }
 
-    /// Builds the loot context that vanilla builds before it rolls a trade set.
     public static LootContext context(
             ServerLevel level,
             Entity trader,

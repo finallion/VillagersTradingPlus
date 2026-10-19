@@ -5,7 +5,6 @@ import java.util.List;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
-/// One catalogue row with the metadata that a [MerchantOffer] does not keep.
 public record CatalogEntry(
         ItemStack firstBuy,
         ItemStack secondBuy,
@@ -33,7 +32,7 @@ public record CatalogEntry(
         return this.maxPrice > this.minPrice;
     }
 
-    // The second buy slot is often empty. Only the optional codec accepts an empty stack.
+    /// Only the optional codec accepts an empty second buy slot.
     public void write(RegistryFriendlyByteBuf buf) {
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, this.firstBuy);
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, this.secondBuy);

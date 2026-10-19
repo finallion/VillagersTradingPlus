@@ -9,7 +9,6 @@ import java.util.List;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 
-/// Wire format of a catalogue, sent as a sequence of [TradeCatalogPayload] slices.
 public final class TradeCatalogPacket {
 
     public static final int MAX_SLICE_BYTES = 32 * 1024;
@@ -68,14 +67,12 @@ public final class TradeCatalogPacket {
         return slices;
     }
 
-    /// Joins the slices of one catalogue. Runs on the client thread only.
     public static final class Reassembler {
 
         private final List<byte[]> received = new ArrayList<>();
         private int expected;
         private int size;
 
-        /// A slice with index 0 always starts over.
         @Nullable
         public Payload accept(TradeCatalogPayload slice, RegistryAccess registries) {
             if (slice.index() == 0) {
