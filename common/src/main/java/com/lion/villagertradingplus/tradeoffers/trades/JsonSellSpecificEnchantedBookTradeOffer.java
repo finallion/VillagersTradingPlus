@@ -1,19 +1,19 @@
 package com.lion.villagertradingplus.tradeoffers.trades;
 
 import com.google.gson.JsonObject;
+import com.lion.villagertradingplus.VillagerTradingPlus;
+import com.lion.villagertradingplus.tradeoffers.util.TradeParseException;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Sells an enchanted book with a fixed enchantment at a fixed level (e.g. a guaranteed
@@ -28,12 +28,16 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
 
         ItemStack currency = getItemStackFromJson(json.get("basePriceIn").getAsJsonObject());
 
-        Identifier enchantmentId = Identifier.tryParse(readString(json, "enchantment", "minecraft:unbreaking"));
+        String rawEnchantment = readString(json, "enchantment", "minecraft:unbreaking");
+        Identifier enchantmentId = Identifier.tryParse(rawEnchantment);
+
+        if (enchantmentId == null) {
+            throw new TradeParseException("sell_specific_enchanted_book trade: invalid enchantment id '" + rawEnchantment + "'");
+        }
+
         // Only the key is resolved here. Enchantments live in a dynamic registry since 1.21, so the
         // entry itself does not exist until a world is loaded - and deserialization has no world.
-        RegistryKey<Enchantment> enchantmentKey = enchantmentId == null
-                ? null
-                : RegistryKey.of(RegistryKeys.ENCHANTMENT, enchantmentId);
+        RegistryKey<Enchantment> enchantmentKey = RegistryKey.of(RegistryKeys.ENCHANTMENT, enchantmentId);
         int level = readInt(json, "level", 1);
 
         return new Factory(currency, enchantmentKey, level, maxUses, experience, priceMultiplier);
@@ -41,14 +45,13 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
 
     private static class Factory implements TradeOffers.Factory {
         private final ItemStack currency;
-        @Nullable
         private final RegistryKey<Enchantment> enchantmentKey;
         private final int level;
         private final int maxUses;
         private final int experience;
         private final float multiplier;
 
-        public Factory(ItemStack currency, @Nullable RegistryKey<Enchantment> enchantmentKey, int level, int maxUses, int experience, float multiplier) {
+        public Factory(ItemStack currency, RegistryKey<Enchantment> enchantmentKey, int level, int maxUses, int experience, float multiplier) {
             this.currency = currency;
             this.enchantmentKey = enchantmentKey;
             this.level = level;
@@ -58,20 +61,19 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
         }
 
         public TradeOffer create(net.minecraft.server.world.ServerWorld world, Entity entity, net.minecraft.util.math.random.Random random) {
-            // forEnchantment builds the stack instead of mutating one, so the blank book is the
-            // fallback rather than the starting point. An unknown id still just yields that blank
-            // book rather than losing the whole trade; a datapack may name an enchantment that this
-            // world does not have loaded.
-            ItemStack book = this.enchantmentKey == null
-                    ? new ItemStack(Items.ENCHANTED_BOOK)
-                    : entity.getEntityWorld().getRegistryManager()
-                            .getOrThrow(RegistryKeys.ENCHANTMENT)
-                            .getOptional(this.enchantmentKey)
-                            .map(enchantment -> EnchantmentHelper.getEnchantedBookWith(
-                                    new EnchantmentLevelEntry(enchantment, this.level)))
-                            .orElseGet(() -> new ItemStack(Items.ENCHANTED_BOOK));
-
-            return new TradeOffer(traded(this.currency.copy()), book, this.maxUses, this.experience, this.multiplier);
+            return entity.getEntityWorld().getRegistryManager()
+                    .getOrThrow(RegistryKeys.ENCHANTMENT)
+                    .getOptional(this.enchantmentKey)
+                    .map(enchantment -> new TradeOffer(
+                            traded(this.currency.copy()),
+                            EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(enchantment, this.level)),
+                            this.maxUses,
+                            this.experience,
+                            this.multiplier))
+                    .orElseGet(() -> {
+                        VillagerTradingPlus.LOGGER.warn("Skipping a sell_specific_enchanted_book offer: unknown enchantment '{}'", this.enchantmentKey.getValue());
+                        return null;
+                    });
         }
     }
 }
