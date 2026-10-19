@@ -1,10 +1,14 @@
-# VillagerTradingPlus
+# VillagersTradingPlus
 
 A library that replaces Minecraft's villager trading with a datapack-driven system.
 
 It is not a content mod - it adds no villagers, blocks or items of its own. It provides the trade
-engine that other mods and datapacks feed. [VillagersPlus](https://github.com/finallion/VillagersPlus_-FABRIC-)
+engine that other mods and datapacks feed. [VillagersPlus](https://github.com/finallion/VillagersPlus)
 is the reference consumer.
+
+**Get it:** [Modrinth](https://modrinth.com/mod/villagerstradingplus)
+
+**Version:** Minecraft 26.1.2. **Loaders:** Fabric (needs Fabric API) and NeoForge.
 
 ## What it does
 
@@ -35,13 +39,15 @@ These apply to every trade the library builds, no matter which mod or datapack d
 | `time_of_day_price_variance` | 0.15 | How far that nudge can go, as a fraction of the cost. Only used when the option above is on. |
 
 ### Trading screen controls
-All three are **off by default**. When on, **any** player can use them - they are meant for creative
-building and testing, not for survival servers.
+All three `allow_` options are **off by default**. The catalog is open to any player. The re-roll
+buttons and the level control need the permission level in `reroll_permission_level`. They are meant
+for creative building and testing, not for survival servers.
 
 | Option | Default | What it does |
 | --- | --- | --- |
 | `allow_trade_reroll` | false | Buttons to re-roll a villager's or wandering trader's trades, all at once or one level at a time. |
 | `allow_set_villager_level` | false | A control to set a villager's level (1-5) and regenerate its trades. Wandering traders have no levels and ignore it. |
+| `reroll_permission_level` | 0 | Command permission level (0-4) a player needs for the re-roll buttons and the level control. `0` means every player, `2` means game masters. |
 | `allow_view_all_trades` | false | A button that opens a read-only catalog panel listing every trade a villager could roll at a chosen level, with weights, chances and conditions. |
 
 ---
@@ -215,22 +221,22 @@ likely as the wither rose.
     }
 
 ### `sell_potion`
-Takes `convertible` plus `priceIn` and returns `sell`, for potion-shaped trades.
+Takes `convertible` plus `priceIn` and returns `sell`, for potion-shaped trades. `sell.count` sets the stack size.
 
     {
       "type": "villagertradingplus:sell_potion",
       "convertible": { "item": "minecraft:potion", "count": 3 },
       "priceIn": { "item": "minecraft:emerald", "count": 5 },
-      "sell": { "item": "minecraft:splash_potion", "count": 7 }
+      "sell": { "item": "minecraft:splash_potion", "count": 1 }
     }
 
 ### `sell_map`
-Sells a filled map pointing at a structure. `structure_id` is a structure tag.
+Sells a filled map pointing at a structure. `structure_id` is a structure tag. `name` is a translation key; leave it out to keep the vanilla map name.
 
     {
       "type": "villagertradingplus:sell_map",
       "structure_id": "minecraft:on_woodland_explorer_maps",
-      "name": "filled_map",
+      "name": "filled_map.mansion",
       "buy": { "item": "minecraft:compass", "count": 1 },
       "priceIn": { "item": "minecraft:emerald", "count": 2 },
       "price_multiplier": 0.2
@@ -317,8 +323,8 @@ Conditions can be switched off globally with `enable_conditional_trades`.
 | `dimension` | `dimension` | `{ "type": "dimension", "dimension": "minecraft:overworld" }` |
 | `weather` | `state`: `clear`, `rain`, `thunder` | `{ "type": "weather", "state": "rain" }` |
 | `day_night` | `time`: `day` or `night` | `{ "type": "day_night", "time": "night" }` |
-| `moon_phase` | `phases` (array of 0-7) | `{ "type": "moon_phase", "phases": [0] }` |
-| `config_flag` | `field` (a boolean config field name), optional `value` | `{ "type": "config_flag", "field": "can_explode" }` |
+| `moon_phase` | `phases` (array of 0-7); also requires night by default, set `"require_night": false` for the bare lunar day | `{ "type": "moon_phase", "phases": [0] }` |
+| `config_flag` | `field` (a boolean config field name), optional `value` | `{ "type": "config_flag", "field": "allow_trade_reroll" }` |
 | `gamerule` | `rule` (a boolean gamerule), optional `value` | `{ "type": "gamerule", "rule": "doInsomnia", "value": true }` |
 | `job_site_block` | `blocks` (array) **or** `wood_variant` (string matched against the block id) | `{ "type": "job_site_block", "blocks": [ "villagersplus:oceanographer_table" ] }` |
 
@@ -390,11 +396,11 @@ Create a datapack with this directory structure:
 Any file name works. Instead of the five villager tiers, the wandering trader has two:
 
 - `common` - level 1. Several are picked, the count is set by `trade_offers_wandering_trader`.
-- `rare` - level 2. Exactly one is picked.
+- `rare` - level 2. The count is the one vanilla uses for its rare pool.
 
 Set `"replace": true` to drop the vanilla wandering-trader trades and use **only** yours. Omit it
 (or set `false`) to add on top of vanilla. Every trade type, the conditions block and pricing all
-work here exactly as they do on villagers.
+work here exactly as they do on villagers. A tier without custom trades keeps the vanilla trades, even with `replace` set to `true`.
 
     {
       "replace": false,
@@ -434,3 +440,12 @@ copyable files for the cases a snippet cannot show well:
 - `full_profession.json` - one profession across all five tiers, mixing many trade types.
 - `conditions_and_pricing.json` - conditions and pricing on realistic trades.
 - `wandering_trader.json` - a complete wandering trader file.
+
+***
+
+## More mods
+
+* [The Graveyard](https://modrinth.com/mod/the-graveyard-fabric) ([Forge](https://modrinth.com/mod/the-graveyard-forge)) - bosses, structures and mobs.
+* [VillagersPlus](https://modrinth.com/mod/villagersplus) - new villager professions built on this library.
+* [DataDrivenVillagers](https://github.com/finallion/DataDrivenVillagers) - villager professions from datapacks.
+* [VanillaTales](https://github.com/finallion/Vanilla-Tales) - small vanilla-style mods.

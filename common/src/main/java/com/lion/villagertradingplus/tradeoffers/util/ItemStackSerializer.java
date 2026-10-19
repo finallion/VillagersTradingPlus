@@ -28,6 +28,7 @@ import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.ItemLore;
@@ -93,9 +94,13 @@ public final class ItemStackSerializer {
         }
 
         if (json.has("potion")) {
-            BuiltInRegistries.POTION.get(Identifier.tryParse(json.get("potion").getAsString()))
-                    .ifPresent(potion -> stack.set(DataComponents.POTION_CONTENTS,
-                            new PotionContents(potion)));
+            String rawPotion = json.get("potion").getAsString();
+            Identifier potionId = Identifier.tryParse(rawPotion);
+            Optional<Holder.Reference<Potion>> potion = potionId == null
+                    ? Optional.empty()
+                    : BuiltInRegistries.POTION.get(potionId);
+            stack.set(DataComponents.POTION_CONTENTS, new PotionContents(
+                    potion.orElseThrow(() -> new TradeParseException("unknown potion id \"" + rawPotion + "\" on a trade item"))));
         }
 
         if (json.has("skull_owner")) {
@@ -141,8 +146,7 @@ public final class ItemStackSerializer {
                     : registry.get().get(ResourceKey.create(Registries.ENCHANTMENT, identifier));
 
             if (enchantment.isEmpty()) {
-                VillagerTradingPlus.LOGGER.error("Unknown enchantment in trade item: {}", id);
-                continue;
+                throw new TradeParseException("unknown enchantment \"" + id + "\" on a trade item");
             }
 
             builder.set(enchantment.get(), entry.has("lvl") ? entry.get("lvl").getAsInt() : 1);
@@ -182,8 +186,10 @@ public final class ItemStackSerializer {
         try {
             CompoundTag parsed = TagParser.parseCompoundFully(snbt);
             componentize(stack, parsed).ifPresent(stack::applyComponentsAndValidate);
+        } catch (TradeParseException e) {
+            throw e;
         } catch (Exception e) {
-            VillagerTradingPlus.LOGGER.error("Failed to parse trade item nbt: " + snbt, e);
+            throw new TradeParseException("invalid \"nbt\" on a trade item: " + snbt + " (" + e.getMessage() + ")");
         }
     }
 
@@ -213,8 +219,9 @@ public final class ItemStackSerializer {
         // Components can reference dynamic registries, so plain NbtOps cannot read the stack back.
         RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, lookup.get());
         return ItemStack.CODEC.parse(ops, fixed.getValue())
-                .resultOrPartial(error -> VillagerTradingPlus.LOGGER.error(
-                        "Could not read the converted \"nbt\" of a trade item: {}", error))
+                .resultOrPartial(error -> {
+                    throw new TradeParseException("could not read the converted \"nbt\" of a trade item: " + error);
+                })
                 .map(ItemStack::getComponentsPatch);
     }
 

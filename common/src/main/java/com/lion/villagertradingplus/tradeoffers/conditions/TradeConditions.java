@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.tradeoffers.util.JsonFields;
+import com.lion.villagertradingplus.tradeoffers.util.TradeParseException;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -38,6 +39,23 @@ public final class TradeConditions {
     private static final Map<String, ConditionType> REGISTRY = new HashMap<>();
 
     private static final int DESCRIBE_LIST_LIMIT = 3;
+
+    private static final Set<String> WEATHER_STATES = Set.of("clear", "rain", "thunder");
+
+    private static final List<String> WOOD_VARIANTS = List.of(
+            "dark_oak",
+            "pale_oak",
+            "oak",
+            "spruce",
+            "birch",
+            "jungle",
+            "acacia",
+            "mangrove",
+            "cherry",
+            "bamboo",
+            "crimson",
+            "warped"
+    );
 
     private record ConditionType(Function<JsonObject, TradeCondition> parser,
                                  Function<JsonObject, Component> describer) {
@@ -129,18 +147,29 @@ public final class TradeConditions {
 
     private static TradeCondition parseWeather(JsonObject json) {
         String state = JsonFields.requireString(json, "\"weather\" condition", "state");
+
+        if (!WEATHER_STATES.contains(state)) {
+            throw new TradeParseException("\"weather\" condition: unknown state '" + state + "' (use clear, rain or thunder)");
+        }
+
         return villager -> {
             Level world = villager.level();
             return switch (state) {
                 case "thunder" -> world.isThundering();
                 case "rain" -> world.isRaining();
-                default -> !world.isRaining(); // "clear"
+                default -> !world.isRaining();
             };
         };
     }
 
     private static TradeCondition parseDayNight(JsonObject json) {
-        boolean wantDay = "day".equals(JsonFields.requireString(json, "\"day_night\" condition", "time"));
+        String time = JsonFields.requireString(json, "\"day_night\" condition", "time");
+
+        if (!"day".equals(time) && !"night".equals(time)) {
+            throw new TradeParseException("\"day_night\" condition: unknown time '" + time + "' (use day or night)");
+        }
+
+        boolean wantDay = "day".equals(time);
         return villager -> villager.level().isBrightOutside() == wantDay;
     }
 
@@ -159,15 +188,28 @@ public final class TradeConditions {
     private static TradeCondition parseConfigFlag(JsonObject json) {
         String fieldName = JsonFields.requireString(json, "\"config_flag\" condition", "field");
         boolean expected = !json.has("value") || json.get("value").getAsBoolean();
+        Field field = findBooleanConfigField(fieldName);
         return villager -> {
             try {
-                Field field = VillagerTradingPlus.CONFIG.getClass().getField(fieldName);
                 return field.getBoolean(VillagerTradingPlus.CONFIG) == expected;
-            } catch (ReflectiveOperationException e) {
-                VillagerTradingPlus.LOGGER.error("config_flag condition references unknown boolean field: " + fieldName, e);
+            } catch (IllegalAccessException e) {
                 return false;
             }
         };
+    }
+
+    private static Field findBooleanConfigField(String fieldName) {
+        try {
+            Field field = VillagerTradingPlus.CONFIG.getClass().getField(fieldName);
+
+            if (field.getType() != boolean.class) {
+                throw new TradeParseException("\"config_flag\" condition: config field '" + fieldName + "' is not a boolean");
+            }
+
+            return field;
+        } catch (NoSuchFieldException e) {
+            throw new TradeParseException("\"config_flag\" condition: unknown config field '" + fieldName + "'");
+        }
     }
 
     /// Boolean rule name from a datapack and the registry path it maps to.
@@ -260,14 +302,28 @@ public final class TradeConditions {
     private static TradeCondition parseJobSite(JsonObject json) {
         if (json.has("wood_variant")) {
             String variant = JsonFields.requireString(json, "\"job_site_block\" condition", "wood_variant");
+            boolean listed = WOOD_VARIANTS.contains(variant);
             return villager -> jobSiteBlockId(villager)
-                    .map(id -> id.getPath().contains(variant))
+                    .map(id -> listed ? variant.equals(woodOf(id.getPath())) : id.getPath().contains(variant))
                     .orElse(false);
         }
         Set<String> blocks = toStringSet(JsonFields.requireArray(json, "\"job_site_block\" condition", "blocks"));
         return villager -> jobSiteBlockId(villager)
                 .map(id -> blocks.contains(id.toString()))
                 .orElse(false);
+    }
+
+    /// The longest wood name inside the path, so `dark_oak` never counts as `oak`.
+    private static String woodOf(String path) {
+        String best = "";
+
+        for (String wood : WOOD_VARIANTS) {
+            if (path.contains(wood) && wood.length() > best.length()) {
+                best = wood;
+            }
+        }
+
+        return best;
     }
 
     private static Component describeBiome(JsonObject json) {
