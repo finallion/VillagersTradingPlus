@@ -58,7 +58,7 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             return new TradeOffer(waterBottle(), currency, sellStack(potion), this.maxUses, this.experience, this.multiplier);
         }
 
-        /** The potion pool is a fixed registry scan, so every brewable result gets its own row. */
+        /// The potion pool is a fixed registry scan, so each brewable result gets a row.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<Potion> brewable = brewable();
@@ -80,7 +80,7 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     .collect(Collectors.toList());
         }
 
-        /** Copies first: {@link PotionUtil#setPotion} writes NBT in place, and {@code buy} is shared. */
+        /// Copies first, because setPotion writes NBT in place and buy is shared.
         private ItemStack waterBottle() {
             return PotionUtil.setPotion(this.buy.copy(), Potions.WATER);
         }

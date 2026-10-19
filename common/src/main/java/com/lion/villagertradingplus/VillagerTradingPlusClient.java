@@ -4,10 +4,7 @@ import com.lion.villagertradingplus.client.TradeCatalogClientState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-/**
- * Client-side counterpart of {@link VillagerTradingPlus}: hooks up the packet receiver that feeds the
- * trade catalog panel.
- */
+/// Client entry point. It registers the packet receiver for the catalogue panel.
 public class VillagerTradingPlusClient {
 
 	@Environment(EnvType.CLIENT)

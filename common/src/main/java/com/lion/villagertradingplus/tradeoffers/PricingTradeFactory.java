@@ -9,14 +9,8 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 
-/**
- * A create()-time wrapper that applies global economy tuning to any produced offer: a config-driven
- * scale on the currency (first buy item) count and an optional time-of-day price variance. Kept
- * generic so it applies to every trade type without editing each adapter.
- *
- * <p>Like conditional trades, the price is fixed when the offer is generated (villager level-up), so
- * time-of-day variance differs between offers rather than changing live.
- */
+/// Applies global price tuning to any produced offer: a currency count scale and optional time-of-day variance.
+/// The price is fixed at generation, so the variance differs between offers.
 public final class PricingTradeFactory implements TradeOffers.Factory {
 
     private final TradeOffers.Factory delegate;
@@ -25,7 +19,7 @@ public final class PricingTradeFactory implements TradeOffers.Factory {
         this.delegate = delegate;
     }
 
-    /** Wraps only when some pricing tuning is actually active; otherwise returns the delegate as-is. */
+    /// Wraps only when pricing tuning is active.
     public static TradeOffers.Factory wrapIfNeeded(TradeOffers.Factory delegate, JsonObject trade) {
         boolean costScale = VillagerTradingPlus.CONFIG.trade_cost_scale != 1.0f;
         boolean timeOfDay = VillagerTradingPlus.CONFIG.enable_time_of_day_pricing;
@@ -52,12 +46,12 @@ public final class PricingTradeFactory implements TradeOffers.Factory {
                 offer.getPriceMultiplier(), offer.getDemandBonus());
     }
 
-    /** The wrapped factory, so the catalogue can enumerate it and re-apply pricing itself. */
+    /// Exposed so the catalogue can enumerate the delegate and re-apply pricing.
     public TradeOffers.Factory delegate() {
         return this.delegate;
     }
 
-    /** Shared so catalogue rows are priced exactly the way a real generated offer would be. */
+    /// Shared so catalogue rows use the same pricing as real offers.
     public static int scaleCount(int count, int maxCount, float factor) {
         return MathHelper.clamp(Math.round(count * factor), 1, maxCount);
     }

@@ -57,10 +57,7 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
                     book(enchantment, level), 0, this.maxUses, this.experience, this.multiplier, this.demand);
         }
 
-        /**
-         * The enchantment and level are enumerable even though the price is not, so every pair gets a
-         * row showing the cheapest it can be, and the tooltip carries the full range.
-         */
+        /// Every pair gets a row with the lowest price. The tooltip shows the full range.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<Enchantment> available = available();
@@ -73,8 +70,7 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
                         out.countSkipped(1);
                         continue;
                     }
-                    // create() rolls 2 + nextInt(5 + 10*level) + 3*level, so the extremes are
-                    // 2 + 3*level and 6 + 13*level before the treasure doubling and the 64 cap.
+                    // Extremes of the roll 2 + nextInt(5 + 10*level) + 3*level, before doubling and the cap.
                     int minPrice = clampPrice(2 + 3 * level, enchantment);
                     int maxPrice = clampPrice(6 + 13 * level, enchantment);
 

@@ -24,20 +24,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Sells an enchanted book whose enchantment is a weighted random pick from a curated list, each
- * entry carrying its own level range. Price scales with the chosen level and doubles for treasure
- * enchantments, capped at 64 (mirrors the vanilla-style pricing of {@code sell_enchanted_book}).
- *
- * <pre>
- * { "type": "villagertradingplus:sell_enchanted_book_from_list",
- *   "currency": { "item": "minecraft:emerald" },
- *   "enchantments": [
- *     { "id": "minecraft:sharpness", "min_level": 1, "max_level": 3, "weight": 5 },
- *     { "id": "minecraft:mending",   "min_level": 1, "max_level": 1, "weight": 1 } ],
- *   "base_cost": 2, "cost_per_level": 3, "treasure_multiplier": 2 }
- * </pre>
- */
+/// Sells an enchanted book with a weighted random pick from a curated list, each with its own level range.
+/// The price scales with the level, doubles for treasure enchantments and caps at 64.
 public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -114,16 +102,12 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
                     0, maxUses, experience, multiplier, demand);
         }
 
-        /**
-         * Both the enchantment and its level are enumerable and the price follows from them, so every
-         * (enchantment, level) pair the list can yield gets its own row with no randomness left.
-         */
+        /// Every (enchantment, level) pair gets a row, because the price follows from them.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             for (Entry entry : entries) {
                 out.pushWeight(entry.weight(), totalWeight);
-                // The level within a chosen entry is then picked uniformly, so each row is worth a
-                // fraction of the entry's weight rather than all of it.
+                // The level is picked uniformly, so each row gets a fraction of the entry weight.
                 out.pushShare(1.0f / (entry.maxLevel() - entry.minLevel() + 1));
                 for (int level = entry.minLevel(); level <= entry.maxLevel(); level++) {
                     if (out.isFull()) {

@@ -7,17 +7,10 @@ import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wire format for the catalogue, sent server-to-client on {@link #CHANNEL}.
- *
- * <p>The whole tier ships in one packet so the panel can page and scroll locally with no round-trip.
- * That makes packet size the thing to watch: {@code CustomPayloadS2CPacket} rejects payloads over
- * 1 MiB, measured <em>before</em> compression and enforced on both encode and decode. The row cap in
- * {@link CatalogBuilder#MAX_ENTRIES} does not bound that on its own, since a single heavy-NBT
- * modded item can run to tens of kilobytes, so rows are written into a scratch buffer and cut off at
- * {@link #MAX_PAYLOAD_BYTES}. Whatever gets dropped is reported to the player, never silently
- * swallowed.
- */
+/// Wire format of the catalogue, sent from server to client on CHANNEL.
+/// A whole tier ships in one packet. The payload limit is 1 MiB, measured before compression.
+/// Rows go into a scratch buffer and are cut at MAX_PAYLOAD_BYTES, because heavy-NBT items vary in size.
+/// The packet reports dropped rows to the player.
 public final class TradeCatalogPacket {
 
     public static final Identifier CHANNEL = new Identifier("villagertradingplus", "trade_catalog");
@@ -27,18 +20,11 @@ public final class TradeCatalogPacket {
     private TradeCatalogPacket() {
     }
 
-    /**
-     * @param level     the tier this catalogue describes
-     * @param maxLevel  how many tiers the merchant has (5 for villagers, 2 for the wandering trader)
-     * @param entries   the rows that fit
-     * @param omitted   how many rows exist beyond those, for the "showing N of M" line
-     */
     public record Payload(int level, int maxLevel, List<CatalogEntry> entries, int omitted) {
     }
 
     public static PacketByteBuf write(int level, int maxLevel, List<CatalogEntry> entries, int alreadySkipped) {
-        // Rows go into a scratch buffer first: the count has to precede them, and a varint cannot be
-        // back-patched once written.
+        // Rows go into a scratch buffer first, because the count precedes them and a varint cannot be patched.
         PacketByteBuf scratch = new PacketByteBuf(Unpooled.buffer());
         int written = 0;
         for (CatalogEntry entry : entries) {

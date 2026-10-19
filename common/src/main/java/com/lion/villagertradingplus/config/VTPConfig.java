@@ -3,11 +3,7 @@ package com.lion.villagertradingplus.config;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.config.annotations.Description;
 
-/**
- * Settings that apply to every trade the library builds, no matter which mod or datapack defined it.
- * These moved out of VillagersPlus when the trade system became a library - a consumer that wants
- * different numbers changes them here, not in its own config.
- */
+/// Settings that apply to every trade the library builds, whatever mod or datapack defined it.
 public class VTPConfig implements Config {
 
     @Override

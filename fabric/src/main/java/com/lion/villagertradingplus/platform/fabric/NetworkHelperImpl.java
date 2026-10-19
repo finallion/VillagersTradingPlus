@@ -16,7 +16,7 @@ public final class NetworkHelperImpl {
     private NetworkHelperImpl() {
     }
 
-    /** Fabric channels need no up-front registration; receivers register themselves. */
+    /// Fabric channels need no up-front registration.
     public static void init() {
     }
 
@@ -27,8 +27,7 @@ public final class NetworkHelperImpl {
     @Environment(EnvType.CLIENT)
     public static void registerClientReceiver(Identifier channel, Consumer<PacketByteBuf> receiver) {
         ClientPlayNetworking.registerGlobalReceiver(channel, (client, handler, buf, responseSender) -> {
-            // The buffer is recycled once this callback returns, so copy before handing it to the
-            // client thread.
+            // The buffer is recycled when the callback returns, so copy before the client thread uses it.
             PacketByteBuf copy = new PacketByteBuf(Unpooled.copiedBuffer(buf));
             client.execute(() -> receiver.accept(copy));
         });

@@ -14,14 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * A tag-or-item holder for the input side of a trade. When built from a {@code "tag"} it resolves
- * to a random member at {@link #resolve} time (called inside {@code Factory.create}); when built
- * from an {@code "item"} it is a fixed stack (with any NBT sugar baked in).
- *
- * <p>Vanilla {@link net.minecraft.village.TradeOffer} matches one concrete {@link ItemStack}, so a
- * tag input is realised as a single random member per generated offer, not an "any-of" match.
- */
+/// A tag-or-item holder for the input side of a trade.
+/// A tag resolves to a random member at resolve time. An item is a fixed stack.
+/// Vanilla TradeOffer matches one concrete stack, so a tag input is not an any-of match.
 public final class Ingredient {
 
     private final ItemStack fixed;          // non-null when built from "item"
@@ -46,12 +41,11 @@ public final class Ingredient {
         return new Ingredient(ItemStackSerializer.fromJson(json), null, count, null);
     }
 
-    /** Whether this ingredient resolves from a tag (so it may vary per generated offer). */
     public boolean isTag() {
         return tag != null;
     }
 
-    /** Resolves a concrete stack. Fixed ingredients copy; tag ingredients pick a random member. */
+    /// Fixed ingredients copy. Tag ingredients pick a random member.
     public ItemStack resolve(Random random) {
         if (tag == null) {
             return fixed.copy();
@@ -66,11 +60,7 @@ public final class Ingredient {
         return build(list.get(random.nextInt(list.size())));
     }
 
-    /**
-     * Every stack this ingredient could resolve to: one entry for a fixed ingredient, one per tag
-     * member otherwise. Used by the trade catalogue, which lists all the variants a trade can take
-     * rather than sampling one.
-     */
+    /// Lists one stack for a fixed ingredient, or one per tag member, for the catalogue.
     public List<ItemStack> resolveAll() {
         if (tag == null) {
             return List.of(fixed.copy());

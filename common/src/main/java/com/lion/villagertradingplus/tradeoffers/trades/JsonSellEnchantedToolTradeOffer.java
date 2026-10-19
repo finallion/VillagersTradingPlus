@@ -27,7 +27,7 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
     }
 
     private static class Factory implements TradeOffers.Factory, CatalogExpandable {
-        /** Bounds of the {@code 5 + nextInt(15)} enchanting power roll that also sets the price. */
+        /// Bounds of the 5 + nextInt(15) enchanting power roll, which also sets the price.
         private static final int MIN_POWER = 5;
         private static final int MAX_POWER = 19;
 
@@ -47,20 +47,14 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
 
         public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
             int power = MIN_POWER + random.nextInt(MAX_POWER - MIN_POWER + 1);
-            // Copied rather than rebuilt from the item alone, so the JSON's count and any name, lore
-            // or NBT sugar on the sell stack survive the random enchanting pass.
+            // Copied, so the count and the name, lore or NBT sugar of the sell stack survive the enchanting pass.
             ItemStack itemStack = EnchantmentHelper.enchant(random, this.sell.copy(), power, false);
 
             return new TradeOffer(new ItemStack(currency.getItem(), price(power)), itemStack,
                     this.maxUses, this.experience, multiplier);
         }
 
-        /**
-         * Not enumerable: {@link EnchantmentHelper#enchant} picks an opaque combination of
-         * enchantments, so there is no finite variant list to walk. One fixed-seed sample stands in,
-         * which at least keeps the row identical between openings, and the price range is stated
-         * exactly since it follows from the power roll.
-         */
+        /// Not enumerable: enchant picks an opaque combination, so one fixed-seed sample stands in.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             TradeOffer sample = create(merchant, Random.create(0L));

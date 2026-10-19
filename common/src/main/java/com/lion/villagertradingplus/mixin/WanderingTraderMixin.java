@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-// See VillagerEntityMixin: fillRecipesFromPool/getOffers are declared on MerchantEntity, not on the
-// target itself, so the mixin must extend it rather than @Shadow them.
+// Extends MerchantEntity for the same reason as VillagerEntityMixin.
 @Mixin(WanderingTraderEntity.class)
 public abstract class WanderingTraderMixin extends MerchantEntity implements TradeControl {
 

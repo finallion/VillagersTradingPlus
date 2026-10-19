@@ -15,16 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/**
- * Sells any single member of an item tag (resolved to one concrete item per generated offer) for a
- * fixed currency.
- *
- * <pre>
- * { "type": "villagertradingplus:sell_tagged_item",
- *   "sell": { "tag": "minecraft:saplings", "count": 1 },
- *   "priceIn": { "item": "minecraft:emerald", "count": 3 } }
- * </pre>
- */
+/// Sells one member of an item tag, chosen per offer, for a fixed currency.
 public class JsonSellTaggedItemTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -62,7 +53,7 @@ public class JsonSellTaggedItemTradeOffer extends JsonTradeOffer {
             return new TradeOffer(currency.copy(), ItemStack.EMPTY, resolved, 0, maxUses, experience, multiplier, demand);
         }
 
-        /** A tag input is one random member per generated offer, so the catalogue lists them all. */
+        /// A tag input is a random member per offer, so the catalogue lists all members.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<ItemStack> variants = sell.resolveAll();

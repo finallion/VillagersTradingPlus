@@ -20,11 +20,7 @@ public final class NetworkHelperImpl {
 
     private static final Map<Identifier, SimpleChannel> CHANNELS = new HashMap<>();
 
-    /**
-     * Populated only on a client. The handler is registered on both sides because Forge requires
-     * symmetric channel registration for version negotiation, but a server never has a receiver to
-     * dispatch to, which keeps client-only classes off its classpath.
-     */
+    /// Client only. A server never has a receiver, so client-only classes stay off its classpath.
     private static final Map<Identifier, Consumer<PacketByteBuf>> CLIENT_RECEIVERS = new HashMap<>();
 
     private NetworkHelperImpl() {
@@ -69,7 +65,7 @@ public final class NetworkHelperImpl {
         return channel;
     }
 
-    /** Forge's SimpleChannel is message-typed; the mod's payloads are already raw buffers. */
+    /// Forge's SimpleChannel is message-typed, but the payloads are raw buffers.
     private record Payload(byte[] data) {
     }
 

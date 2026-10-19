@@ -49,10 +49,7 @@ public final class ItemStackSerializer {
         return stack;
     }
 
-    /**
-     * Applies the optional NBT/component sugar onto an already-built stack. Public so tag-resolved
-     * stacks ({@link Ingredient}) can reuse the same sugar per random pick.
-     */
+    /// Public so tag-resolved stacks reuse the same sugar per random pick.
     public static void applyComponents(ItemStack stack, JsonObject json) {
         if (stack.isEmpty()) {
             return;
@@ -151,12 +148,7 @@ public final class ItemStackSerializer {
         }
     }
 
-    /**
-     * Parses text that may be a plain literal string, a JSON text component given as a string
-     * (e.g. {@code "{\"text\":\"Hi\",\"color\":\"gold\"}"}), or a raw JSON object/array component.
-     * A bare string that is not JSON is treated as literal text; strict component parsing is only
-     * attempted when the string looks like JSON, and any parse failure falls back to a literal.
-     */
+    /// Plain strings are literal. JSON-like strings parse as components, and a parse failure falls back to literal.
     private static Text parseText(JsonElement element) {
         if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
             String raw = element.getAsString();
@@ -185,7 +177,6 @@ public final class ItemStackSerializer {
         return Text.empty();
     }
 
-    /** Parses a color as an integer or a {@code #RRGGBB} hex string. */
     private static int parseColor(String value) {
         String trimmed = value.trim();
         if (trimmed.startsWith("#")) {

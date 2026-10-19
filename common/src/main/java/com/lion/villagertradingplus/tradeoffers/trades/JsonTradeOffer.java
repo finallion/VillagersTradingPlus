@@ -27,10 +27,7 @@ public abstract class JsonTradeOffer {
         this.priceMultiplier = base * VillagerTradingPlus.CONFIG.trade_price_multiplier_scale;
     }
 
-    /**
-     * Builds a vanilla offer using the loaded stats, including the initial {@code demand}. Uses the
-     * 8-arg {@link TradeOffer} constructor so the demand field is honoured by vanilla price math.
-     */
+    /// Uses the 8-argument TradeOffer constructor, so vanilla price math honors demand.
     protected TradeOffer buildOffer(ItemStack buy, ItemStack second, ItemStack sell) {
         return new TradeOffer(buy, second, sell, 0, maxUses, experience, priceMultiplier, demand);
     }

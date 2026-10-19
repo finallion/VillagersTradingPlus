@@ -6,24 +6,10 @@ import net.minecraft.network.PacketByteBuf;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * One row of the trade catalogue: the three display stacks plus every piece of metadata the JSON
- * defined but vanilla {@link net.minecraft.village.TradeOffer} throws away.
- *
- * <p>Built server-side by {@link CatalogBuilder} and shipped to the client whole, because none of
- * this survives a {@code TradeOffer} round-trip.
- *
- * @param poolWeight       weight within the innermost {@code weighted_pool}, or 0 when the trade is
- *                         not inside one
- * @param poolTotalWeight  total weight of that pool, or 0
- * @param poolShare        composed probability across <em>all</em> nesting levels (1.0 when not
- *                         pooled); differs from {@code poolWeight / poolTotalWeight} only for
- *                         pools nested inside other pools
- * @param tierPoolSize     how many trades the merchant's tier pool holds
- * @param tierPicks        how many of them the merchant actually rolls ({@code trade_offers_per_level})
- * @param minPrice         lowest first-buy count this trade can produce
- * @param maxPrice         highest; equal to {@code minPrice} when the price is fixed
- */
+/// One catalogue row: three display stacks plus metadata that TradeOffer drops.
+/// The server builds it in CatalogBuilder and sends it whole to the client.
+/// poolShare is the probability composed over all nesting levels.
+/// tierPicks is the number of trades the merchant rolls (trade_offers_per_level).
 public record CatalogEntry(
         ItemStack firstBuy,
         ItemStack secondBuy,
@@ -42,12 +28,11 @@ public record CatalogEntry(
         List<ConditionInfo> conditions,
         boolean conditionsMet) {
 
-    /** Whether this row came out of a {@code weighted_pool} and so has a meaningful weight. */
     public boolean isPooled() {
         return this.poolTotalWeight > 0;
     }
 
-    /** Whether the first-buy count varies between rolls, so the displayed price is only a floor. */
+    /// The displayed price is only a floor when the price varies.
     public boolean hasPriceRange() {
         return this.maxPrice > this.minPrice;
     }

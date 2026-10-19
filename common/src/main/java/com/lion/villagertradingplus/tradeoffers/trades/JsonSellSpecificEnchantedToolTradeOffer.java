@@ -13,10 +13,7 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Sells a tool with a fixed enchantment at a fixed level (e.g. a guaranteed Fortune III pickaxe),
- * unlike {@code sell_enchanted_tool} which enchants randomly.
- */
+/// Sells a tool with a fixed enchantment and level. sell_enchanted_tool enchants randomly instead.
 public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
 
     @Override

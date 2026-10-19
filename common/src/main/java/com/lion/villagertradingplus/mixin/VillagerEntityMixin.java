@@ -21,8 +21,7 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
-// Extends MerchantEntity so the inherited members this mixin uses (fillRecipesFromPool, getOffers,
-// getWorld) resolve through the real hierarchy; @Shadow only sees members declared on the target itself.
+// Extends MerchantEntity, because @Shadow sees only members declared on the target itself.
 @Mixin(VillagerEntity.class)
 public abstract class VillagerEntityMixin extends MerchantEntity implements TradeControl {
 
@@ -38,7 +37,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
 
     @Shadow public abstract void reinitializeBrain(ServerWorld world);
 
-    /** Per-level offer counts (index = level 1..5), so a single tier can be re-rolled in place. */
+    /// Offer counts per level (index = level 1..5), so one tier can be re-rolled in place.
     @Unique private int[] villagertradingplus$levelCounts = null;
 
     @ModifyConstant(method = "fillRecipes", constant = @Constant(intValue = 2))
