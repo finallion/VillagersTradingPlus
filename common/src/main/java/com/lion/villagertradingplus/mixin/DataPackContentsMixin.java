@@ -31,7 +31,8 @@ public class DataPackContentsMixin {
             List<Registry.PendingTags<?>> pendingTagLoads,
             PermissionSet permissions,
             List<DataComponentInitializers.PendingComponents<?>> pendingComponents,
-            CallbackInfo ci) {
+            CallbackInfo ci
+    ) {
         DatapackRegistries.set(dynamicRegistries.compositeAccess());
     }
 

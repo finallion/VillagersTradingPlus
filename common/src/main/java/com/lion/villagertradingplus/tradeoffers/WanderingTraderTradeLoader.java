@@ -23,7 +23,9 @@ public final class WanderingTraderTradeLoader {
         public static final Snapshot EMPTY = new Snapshot(Map.of(), false);
 
         public boolean hasTrades() {
-            return tiers.values().stream().anyMatch(list -> !list.isEmpty());
+            return tiers.values()
+                    .stream()
+                    .anyMatch(list -> !list.isEmpty());
         }
 
         public List<TradeFactory> tier(int tier) {

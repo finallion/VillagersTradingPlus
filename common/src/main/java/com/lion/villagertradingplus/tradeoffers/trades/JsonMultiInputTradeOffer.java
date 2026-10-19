@@ -31,7 +31,15 @@ public class JsonMultiInputTradeOffer extends JsonTradeOffer {
         private final float multiplier;
         private final int demand;
 
-        public Factory(ItemStack inputA, ItemStack inputB, ItemStack sell, int maxUses, int experience, float multiplier, int demand) {
+        public Factory(
+                ItemStack inputA,
+                ItemStack inputB,
+                ItemStack sell,
+                int maxUses,
+                int experience,
+                float multiplier,
+                int demand
+        ) {
             this.inputA = inputA;
             this.inputB = inputB;
             this.sell = sell;

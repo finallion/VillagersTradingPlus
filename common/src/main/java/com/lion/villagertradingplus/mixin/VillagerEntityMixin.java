@@ -45,14 +45,17 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
     @Inject(method = "updateTrades", at = @At("HEAD"), cancellable = true)
     private void villagertradingplus$drawFromPool(ServerLevel level, CallbackInfo ci) {
         Holder<VillagerProfession> profession = getVillagerData().profession();
+
         if (!TradePools.drawsFromPool(profession)) {
             return;
         }
 
         MerchantOffers offers = getOffers();
+
         if (offers.isEmpty()) {
             villagertradingplus$levelCounts = null;
         }
+
         int tier = getVillagerData().level();
         villagertradingplus$recordCount(tier, TradePools.addVillagerOffers(level, this, profession, tier, offers));
         ci.cancel();
@@ -81,6 +84,7 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
         if (!(level() instanceof ServerLevel serverWorld)) {
             return;
         }
+
         MerchantOffers offers = getOffers();
         offers.clear();
 
@@ -97,7 +101,9 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
         if (!(level() instanceof ServerLevel serverWorld)) {
             return;
         }
+
         int level = getVillagerData().level();
+
         if (targetLevel < 1 || targetLevel > level) {
             return;
         }
@@ -129,6 +135,7 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
         setVillagerData(getVillagerData().withLevel(targetLevel));
         setVillagerXp(VillagerData.getMinXpPerLevel(targetLevel));
         villagertradingplus$rerollAll();
+
         if (level() instanceof ServerLevel reinitWorld) {
             refreshBrain(reinitWorld);
         }
@@ -137,26 +144,31 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
     @Unique
     private int villagertradingplus$addTier(ServerLevel level, MerchantOffers target, int tier) {
         Holder<VillagerProfession> profession = getVillagerData().profession();
+
         if (TradePools.drawsFromPool(profession)) {
             return TradePools.addVillagerOffers(level, this, profession, tier, target);
         }
 
         ResourceKey<TradeSet> set = profession.value().getTrades(tier);
         int before = target.size();
+
         if (set != null) {
             addOffersFromTradeSet(level, target, set);
         }
+
         return target.size() - before;
     }
 
     @Unique
     private void villagertradingplus$recordCount(int tier, int added) {
         int size = Math.max(tier, VillagerData.MAX_VILLAGER_LEVEL) + 1;
+
         if (villagertradingplus$levelCounts == null) {
             villagertradingplus$levelCounts = new int[size];
         } else if (villagertradingplus$levelCounts.length < size) {
             villagertradingplus$levelCounts = Arrays.copyOf(villagertradingplus$levelCounts, size);
         }
+
         villagertradingplus$levelCounts[tier] = added;
     }
 

@@ -9,7 +9,8 @@ import net.minecraft.world.entity.npc.villager.VillagerProfession;
 /// Immutable result of one reload. `defaults` replace a profession's vanilla trades. `additions` extend them.
 public record TradeSnapshot(
         Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> defaults,
-        Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> additions) {
+        Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> additions
+) {
 
     public static final TradeSnapshot EMPTY = new TradeSnapshot(Map.of(), Map.of());
 
@@ -29,12 +30,17 @@ public record TradeSnapshot(
         return at(additions, profession, level);
     }
 
-    private static List<TradeFactory> at(Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> source,
-                                         ResourceKey<VillagerProfession> profession, int level) {
+    private static List<TradeFactory> at(
+            Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> source,
+            ResourceKey<VillagerProfession> profession,
+            int level
+    ) {
         Int2ObjectMap<List<TradeFactory>> levels = source.get(profession);
+
         if (levels == null) {
             return List.of();
         }
+
         return levels.getOrDefault(level, List.of());
     }
 }

@@ -13,8 +13,7 @@ public final class DatapackRegistries {
 
     private static volatile WeakReference<RegistryAccess> current = new WeakReference<>(null);
 
-    private DatapackRegistries() {
-    }
+    private DatapackRegistries() {}
 
     public static void set(RegistryAccess registryManager) {
         current = new WeakReference<>(registryManager);

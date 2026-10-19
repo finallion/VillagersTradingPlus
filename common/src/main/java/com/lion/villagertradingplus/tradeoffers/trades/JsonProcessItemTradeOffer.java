@@ -31,7 +31,15 @@ public class JsonProcessItemTradeOffer extends JsonTradeOffer {
         private final float multiplier;
         private final int demand;
 
-        public Factory(ItemStack buy, ItemStack sell, ItemStack currency, int maxUses, int experience, float multiplier, int demand) {
+        public Factory(
+                ItemStack buy,
+                ItemStack sell,
+                ItemStack currency,
+                int maxUses,
+                int experience,
+                float multiplier,
+                int demand
+        ) {
             this.buy = buy;
             this.sell = sell;
             this.currency = currency;
@@ -41,7 +49,11 @@ public class JsonProcessItemTradeOffer extends JsonTradeOffer {
             this.demand = demand;
         }
 
-        public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, net.minecraft.util.RandomSource random) {
+        public MerchantOffer create(
+                net.minecraft.server.level.ServerLevel world,
+                Entity entity,
+                net.minecraft.util.RandomSource random
+        ) {
             return new MerchantOffer(traded(buy), tradedOrEmpty(currency), sell, 0, this.maxUses, this.experience, this.multiplier, this.demand);
         }
 

@@ -46,15 +46,31 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
             this.multiplier = multiplier;
         }
 
-        public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, net.minecraft.util.RandomSource random) {
+        public MerchantOffer create(
+                net.minecraft.server.level.ServerLevel world,
+                Entity entity,
+                net.minecraft.util.RandomSource random
+        ) {
             int power = MIN_POWER + random.nextInt(MAX_POWER - MIN_POWER + 1);
             // Copy the sell stack, so the JSON count, name and lore survive the enchanting pass.
-            ItemStack itemStack = EnchantmentHelper.enchantItem(random, this.sell.copy(), power,
-                    entity.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
-                            .getOrThrow(EnchantmentTags.IN_ENCHANTING_TABLE).stream());
+            ItemStack itemStack = EnchantmentHelper.enchantItem(
+                    random,
+                    this.sell.copy(),
+                    power,
+                    entity.level()
+                            .registryAccess()
+                            .lookupOrThrow(Registries.ENCHANTMENT)
+                            .getOrThrow(EnchantmentTags.IN_ENCHANTING_TABLE)
+                            .stream()
+            );
 
-            return new MerchantOffer(traded(new ItemStack(currency.getItem(), price(power))), itemStack,
-                    this.maxUses, this.experience, multiplier);
+            return new MerchantOffer(
+                    traded(new ItemStack(currency.getItem(), price(power))),
+                    itemStack,
+                    this.maxUses,
+                    this.experience,
+                    multiplier
+            );
         }
 
         /// Not enumerable. The enchanting pass picks an opaque set of enchantments.
@@ -63,7 +79,9 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
             if (!(merchant.level() instanceof net.minecraft.server.level.ServerLevel world)) {
                 return;
             }
+
             MerchantOffer sample = create(world, merchant, RandomSource.create(0L));
+
             if (sample != null) {
                 out.addOffer(sample, price(MIN_POWER), price(MAX_POWER));
             }

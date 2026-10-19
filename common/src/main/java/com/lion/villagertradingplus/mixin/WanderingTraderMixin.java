@@ -25,6 +25,7 @@ public abstract class WanderingTraderMixin extends AbstractVillager implements T
         if (!TradePools.drawsWanderingFromPool()) {
             return;
         }
+
         TradePools.fillWanderingTrader(level, this, getOffers());
         ci.cancel();
     }
@@ -34,6 +35,7 @@ public abstract class WanderingTraderMixin extends AbstractVillager implements T
         if (!(level() instanceof ServerLevel serverWorld)) {
             return;
         }
+
         MerchantOffers offers = getOffers();
         offers.clear();
         TradePools.fillWanderingTrader(serverWorld, this, offers);

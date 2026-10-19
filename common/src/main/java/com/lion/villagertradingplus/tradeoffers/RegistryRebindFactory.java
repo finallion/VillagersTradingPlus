@@ -36,25 +36,38 @@ public final class RegistryRebindFactory implements TradeFactory {
     @Override
     public MerchantOffer create(net.minecraft.server.level.ServerLevel world, Entity entity, RandomSource random) {
         MerchantOffer offer = this.delegate.create(world, entity, random);
+
         if (offer == null) {
             return null;
         }
 
         Registry<Enchantment> live = entity.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
         ItemStack sell = offer.getResult();
+
         if (!rebind(sell, DataComponents.ENCHANTMENTS, live)
                 & !rebind(sell, DataComponents.STORED_ENCHANTMENTS, live)) {
             return offer;
         }
 
-        return new MerchantOffer(offer.getItemCostA(), offer.getItemCostB(), sell,
-                offer.getUses(), offer.getMaxUses(), offer.getXp(),
-                offer.getPriceMultiplier(), offer.getDemand());
+        return new MerchantOffer(
+                offer.getItemCostA(),
+                offer.getItemCostB(),
+                sell,
+                offer.getUses(),
+                offer.getMaxUses(),
+                offer.getXp(),
+                offer.getPriceMultiplier(),
+                offer.getDemand()
+        );
     }
 
-    private static boolean rebind(ItemStack stack, DataComponentType<ItemEnchantments> type,
-                                  Registry<Enchantment> live) {
+    private static boolean rebind(
+            ItemStack stack,
+            DataComponentType<ItemEnchantments> type,
+            Registry<Enchantment> live
+    ) {
         ItemEnchantments current = stack.get(type);
+
         if (current == null || current.isEmpty()) {
             return false;
         }
@@ -66,27 +79,33 @@ public final class RegistryRebindFactory implements TradeFactory {
         for (Object2IntMap.Entry<Holder<Enchantment>> entry : current.entrySet()) {
             Holder<Enchantment> bound = entry.getKey();
             Holder<Enchantment> fresh = resolve(bound, live);
+
             if (fresh == null) {
                 changed = true;
                 continue;
             }
+
             if (fresh != bound) {
                 changed = true;
             }
+
             builder.set(fresh, entry.getIntValue());
         }
 
         if (changed) {
             stack.set(type, builder.toImmutable());
         }
+
         return changed;
     }
 
     private static Holder<Enchantment> resolve(Holder<Enchantment> entry, Registry<Enchantment> live) {
         Optional<ResourceKey<Enchantment>> key = entry.unwrapKey();
+
         if (key.isEmpty()) {
             return entry;
         }
+
         return live.get(key.get()).map(reference -> (Holder<Enchantment>) reference).orElse(null);
     }
 }

@@ -31,8 +31,7 @@ public final class TradeGuiActions {
     private static final Map<ServerPlayer, Integer> LAST_CATALOG_TICK = new WeakHashMap<>();
     private static final Map<ServerPlayer, List<TradeCatalogPayload>> LAST_CATALOG = new WeakHashMap<>();
 
-    private TradeGuiActions() {
-    }
+    private TradeGuiActions() {}
 
     public static boolean handle(ServerPlayer player, AbstractVillager merchant, int id) {
         VTPConfig cfg = VillagerTradingPlus.CONFIG;
@@ -59,6 +58,7 @@ public final class TradeGuiActions {
             if (!cfg.allow_trade_reroll || !(merchant instanceof TradeControl tc)) {
                 return false;
             }
+
             if (!mayControlTrades(player)) {
                 return false;
             }
@@ -76,6 +76,7 @@ public final class TradeGuiActions {
             if (!cfg.allow_trade_reroll || !(merchant instanceof TradeControl tc)) {
                 return false;
             }
+
             if (!mayControlTrades(player)) {
                 return false;
             }
@@ -93,6 +94,7 @@ public final class TradeGuiActions {
             if (!cfg.allow_view_all_trades) {
                 return false;
             }
+
             if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)) {
                 resendLastCatalog(player);
                 return true;
@@ -126,8 +128,14 @@ public final class TradeGuiActions {
     private static void refresh(ServerPlayer player, AbstractVillager merchant) {
         if (player.containerMenu instanceof MerchantMenu handler) {
             int level = merchant instanceof Villager villager ? villager.getVillagerData().level() : 1;
-            player.sendMerchantOffers(handler.containerId, merchant.getOffers(), level, merchant.getVillagerXp(),
-                    merchant.showProgressBar(), merchant.canRestock());
+            player.sendMerchantOffers(
+                    handler.containerId,
+                    merchant.getOffers(),
+                    level,
+                    merchant.getVillagerXp(),
+                    merchant.showProgressBar(),
+                    merchant.canRestock()
+            );
         }
     }
 
@@ -137,8 +145,13 @@ public final class TradeGuiActions {
 
         CatalogBuilder builder = buildCatalog(merchant, level);
         // The client joins the packets of one catalogue in order.
-        List<TradeCatalogPayload> slices = TradeCatalogPacket.write(player.level().registryAccess(), level, maxLevel,
-                        builder.entries(), builder.skipped());
+        List<TradeCatalogPayload> slices = TradeCatalogPacket.write(
+                player.level().registryAccess(),
+                level,
+                maxLevel,
+                builder.entries(),
+                builder.skipped()
+        );
         LAST_CATALOG.put(player, slices);
         slices.forEach(slice -> NetworkHelper.sendToPlayer(player, slice));
     }
@@ -173,6 +186,7 @@ public final class TradeGuiActions {
         if (merchant instanceof Villager villager) {
             return TradePools.villagerPicks(serverLevel, merchant, villager.getVillagerData().profession(), level);
         }
+
         return TradePools.wanderingPicks(serverLevel, merchant, level);
     }
 
@@ -180,6 +194,7 @@ public final class TradeGuiActions {
         if (merchant instanceof Villager villager) {
             return TradePools.forVillager(serverLevel, villager.getVillagerData().profession(), level);
         }
+
         return TradePools.forWanderingTrader(serverLevel, level);
     }
 }
