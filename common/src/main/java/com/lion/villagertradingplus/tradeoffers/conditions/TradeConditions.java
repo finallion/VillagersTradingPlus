@@ -29,23 +29,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-/**
- * Registry and parser for the cross-cutting {@code "conditions"} block that any trade may carry.
- * A condition is JSON {@code {"type": "...", ...params}}. {@link #parse} returns the combined list,
- * evaluated with AND semantics by default or OR when the array is preceded by a {@code logic}
- * marker (see {@link #parse}). An unknown condition type fails closed (the trade is withheld) with
- * a loud log so typos are visible instead of silently disabling gating.
- *
- * <p>Each condition type registers a <em>describer</em> alongside its parser. The predicate alone is
- * an opaque lambda, so without one the trade catalogue could tell a player a trade was gated but
- * never say by what.
- */
+/// Registry and parser for the conditions block of a trade.
+/// Conditions combine with AND, or with OR when a logic marker precedes the array.
+/// An unknown type fails closed and logs, so the trade is withheld.
+/// Each type registers a describer, so the catalogue can name the gate.
 public final class TradeConditions {
 
     private static final Map<String, ConditionType> REGISTRY = new HashMap<>();
     private static final Map<String, GameRules.Key<GameRules.BooleanRule>> BOOLEAN_RULES = new HashMap<>();
 
-    /** How many entries of a list-valued condition to name before collapsing the rest into a count. */
+    /// Entries named before the rest collapse into a count.
     private static final int DESCRIBE_LIST_LIMIT = 3;
 
     private static final Set<String> WEATHER_STATES = Set.of("clear", "rain", "thunder");
@@ -65,15 +58,12 @@ public final class TradeConditions {
             "warped"
     );
 
-    /** A condition type: how to build its predicate, and how to phrase it for a player. */
     private record ConditionType(Function<JsonObject, TradeCondition> parser,
                                  Function<JsonObject, Text> describer) {
     }
 
     static {
-        // accept() stopped being static in 1.21.6 because game rules are feature-gated now. A
-        // throwaway instance over the default feature set enumerates every rule a vanilla world can
-        // have, which is all this map is for: turning a rule name from JSON into a typed Key.
+        // A throwaway instance over the default feature set enumerates every vanilla game rule.
         new GameRules(FeatureFlags.DEFAULT_ENABLED_FEATURES).accept(new GameRules.Visitor() {
             @Override
             public <T extends GameRules.Rule<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
@@ -90,7 +80,7 @@ public final class TradeConditions {
     private TradeConditions() {
     }
 
-    /** Registers a condition type with a generic description. Prefer the three-arg overload. */
+    /// Registers a type with a generic description. Prefer the three-argument overload.
     public static void register(String type, Function<JsonObject, TradeCondition> factory) {
         register(type, factory, json -> Text.translatable("condition.villagertradingplus.generic", type));
     }
@@ -100,11 +90,7 @@ public final class TradeConditions {
         REGISTRY.put(type, new ConditionType(factory, describer));
     }
 
-    /**
-     * Parses the {@code conditions} array into a single combined {@link TradeCondition}. Default
-     * logic is AND; pass {@code "logic": "or"} on the owning trade object to switch, which is read
-     * separately by {@link #parse(JsonArray, boolean)}.
-     */
+    /// Combines the conditions with AND by default. Setting logic to or on the owning trade switches to OR.
     public static ParsedConditions parse(JsonArray conditions) {
         return parse(conditions, false);
     }
@@ -116,16 +102,14 @@ public final class TradeConditions {
             String type = stripNamespace(JsonFields.requireString(obj, "trade condition", "type"));
             ConditionType conditionType = REGISTRY.get(type);
             if (conditionType == null) {
-                // Withheld rather than skipped: the type may come from a mod that is not installed,
-                // and offering the trade ungated would be the more harmful guess.
+                // Withheld rather than skipped, because offering the trade ungated is the more harmful guess.
                 VillagerTradingPlus.LOGGER.error("Unknown trade condition type: " + type + " -- this trade will be withheld.");
                 parsed.add(new ParsedConditions.Entry(
                         Text.translatable("condition.villagertradingplus.unknown", type),
                         villager -> false)); // fail closed
                 continue;
             }
-            // Parsed before it is described, so a malformed condition fails with one clean message
-            // instead of first logging that its describer choked on the same missing field.
+            // Parse first, so a malformed condition fails with one clean message.
             TradeCondition condition = conditionType.parser().apply(obj);
             parsed.add(new ParsedConditions.Entry(describeSafely(conditionType, obj, type), condition));
         }
@@ -133,7 +117,7 @@ public final class TradeConditions {
         return new ParsedConditions(List.copyOf(parsed), orLogic);
     }
 
-    /** A malformed describer must never take down trade loading, so fall back to the bare type name. */
+    /// A failing describer falls back to the bare type name, so trade loading survives.
     private static Text describeSafely(ConditionType type, JsonObject json, String typeName) {
         try {
             return type.describer().apply(json);
@@ -158,8 +142,6 @@ public final class TradeConditions {
         register("gamerule", TradeConditions::parseGamerule, TradeConditions::describeGamerule);
         register("job_site_block", TradeConditions::parseJobSite, TradeConditions::describeJobSite);
     }
-
-    // --- Built-in condition parsers ---------------------------------------------------------
 
     private static TradeCondition parseBiome(JsonObject json) {
         if (json.has("tag")) {
@@ -206,14 +188,7 @@ public final class TradeConditions {
         return villager -> villager.getWorld().isDay() == wantDay;
     }
 
-    /**
-     * Matches the lunar day, and by default only while the moon is actually up.
-     *
-     * <p>{@code getMoonPhase()} is {@code getLunarTime() / 24000 % 8}: it names the lunar day and
-     * says nothing about the time within it, so on its own it holds all through the following
-     * daylight hours too - a "full moon" trade would sit there unlocked at noon. Set
-     * {@code "require_night": false} to gate on the bare lunar day anyway.
-     */
+    /// Matches the lunar day. By default it requires night, because the lunar day also covers the daylight hours.
     private static TradeCondition parseMoonPhase(JsonObject json) {
         Set<Integer> phases = new HashSet<>();
         for (JsonElement element : JsonFields.requireArray(json, "\"moon_phase\" condition", "phases")) {
@@ -259,8 +234,7 @@ public final class TradeConditions {
             VillagerTradingPlus.LOGGER.error("gamerule condition references unknown boolean rule: " + ruleName);
             return villager -> false;
         }
-        // getGameRules() moved off World onto ServerWorld. Trades are only ever generated
-        // server-side, so a client-side world simply fails the condition rather than guessing.
+        // Trades generate on the server, so a client-side world fails the condition.
         return villager -> villager.getWorld() instanceof ServerWorld serverWorld
                 && serverWorld.getGameRules().getBoolean(key) == expected;
     }
@@ -278,8 +252,6 @@ public final class TradeConditions {
                 .map(id -> blocks.contains(id.toString()))
                 .orElse(false);
     }
-
-    // --- Built-in condition describers ------------------------------------------------------
 
     /// The longest wood name inside the path, so `dark_oak` never counts as `oak`.
     private static String woodOf(String path) {
@@ -347,7 +319,6 @@ public final class TradeConditions {
         return Text.translatable("condition.villagertradingplus.job_site_block", joinArray(json.getAsJsonArray("blocks")));
     }
 
-    /** Comma-joins a JSON array, naming at most {@link #DESCRIBE_LIST_LIMIT} entries. */
     private static String joinArray(JsonArray array) {
         StringBuilder joined = new StringBuilder();
         int shown = Math.min(array.size(), DESCRIBE_LIST_LIMIT);
@@ -363,7 +334,6 @@ public final class TradeConditions {
         return joined.toString();
     }
 
-    /** Drops the {@code minecraft:} namespace so descriptions stay readable in a tooltip. */
     private static String prettify(String id) {
         return id.startsWith("minecraft:") ? id.substring("minecraft:".length()) : id;
     }

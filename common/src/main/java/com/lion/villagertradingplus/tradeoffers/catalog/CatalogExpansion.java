@@ -10,28 +10,19 @@ import net.minecraft.village.TradeOffers;
 
 import java.util.List;
 
-/**
- * Turns a trade factory into catalogue rows.
- *
- * <p>{@code TradeOfferManager.deserializeTrade} layers wrappers around every factory it builds, and
- * it does so recursively, so a sub-trade inside a {@code weighted_pool} carries its own wrappers
- * too. This walk peels them off one at a time, recording what each contributes, and only then asks
- * the factory underneath to enumerate itself. That is also the whole trick behind showing gated
- * trades: it reaches past {@link ConditionalTradeFactory} instead of calling through it, so a trade
- * whose condition currently fails is listed and marked rather than silently missing.
- */
+/// Turns a trade factory into catalogue rows.
+/// TradeOfferManager.deserializeTrade wraps every factory recursively. The walk peels the wrappers one by one.
+/// It reaches past ConditionalTradeFactory, so a trade with a failing condition is listed and marked.
 public final class CatalogExpansion {
 
     private CatalogExpansion() {
     }
 
-    /** Expands one top-level factory from a tier pool. */
     public static void expandTrade(TradeOffers.Factory factory, Entity merchant, CatalogBuilder out) {
         out.reset();
         expand(factory, merchant, out);
     }
 
-    /** Expands a factory in the current scope. Called recursively by pool expanders. */
     public static void expand(TradeOffers.Factory factory, Entity merchant, CatalogBuilder out) {
         if (out.isFull()) {
             out.countSkipped(1);
@@ -47,9 +38,7 @@ public final class CatalogExpansion {
 
         if (factory instanceof ConditionalTradeFactory conditional) {
             TradeCondition condition = conditional.condition();
-            // Third-party conditions registered through the one-arg TradeConditions.register still
-            // gate correctly; they just cannot describe themselves, so the row shows as gated
-            // without a reason line.
+            // Third-party conditions without a describer still gate, but the row shows no reason line.
             List<ConditionInfo> infos = condition instanceof ParsedConditions parsed
                     ? parsed.describe(merchant)
                     : List.of();
@@ -59,8 +48,7 @@ public final class CatalogExpansion {
             return;
         }
 
-        // Transparent to the catalogue: it only rebinds registry entries on a created offer, and the
-        // rows below have to keep reaching the factory that knows how to enumerate itself.
+        // Transparent to the catalogue: the rows below must still reach the enumerating factory.
         if (factory instanceof RegistryRebindFactory rebind) {
             expand(rebind.delegate(), merchant, out);
             return;

@@ -11,12 +11,7 @@ import java.util.*;
 public class TradeOfferRegistryLoader {
     private static final HashMap<RegistryKey<VillagerProfession>, Int2ObjectOpenHashMap<List<TradeOffers.Factory>>> TRADES_REGISTRY = new HashMap<>();
 
-    /// Starts a reload from a clean slate. Call before any trade file is deserialized.
-    ///
-    /// Two things have to be dropped, not one: what this loader accumulated, and what the previous
-    /// reload left in vanilla's table. Both survive a reload while re-parsing hands out fresh
-    /// `Factory` instances, so anything kept from the last pass can no longer be recognised as the
-    /// same trade and ends up in the pool a second time.
+    /// Clears the loader and vanilla's table, because re-parsed Factory instances differ from the kept ones.
     public static void begin() {
         TRADES_REGISTRY.clear();
         TradeMerger.resetToVanilla();
