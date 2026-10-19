@@ -79,7 +79,6 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             );
         }
 
-        /// The potion pool is a fixed registry scan, so each brewable result gets a row.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<RegistryEntry<Potion>> brewable = brewable(merchant.getWorld());
@@ -103,7 +102,6 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             out.popShare();
         }
 
-        /// Brewability depends on the loaded datapacks, because brewing recipes are data-driven.
         private static List<RegistryEntry<Potion>> brewable(World world) {
             return Registries.POTION.streamEntries()
                     .filter(entry -> !entry.value().getEffects().isEmpty()

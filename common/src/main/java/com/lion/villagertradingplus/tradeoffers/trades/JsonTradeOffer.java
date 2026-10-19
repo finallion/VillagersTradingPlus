@@ -29,7 +29,6 @@ public abstract class JsonTradeOffer {
         this.maxUses = readInt(jsonObject, "max_uses", 12);
         this.experience = readInt(jsonObject, "villager_experience", 5);
         this.demand = readInt(jsonObject, "demand", 0);
-        // Global price-multiplier scale from config (1.0 keeps the JSON value unchanged).
         float base = readFloat(jsonObject, "price_multiplier", 0.05f);
         this.priceMultiplier = base * VillagerTradingPlus.CONFIG.trade_price_multiplier_scale;
     }
@@ -39,7 +38,6 @@ public abstract class JsonTradeOffer {
         return new TradeOffer(traded(buy), tradedOrEmpty(second), sell, 0, maxUses, experience, priceMultiplier, demand);
     }
 
-    /// Converts the buy stack to a TradedItem. The rule must carry name, enchantments and potion.
     protected static TradedItem traded(ItemStack stack) {
         TradedItem tradedItem = new TradedItem(stack.getItem(), stack.getCount());
         ComponentChanges changes = stack.getComponentChanges();
@@ -51,16 +49,15 @@ public abstract class JsonTradeOffer {
         return tradedItem.withComponents(builder -> { addChanges(builder, changes); return builder; });
     }
 
-    /// An empty stack means no second slot, which maps to an absent optional.
     protected static Optional<TradedItem> tradedOrEmpty(ItemStack stack) {
         return stack.isEmpty() ? Optional.empty() : Optional.of(traded(stack));
     }
 
-    // The cast is unavoidable: ComponentChanges erases the pairing of type and value.
+    /// The cast is needed, because ComponentChanges erases the pairing of type and value.
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void addChanges(ComponentPredicate.Builder builder, ComponentChanges changes) {
         for (Map.Entry<ComponentType<?>, Optional<?>> entry : changes.entrySet()) {
-            // A *removed* component has no predicate equivalent - only presence can be demanded.
+            // A removed component has no predicate. Only presence can be demanded.
             entry.getValue().ifPresent(value -> builder.add((ComponentType) entry.getKey(), value));
         }
     }

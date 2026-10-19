@@ -13,8 +13,6 @@ import net.minecraft.util.profiler.Profiler;
 
 import java.util.Map;
 
-/// Loads data/<namespace>/villager_trades/<name>.json from every namespace.
-/// The profession field of a file selects its profession, not the file name.
 public class TradeOfferResourceListener extends JsonDataLoader implements ResourceReloader {
 
     public TradeOfferResourceListener() {

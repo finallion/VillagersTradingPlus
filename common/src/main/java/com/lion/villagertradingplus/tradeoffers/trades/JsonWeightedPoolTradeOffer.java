@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-/// Picks one of N sub-trades by weight in create. Sub-trades route through TradeOfferManager#deserializeTrade.
 /// A picked sub-trade can return null, for example when its condition fails.
 public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
 
@@ -31,7 +30,7 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
             int weight = readInt(entry, "weight", 1);
             TradeOffers.Factory factory = TradeOfferManager.deserializeTrade(entry.getAsJsonObject("trade"));
 
-            // Strips the inner PricingTradeFactory, so the global cost scale applies once, at the outermost level.
+            // The inner PricingTradeFactory is stripped, so the cost scale applies once.
             if (factory instanceof PricingTradeFactory pricing) {
                 factory = pricing.delegate();
             }
@@ -56,7 +55,6 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
             this.totalWeight = totalWeight;
         }
 
-        /// Each sub-trade gets its own row, so the catalogue shows every member and its odds.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             for (Entry entry : entries) {

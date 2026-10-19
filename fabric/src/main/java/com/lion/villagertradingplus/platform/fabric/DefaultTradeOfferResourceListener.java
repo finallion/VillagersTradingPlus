@@ -27,7 +27,6 @@ public class DefaultTradeOfferResourceListener extends JsonDataLoader implements
 
     @Override
     protected void apply(Map<Identifier, JsonElement> loader, ResourceManager manager, Profiler profiler) {
-        // First listener of the trade chain, so this is where a reload starts from a clean slate.
         TradeOfferRegistryLoader.begin();
 
         loader.forEach((identifier, jsonElement) -> {
@@ -35,7 +34,6 @@ public class DefaultTradeOfferResourceListener extends JsonDataLoader implements
                 return;
             }
 
-            // Use the file name, because reading JSON here would put an unguarded access before the guard.
             VillagerTradingPlus.LOGGER.debug("Deserializing default trades from: {}", identifier);
 
             TradeOfferManager.deserializeJson(identifier, jsonElement.getAsJsonObject());

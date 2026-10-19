@@ -6,7 +6,6 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 
-/// Wraps a trade factory and yields its offer only when the condition passes. A null offer drops the trade.
 public final class ConditionalTradeFactory implements TradeOffers.Factory {
 
     private final TradeOffers.Factory delegate;
@@ -26,7 +25,6 @@ public final class ConditionalTradeFactory implements TradeOffers.Factory {
         return delegate.create(entity, random);
     }
 
-    /// The catalogue reads past the gate on purpose and marks gated trades.
     public TradeOffers.Factory delegate() {
         return this.delegate;
     }

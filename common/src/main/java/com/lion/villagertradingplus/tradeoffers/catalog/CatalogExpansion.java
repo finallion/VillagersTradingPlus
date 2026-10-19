@@ -9,9 +9,6 @@ import net.minecraft.village.TradeOffers;
 
 import java.util.List;
 
-/// Turns a trade factory into catalogue rows.
-/// TradeOfferManager.deserializeTrade wraps every factory recursively. The walk peels the wrappers one by one.
-/// It reaches past ConditionalTradeFactory, so a trade with a failing condition is listed and marked.
 public final class CatalogExpansion {
 
     private CatalogExpansion() {}
@@ -36,7 +33,6 @@ public final class CatalogExpansion {
 
         if (factory instanceof ConditionalTradeFactory conditional) {
             TradeCondition condition = conditional.condition();
-            // Third-party conditions without a describer still gate, but the row shows no reason line.
             List<ConditionInfo> infos = condition instanceof ParsedConditions parsed
                     ? parsed.describe(merchant)
                     : List.of();

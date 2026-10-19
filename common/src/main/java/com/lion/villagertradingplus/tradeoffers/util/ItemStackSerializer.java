@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/// Raw `nbt` applies last. Bad input throws `TradeParseException`.
+/// Raw `nbt` applies last.
 public final class ItemStackSerializer {
 
     private ItemStackSerializer() {}
@@ -71,7 +71,6 @@ public final class ItemStackSerializer {
         return stack;
     }
 
-    /// Public so tag-resolved stacks reuse the same sugar per random pick.
     public static void applyComponents(ItemStack stack, JsonObject json) {
         if (stack.isEmpty()) {
             return;
@@ -89,7 +88,6 @@ public final class ItemStackSerializer {
             applyEnchantments(stack, json.getAsJsonArray("enchantments"));
         }
 
-        // No dyeable check: any item can carry a color, and the game ignores it where it does not render one.
         if (json.has("color")) {
             stack.set(
                     DataComponentTypes.DYED_COLOR,
@@ -130,13 +128,11 @@ public final class ItemStackSerializer {
             applyBook(stack, json.getAsJsonObject("book"));
         }
 
-        // Raw SNBT escape hatch, applied LAST so it can override or add anything above.
         if (json.has("nbt")) {
             applyRawNbt(stack, json.get("nbt").getAsString());
         }
     }
 
-    /// Enchantments are a dynamic registry, so the ids resolve against the registry loaded for this world.
     private static void applyEnchantments(ItemStack stack, JsonArray enchantments) {
         Optional<Registry<Enchantment>> registry = DatapackRegistries.registry(RegistryKeys.ENCHANTMENT);
 
@@ -148,7 +144,6 @@ public final class ItemStackSerializer {
             return;
         }
 
-        // Builds on the existing stack, so repeated application accumulates. A tag Ingredient reapplies it per pick.
         ItemEnchantmentsComponent.Builder builder =
                 new ItemEnchantmentsComponent.Builder(EnchantmentHelper.getEnchantments(stack));
         boolean applied = false;
@@ -207,7 +202,6 @@ public final class ItemStackSerializer {
         );
     }
 
-    /// Runs the raw tag through the vanilla data fixer, so legacy SNBT keys land in the right components.
     private static void applyRawNbt(ItemStack stack, String snbt) {
         try {
             NbtCompound parsed = StringNbtReader.parse(snbt);
@@ -247,7 +241,7 @@ public final class ItemStackSerializer {
                         SharedConstants.getGameVersion().getSaveVersion().getId()
                 );
 
-        // Components can reference dynamic registries, so plain NbtOps cannot read the fixed stack back.
+        // Components can reference dynamic registries, so plain NbtOps cannot read the stack back.
         RegistryOps<NbtElement> ops = RegistryOps.of(NbtOps.INSTANCE, lookup.get());
         return ItemStack.CODEC.parse(ops, fixed.getValue())
                 .resultOrPartial(error -> {
@@ -256,7 +250,7 @@ public final class ItemStackSerializer {
                 .map(ItemStack::getComponentChanges);
     }
 
-    /// Plain strings are literal. JSON-like strings parse as components, and a parse failure falls back to literal.
+    /// JSON-like strings parse as components. A failed parse keeps the literal.
     private static Text parseText(JsonElement element) {
         if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
             String raw = element.getAsString();

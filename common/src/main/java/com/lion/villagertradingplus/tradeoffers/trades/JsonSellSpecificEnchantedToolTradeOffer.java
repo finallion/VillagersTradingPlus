@@ -17,7 +17,6 @@ import net.minecraft.village.TradeOffers;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 
-/// Sells a tool with a fixed enchantment and level. sell_enchanted_tool enchants randomly instead.
 public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -35,7 +34,7 @@ public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
             throw new TradeParseException("sell_specific_enchanted_tool trade: invalid enchantment id '" + rawEnchantment + "'");
         }
 
-        // Only the key resolves here, because the entry needs a loaded world and deserialization has none.
+        // Resolve only the key. The entry needs a world, and parsing has none.
         RegistryKey<Enchantment> enchantmentKey = RegistryKey.of(RegistryKeys.ENCHANTMENT, enchantmentId);
         int level = readInt(json, "level", 1);
 
