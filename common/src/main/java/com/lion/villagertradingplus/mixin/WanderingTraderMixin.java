@@ -1,6 +1,5 @@
 package com.lion.villagertradingplus.mixin;
 
-import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.tradeoffers.WanderingTraderTradeLoader;
 import com.lion.villagertradingplus.tradeoffers.gui.TradeControl;
 import net.minecraft.entity.EntityType;
@@ -25,11 +24,7 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
         super(entityType, world);
     }
 
-    /**
-     * Replaces the whole vanilla pool rather than patching a constant. {@code WANDERING_TRADER_TRADES}
-     * is an immutable list whose entries carry their own draw count, and {@code fillRecipes} holds no
-     * count constant left to modify: a {@code @ModifyConstant} fails its injection at startup.
-     */
+    /// Vanilla pairs carry their own draw count, so the whole list is swapped.
     @Redirect(
             method = "fillRecipes",
             at = @At(
@@ -37,6 +32,10 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
                     target = "Lnet/minecraft/village/TradeOffers;WANDERING_TRADER_TRADES:Ljava/util/List;",
                     opcode = org.objectweb.asm.Opcodes.GETSTATIC))
     private List<Pair<TradeOffers.Factory[], Integer>> villagertradingplus$mergedPools() {
+        if (WanderingTraderTradeLoader.isServedByLoaderEvent()) {
+            return TradeOffers.WANDERING_TRADER_TRADES;
+        }
+
         return WanderingTraderTradeLoader.pools();
     }
 
@@ -45,14 +44,20 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
         TradeOfferList offers = getOffers();
         offers.clear();
 
+        Pair<TradeOffers.Factory[], Integer> buying = WanderingTraderTradeLoader.buyingPair();
         TradeOffers.Factory[] common = WanderingTraderTradeLoader.poolForLevel(1);
         TradeOffers.Factory[] rare = WanderingTraderTradeLoader.poolForLevel(2);
 
-        if (common != null) {
-            fillRecipesFromPool(offers, common, VillagerTradingPlus.CONFIG.trade_offers_wandering_trader);
+        if (buying != null) {
+            fillRecipesFromPool(offers, buying.getLeft(), buying.getRight());
         }
+
         if (rare != null) {
-            fillRecipesFromPool(offers, rare, 1);
+            fillRecipesFromPool(offers, rare, WanderingTraderTradeLoader.countForLevel(2));
+        }
+
+        if (common != null) {
+            fillRecipesFromPool(offers, common, WanderingTraderTradeLoader.countForLevel(1));
         }
     }
 }

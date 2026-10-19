@@ -25,6 +25,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -41,17 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Central item-stack parser for the JSON trade system. Backwards compatible with the original
- * {@code {"item": ..., "count": ...}} shape, plus optional component sugar:
- * {@code name}, {@code lore}, {@code enchantments}, {@code color}, {@code potion},
- * {@code skull_owner}, {@code book} and a raw {@code nbt} (SNBT) escape hatch applied last.
- *
- * <p>An unresolvable or missing item id raises {@link TradeParseException} so the whole trade is
- * skipped with a logged reason; a blank slot in a villager's trade list is worse than no trade.
- * Malformed sugar is still logged and skipped rather than throwing, since the stack itself remains
- * usable.
- */
+/// Raw `nbt` applies last. Bad input throws `TradeParseException`.
 public final class ItemStackSerializer {
 
     private ItemStackSerializer() {
@@ -109,9 +100,13 @@ public final class ItemStackSerializer {
         }
 
         if (json.has("potion")) {
-            Registries.POTION.getEntry(Identifier.tryParse(json.get("potion").getAsString()))
-                    .ifPresent(potion -> stack.set(DataComponentTypes.POTION_CONTENTS,
-                            new PotionContentsComponent(potion)));
+            String rawPotion = json.get("potion").getAsString();
+            Identifier potionId = Identifier.tryParse(rawPotion);
+            Optional<RegistryEntry.Reference<Potion>> potion = potionId == null
+                    ? Optional.empty()
+                    : Registries.POTION.getEntry(potionId);
+            stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(
+                    potion.orElseThrow(() -> new TradeParseException("unknown potion id \"" + rawPotion + "\" on a trade item"))));
         }
 
         if (json.has("skull_owner")) {
@@ -130,19 +125,7 @@ public final class ItemStackSerializer {
         }
     }
 
-    /**
-     * Applies {@code "enchantments": [ { "id": "minecraft:looting", "lvl": 3 } ]} - the same shape as
-     * before components, since the JSON is a public format.
-     *
-     * <p>An id no longer names an enchantment on its own: they are a dynamic registry since 1.21 and
-     * have to be looked up in the one loaded for this world. {@link DatapackRegistries} holds it, and
-     * it is populated well before any trade file is read, so this still resolves at parse time and the
-     * result is a normal component on the stack - which means the buy side keeps working too, because
-     * {@code JsonTradeOffer.traded} folds the stack's components into the match rule.
-     *
-     * <p>An unknown enchantment id costs its own entry, not the trade: a datapack may name one this
-     * world does not have loaded.
-     */
+    /// Enchantments are a dynamic registry, so the ids resolve against the registry loaded for this world.
     private static void applyEnchantments(ItemStack stack, JsonArray enchantments) {
         Optional<Registry<Enchantment>> registry = DatapackRegistries.registry(RegistryKeys.ENCHANTMENT);
         if (registry.isEmpty()) {
@@ -172,8 +155,7 @@ public final class ItemStackSerializer {
                     : registry.get().getOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, identifier));
 
             if (enchantment.isEmpty()) {
-                VillagerTradingPlus.LOGGER.error("Unknown enchantment in trade item: {}", id);
-                continue;
+                throw new TradeParseException("unknown enchantment \"" + id + "\" on a trade item");
             }
 
             builder.set(enchantment.get(), entry.has("lvl") ? entry.get("lvl").getAsInt() : 1);
@@ -234,8 +216,10 @@ public final class ItemStackSerializer {
         try {
             NbtCompound parsed = StringNbtReader.readCompound(snbt);
             componentize(stack, parsed).ifPresent(stack::applyChanges);
+        } catch (TradeParseException e) {
+            throw e;
         } catch (Exception e) {
-            VillagerTradingPlus.LOGGER.error("Failed to parse trade item nbt: " + snbt, e);
+            throw new TradeParseException("invalid \"nbt\" on a trade item: " + snbt + " (" + e.getMessage() + ")");
         }
     }
 
@@ -273,8 +257,9 @@ public final class ItemStackSerializer {
         // not enough to read the fixed stack back.
         RegistryOps<NbtElement> ops = RegistryOps.of(NbtOps.INSTANCE, lookup.get());
         return ItemStack.CODEC.parse(ops, fixed.getValue())
-                .resultOrPartial(error -> VillagerTradingPlus.LOGGER.error(
-                        "Could not read the converted \"nbt\" of a trade item: {}", error))
+                .resultOrPartial(error -> {
+                    throw new TradeParseException("could not read the converted \"nbt\" of a trade item: " + error);
+                })
                 .map(ItemStack::getComponentChanges);
     }
 

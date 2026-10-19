@@ -4,8 +4,10 @@ import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.VillagerTradingPlusClient;
 import com.lion.villagertradingplus.platform.neoforge.DefaultTradeOfferResourceListener;
 import com.lion.villagertradingplus.platform.neoforge.NetworkHelperImpl;
+import com.lion.villagertradingplus.platform.neoforge.TradeEventHandler;
 import com.lion.villagertradingplus.platform.neoforge.TradeOfferResourceListener;
 import com.lion.villagertradingplus.platform.neoforge.WanderingTraderTradeOfferResourceListener;
+import com.lion.villagertradingplus.tradeoffers.WanderingTraderTradeLoader;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -24,6 +26,7 @@ public class VillagerTradingPlusNeoForge {
      */
     public VillagerTradingPlusNeoForge(IEventBus modEventBus) {
         VillagerTradingPlus.init();
+        WanderingTraderTradeLoader.setServedByLoaderEvent(true);
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             VillagerTradingPlusClient.init();
@@ -31,6 +34,8 @@ public class VillagerTradingPlusNeoForge {
 
         modEventBus.addListener(NetworkHelperImpl::register);
         NeoForge.EVENT_BUS.addListener(VillagerTradingPlusNeoForge::registerResourceReloader);
+        NeoForge.EVENT_BUS.addListener(TradeEventHandler::onVillagerTrades);
+        NeoForge.EVENT_BUS.addListener(TradeEventHandler::onWandererTrades);
     }
 
     // Renamed from AddReloadListenerEvent, and listeners are now keyed so NeoForge can order them.

@@ -3,10 +3,14 @@ package com.lion.villagertradingplus.tradeoffers.catalog;
 import com.lion.villagertradingplus.tradeoffers.PricingTradeFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
+import net.minecraft.world.gen.structure.Structure;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -195,10 +199,34 @@ public final class CatalogBuilder {
      * seed, so the row is stable across openings even when {@code create} is random.
      */
     public void addSampled(TradeOffers.Factory factory, Entity merchant) {
+        if (isStructureMapFactory(factory)) {
+            countSkipped(1);
+            return;
+        }
+
         TradeOffer offer = factory.create(merchant, Random.create(CATALOG_SEED));
         if (offer != null) {
             addOffer(offer);
         }
+    }
+
+    /// Vanilla map trades search for a structure when rolled. The factory class is private, so match it by its structure tag field.
+    private static boolean isStructureMapFactory(TradeOffers.Factory factory) {
+        Class<?> type = factory.getClass();
+
+        if (type.getEnclosingClass() != TradeOffers.class) {
+            return false;
+        }
+
+        for (Field field : type.getDeclaredFields()) {
+            if (field.getType() == TagKey.class
+                    && field.getGenericType() instanceof ParameterizedType tagType
+                    && tagType.getActualTypeArguments()[0] == Structure.class) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // --- caps ----------------------------------------------------------------------------------

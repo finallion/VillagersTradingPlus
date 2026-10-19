@@ -96,6 +96,32 @@ public class TradeOfferManager {
         return null;
     }
 
+    private static Identifier sourceFile;
+
+    public static void deserializeJson(Identifier source, JsonObject jsonRoot) {
+        sourceFile = source;
+
+        try {
+            deserializeJson(jsonRoot);
+        } finally {
+            sourceFile = null;
+        }
+    }
+
+    public static void deserializeWanderingTraderJson(Identifier source, JsonObject jsonRoot) {
+        sourceFile = source;
+
+        try {
+            deserializeWanderingTraderJson(jsonRoot);
+        } finally {
+            sourceFile = null;
+        }
+    }
+
+    private static String fileSuffix() {
+        return sourceFile == null ? "" : " [file " + sourceFile + "]";
+    }
+
     public static void deserializeJson(JsonObject jsonRoot) {
         // One unusable file costs that file, not the reload. The listener logs which one it is
         // right before calling in, so the pair of lines pins it down.
@@ -116,9 +142,9 @@ public class TradeOfferManager {
             deserializeTrades(jsonRoot, (integer, factory)
                     -> TradeOfferRegistryLoader.registerVillagerTrade(profession, integer, factory));
         } catch (TradeParseException e) {
-            VillagerTradingPlus.LOGGER.error("Skipping villager trade file: {}", e.getMessage());
+            VillagerTradingPlus.LOGGER.error("Skipping villager trade file{}: {}", fileSuffix(), e.getMessage());
         } catch (RuntimeException e) {
-            VillagerTradingPlus.LOGGER.error("Skipping malformed villager trade file.", e);
+            VillagerTradingPlus.LOGGER.error("Skipping malformed villager trade file{}.", fileSuffix(), e);
         }
     }
 
@@ -170,9 +196,9 @@ public class TradeOfferManager {
                 }
             }
         } catch (TradeParseException e) {
-            VillagerTradingPlus.LOGGER.error("Skipping wandering trader trade file: {}", e.getMessage());
+            VillagerTradingPlus.LOGGER.error("Skipping wandering trader trade file{}: {}", fileSuffix(), e.getMessage());
         } catch (RuntimeException e) {
-            VillagerTradingPlus.LOGGER.error("Skipping malformed wandering trader trade file.", e);
+            VillagerTradingPlus.LOGGER.error("Skipping malformed wandering trader trade file{}.", fileSuffix(), e);
         }
     }
 
@@ -229,7 +255,7 @@ public class TradeOfferManager {
         String type = readString(trade, "type");
         JsonTradeOffer adapter = findAdapter(type);
         if (adapter == null) {
-            VillagerTradingPlus.LOGGER.warn("Skipping trade with unknown type '{}'.", type);
+            VillagerTradingPlus.LOGGER.warn("Skipping trade with unknown type '{}'{}.", type, fileSuffix());
             return null;
         }
 
@@ -247,7 +273,7 @@ public class TradeOfferManager {
             return PricingTradeFactory.wrapIfNeeded(factory, trade);
         } catch (TradeParseException e) {
             // Skip only this trade: one bad item id must not take the rest of the datapack with it.
-            VillagerTradingPlus.LOGGER.warn("Skipping '{}' trade: {}", type, e.getMessage());
+            VillagerTradingPlus.LOGGER.warn("Skipping '{}' trade{}: {}", type, fileSuffix(), e.getMessage());
             return null;
         } catch (RuntimeException e) {
             // The backstop. Every trade in every datapack passes through here, so this is the one
@@ -256,7 +282,7 @@ public class TradeOfferManager {
             // abort it. Logged with the stack trace because, unlike a TradeParseException, this is
             // not an expected shape of bad input - it is either an unguarded read that should be
             // using JsonFields, or a genuine defect here.
-            VillagerTradingPlus.LOGGER.error("Skipping malformed '{}' trade: {}", type, trade, e);
+            VillagerTradingPlus.LOGGER.error("Skipping malformed '{}' trade{}: {}", type, fileSuffix(), trade, e);
             return null;
         }
     }

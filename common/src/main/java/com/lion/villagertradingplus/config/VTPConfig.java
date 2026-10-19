@@ -1,5 +1,6 @@
 package com.lion.villagertradingplus.config;
 
+import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.config.annotations.Description;
 
 /**
@@ -24,6 +25,36 @@ public class VTPConfig implements Config {
         return "villagertradingplus";
     }
 
+    /// The clamp applies in memory, not in the file.
+    public void clampToValidRanges() {
+        trade_offers_per_level = clamp("trade_offers_per_level", trade_offers_per_level, 0, 64);
+        trade_offers_wandering_trader = clamp("trade_offers_wandering_trader", trade_offers_wandering_trader, 0, 64);
+        trade_price_multiplier_scale = clamp("trade_price_multiplier_scale", trade_price_multiplier_scale, 0.0F, 100.0F);
+        trade_cost_scale = clamp("trade_cost_scale", trade_cost_scale, 0.0F, 100.0F);
+        time_of_day_price_variance = clamp("time_of_day_price_variance", time_of_day_price_variance, 0.0F, 1.0F);
+        reroll_permission_level = clamp("reroll_permission_level", reroll_permission_level, 0, 4);
+    }
+
+    private static int clamp(String name, int value, int min, int max) {
+        int clamped = Math.max(min, Math.min(max, value));
+
+        if (clamped != value) {
+            VillagerTradingPlus.LOGGER.warn("Config value {}={} is outside {} to {}. Using {}.", name, value, min, max, clamped);
+        }
+
+        return clamped;
+    }
+
+    private static float clamp(String name, float value, float min, float max) {
+        float clamped = Float.isNaN(value) ? min : Math.max(min, Math.min(max, value));
+
+        if (clamped != value) {
+            VillagerTradingPlus.LOGGER.warn("Config value {}={} is outside {} to {}. Using {}.", name, value, min, max, clamped);
+        }
+
+        return clamped;
+    }
+
     @Description("Amount of new trades per level a villager can have at max. (Default: 2)")
     public int trade_offers_per_level = 2;
 
@@ -45,11 +76,14 @@ public class VTPConfig implements Config {
     @Description("Only used when enable_time_of_day_pricing is true. Sets how far the time-based price change can go, as a fraction of the cost. 0.15 = up to 15% cheaper or more expensive. 0.0 = no change. (Default: 0.15)")
     public float time_of_day_price_variance = 0.15F;
 
-    @Description("Adds buttons to the trading screen to reset and re-roll a villager's or wandering trader's trades (all of them, or just one level). When true, ANY player can use it. (Default: false)")
+    @Description("Adds buttons to the trading screen to reset and re-roll a villager's or wandering trader's trades (all of them, or just one level). When true, every player who passes reroll_permission_level can use it. (Default: false)")
     public boolean allow_trade_reroll = false;
 
-    @Description("Adds a control to the trading screen to set a villager's level (1-5). Regenerates the villager's trades for the new level. Wandering traders have no levels and ignore it. When true, ANY player can use it. (Default: false)")
+    @Description("Adds a control to the trading screen to set a villager's level (1-5). Regenerates the villager's trades for the new level. Wandering traders have no levels and ignore it. When true, every player who passes reroll_permission_level can use it. (Default: false)")
     public boolean allow_set_villager_level = false;
+
+    @Description("Command permission level (0-4) a player needs to use the re-roll buttons and the villager level control. 0 = every player. 2 = operators with game master rights. Values outside 0-4 are clamped. (Default: 0)")
+    public int reroll_permission_level = 0;
 
     @Description("Adds a button to the trading screen that opens a read-only catalog of all possible trades for a chosen level, so you can see what a villager could offer. When true, ANY player can use it. (Default: false)")
     public boolean allow_view_all_trades = false;
