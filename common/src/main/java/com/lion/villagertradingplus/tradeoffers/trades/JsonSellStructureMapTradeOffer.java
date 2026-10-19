@@ -90,7 +90,6 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
             }
         }
 
-        /// One row, built without touching the world.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             ItemStack map = new ItemStack(Items.FILLED_MAP);

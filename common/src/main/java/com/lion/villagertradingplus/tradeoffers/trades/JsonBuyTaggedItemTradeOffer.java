@@ -14,7 +14,6 @@ import com.lion.villagertradingplus.tradeoffers.TradeFactory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 
-/// Buys one member of an item tag per generated offer.
 public class JsonBuyTaggedItemTradeOffer extends JsonTradeOffer {
 
     @Override

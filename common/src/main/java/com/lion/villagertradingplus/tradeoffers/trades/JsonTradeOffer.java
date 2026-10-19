@@ -52,11 +52,10 @@ public abstract class JsonTradeOffer {
         return stack.isEmpty() ? Optional.empty() : Optional.of(traded(stack));
     }
 
-    // DataComponentPatch erases the link between the component type and its value, so the cast stays.
+    /// DataComponentPatch erases the link between the component type and its value, so the cast stays.
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void addChanges(DataComponentExactPredicate.Builder builder, DataComponentPatch changes) {
         for (Map.Entry<DataComponentType<?>, Optional<?>> entry : changes.entrySet()) {
-            // A predicate cannot require that a component is absent, so removed components are skipped.
             entry.getValue().ifPresent(value -> builder.expect((DataComponentType) entry.getKey(), value));
         }
     }

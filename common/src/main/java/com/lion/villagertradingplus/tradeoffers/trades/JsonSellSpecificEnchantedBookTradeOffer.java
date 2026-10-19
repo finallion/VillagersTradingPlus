@@ -15,7 +15,6 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.trading.MerchantOffer;
 import org.jetbrains.annotations.NotNull;
 
-/// Sells a book with one fixed enchantment. Unlike `sell_enchanted_book`, it does not roll.
 public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
 
     @Override

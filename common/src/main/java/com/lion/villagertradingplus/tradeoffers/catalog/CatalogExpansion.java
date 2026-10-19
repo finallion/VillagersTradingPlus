@@ -9,7 +9,6 @@ import java.util.List;
 import net.minecraft.world.entity.Entity;
 import com.lion.villagertradingplus.tradeoffers.TradeFactory;
 
-/// Turns a trade factory into catalogue rows. It removes the wrappers one by one, then lists the offers.
 public final class CatalogExpansion {
 
     private CatalogExpansion() {}
@@ -34,7 +33,6 @@ public final class CatalogExpansion {
 
         if (factory instanceof ConditionalTradeFactory conditional) {
             TradeCondition condition = conditional.condition();
-            // A condition registered without a describer gates correctly. Its row shows no reason line.
             List<ConditionInfo> infos = condition instanceof ParsedConditions parsed
                     ? parsed.describe(merchant)
                     : List.of();
@@ -44,7 +42,6 @@ public final class CatalogExpansion {
             return;
         }
 
-        // This wrapper only rebinds registry entries. Walk past it to the factory that enumerates.
         if (factory instanceof RegistryRebindFactory rebind) {
             expand(rebind.delegate(), merchant, out);
             return;

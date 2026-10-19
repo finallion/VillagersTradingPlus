@@ -3,7 +3,6 @@ package com.lion.villagertradingplus.config;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.config.annotations.Description;
 
-/// Settings that apply to every trade the library builds, no matter which mod or datapack defined it.
 public class VTPConfig implements Config {
 
     @Override
@@ -48,7 +47,6 @@ public class VTPConfig implements Config {
     @Description("Adds a control to the trading screen to set a villager's level (1-5). Regenerates the villager's trades for the new level. Wandering traders have no levels and ignore it. When true, every player who passes reroll_permission_level can use it. (Default: false)")
     public boolean allow_set_villager_level = false;
 
-    /// The clamp applies in memory, not in the file.
     public void clampToValidRanges() {
         trade_offers_per_level = clamp("trade_offers_per_level", trade_offers_per_level, 0, 64);
         trade_offers_wandering_trader = clamp("trade_offers_wandering_trader", trade_offers_wandering_trader, 0, 64);

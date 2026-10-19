@@ -30,7 +30,6 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.Level;
 
-/// Sells a book with a weighted pick from a list. The price scales with the level, with a cap of 64.
 public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -40,7 +39,6 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
 
         ItemStack currency = getItemStackFromJsonWithoutCount(JsonFields.requireObject(json, "sell_enchanted_book_from_list trade", "currency"));
 
-        // Present only during a datapack load. Reads the level bounds of an enchantment as defaults.
         Optional<Registry<Enchantment>> registry = DatapackRegistries.registry(Registries.ENCHANTMENT);
 
         List<Entry> entries = new ArrayList<>();
@@ -150,7 +148,6 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
             );
         }
 
-        /// Lists every (enchantment, level) pair. The price follows from them.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<Resolved> resolved = resolve(merchant.level());

@@ -50,13 +50,10 @@ public class TradeOfferManager {
         tradeOfferRegistry.put(Identifier.fromNamespaceAndPath(VillagerTradingPlus.MOD_ID,"multi_input"), new JsonMultiInputTradeOffer());
     }
 
-    /// Alias namespace that type ids accept.
     private static final String LEGACY_NAMESPACE = "villagersplus";
 
-    /// Alias type ids that already logged a warning, so a big datapack logs each one once and not per trade.
     private static final Set<String> REPORTED_LEGACY_TYPES = ConcurrentHashMap.newKeySet();
 
-    /// Accepts `villagertradingplus:x`, a bare `x` and the alias `villagersplus:x`.
     @Nullable
     private static JsonTradeOffer findAdapter(String type) {
         Identifier id = Identifier.tryParse(type);
@@ -71,7 +68,7 @@ public class TradeOfferManager {
             return adapter;
         }
 
-        // A bare id resolves to the minecraft namespace, which is not the intended type.
+        // A bare id resolves to the minecraft namespace.
         if (type.indexOf(':') < 0) {
             return tradeOfferRegistry.get(Identifier.fromNamespaceAndPath(VillagerTradingPlus.MOD_ID, id.getPath()));
         }
@@ -118,7 +115,6 @@ public class TradeOfferManager {
     }
 
     public static void deserializeJson(JsonObject jsonRoot) {
-        // One unusable file costs that file, not the reload.
         try {
             Identifier professionId = Identifier.tryParse(
                     JsonFields.requireString(jsonRoot, "villager trade file", "profession")
@@ -158,7 +154,6 @@ public class TradeOfferManager {
                     continue;
                 }
 
-                // A tier that is not an array is dropped whole. A bad entry drops only itself.
                 JsonArray tierTrades;
                 try {
                     tierTrades = JsonFields.requireArray(trades, "tier '" + entry.getKey() + "'", entry.getKey());
@@ -229,7 +224,6 @@ public class TradeOfferManager {
 
                 TradeFactory factory = deserializeTrade(trade);
 
-                // deserializeTrade already logged why; just record which tier lost a trade.
                 if (factory == null) {
                     VillagerTradingPlus.LOGGER.warn("Dropped a broken trade from tier '{}': {}", entry.getKey(), trade);
                 } else {
@@ -239,7 +233,6 @@ public class TradeOfferManager {
         }
     }
 
-    /// Every trade passes here, nested trades included.
     @Nullable
     public static TradeFactory deserializeTrade(JsonObject trade) {
         String type = readString(trade, "type");
@@ -251,7 +244,7 @@ public class TradeOfferManager {
         }
 
         try {
-            // Wrap innermost, so `weighted_pool` still finds the PricingTradeFactory to strip.
+            // The wrapper sits innermost, so `weighted_pool` still finds the PricingTradeFactory.
             TradeFactory factory = RegistryRebindFactory.wrap(adapter.deserialize(trade));
 
             if (VillagerTradingPlus.CONFIG.enable_conditional_trades && trade.has("conditions")) {
@@ -264,11 +257,9 @@ public class TradeOfferManager {
 
             return PricingTradeFactory.wrapIfNeeded(factory, trade);
         } catch (TradeParseException e) {
-            // Skip this trade only. One bad item id drops no other trade.
             VillagerTradingPlus.LOGGER.warn("Skipping '{}' trade{}: {}", type, fileSuffix(), e.getMessage());
             return null;
         } catch (RuntimeException e) {
-            // Backstop for unchecked reads. A stack trace marks a defect.
             VillagerTradingPlus.LOGGER.error("Skipping malformed '{}' trade{}: {}", type, fileSuffix(), trade, e);
             return null;
         }

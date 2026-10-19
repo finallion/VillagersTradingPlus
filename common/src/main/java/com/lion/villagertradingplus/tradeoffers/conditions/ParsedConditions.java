@@ -6,7 +6,6 @@ import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 
-/// Holds the combined predicate and one description per condition for the catalogue.
 public record ParsedConditions(List<Entry> entries, boolean orLogic) implements TradeCondition {
 
     public record Entry(Component description, TradeCondition condition) {
@@ -20,7 +19,7 @@ public record ParsedConditions(List<Entry> entries, boolean orLogic) implements 
                     return true;
                 }
             }
-            // An empty OR block gates nothing, matching the AND case below.
+            // An empty OR block gates nothing.
             return this.entries.isEmpty();
         }
 

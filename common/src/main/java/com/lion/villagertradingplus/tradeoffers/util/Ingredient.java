@@ -13,15 +13,13 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
-/// Input side of a trade: a fixed item or an item tag.
-/// A tag resolves to one random member at [#resolve] time, inside `Factory.create`.
 /// Vanilla [MerchantOffer] matches one concrete [ItemStack], so a tag is not an any-of match.
 public final class Ingredient {
 
-    private final ItemStack fixed;          // non-null when built from "item"
-    private final TagKey<net.minecraft.world.item.Item> tag; // non-null when built from "tag"
+    private final ItemStack fixed;
+    private final TagKey<net.minecraft.world.item.Item> tag;
     private final int count;
-    private final JsonObject componentSugar; // reapplied to each tag pick
+    private final JsonObject componentSugar;
 
     private Ingredient(
             ItemStack fixed,
@@ -68,7 +66,6 @@ public final class Ingredient {
         return build(list.get(random.nextInt(list.size())));
     }
 
-    /// Every stack this ingredient could resolve to: one entry for a fixed ingredient, one per tag member otherwise.
     public List<ItemStack> resolveAll() {
         if (tag == null) {
             return List.of(fixed.copy());

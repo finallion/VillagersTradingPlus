@@ -5,7 +5,7 @@ import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPacket;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 
-/// Holds the catalogue that the server last sent. The reply can arrive before the panel exists.
+/// The reply can arrive before the panel exists.
 public final class TradeCatalogClientState {
 
     private static final TradeCatalogPacket.Reassembler REASSEMBLER = new TradeCatalogPacket.Reassembler();
@@ -19,7 +19,6 @@ public final class TradeCatalogClientState {
 
     public static void register() {
         NetworkHelper.registerCatalogReceiver(slice -> {
-            // Item stacks resolve their components against the client world registries.
             if (Minecraft.getInstance().level == null) {
                 return;
             }
@@ -27,7 +26,6 @@ public final class TradeCatalogClientState {
             TradeCatalogPacket.Payload payload =
                     REASSEMBLER.accept(slice, Minecraft.getInstance().level.registryAccess());
 
-            // The panel keeps its placeholder until the last slice arrives.
             if (payload != null) {
                 current = payload;
                 awaitingReply = false;

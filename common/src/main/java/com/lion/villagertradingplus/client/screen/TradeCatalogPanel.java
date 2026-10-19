@@ -19,14 +19,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
-/// The screen mixin draws this panel after all widgets of the trade screen.
-/// The server sends a whole tier in one packet, so paging and scrolling are local.
 public final class TradeCatalogPanel {
 
     private static final int MAX_WIDTH = 176;
     /// Narrowest width: three 16px slots plus the arrow and padding.
     private static final int MIN_WIDTH = 73;
-    /// Below this the tighter row layout kicks in.
     private static final int COMPACT_WIDTH = 120;
     /// Matches the `imageHeight` of the trade screen, so the panels line up.
     private static final int HEIGHT = 166;
@@ -34,7 +31,7 @@ public final class TradeCatalogPanel {
     private static final int DOCK_GAP = 2;
     private static final int SCREEN_MARGIN = 1;
 
-    /// Slots draw a border from `x - 1` to `x + 17`. Row spacing uses this footprint.
+    /// Row spacing uses the `x - 1` to `x + 17` slot span.
     private static final int SLOT_FOOTPRINT = 18;
     private static final int ARROW_WIDTH = 12;
 
@@ -63,7 +60,6 @@ public final class TradeCatalogPanel {
     private static final int TEXT_GATED = 0xFFB06000;
     private static final int BUTTON_LABEL = 0xFFFFFFFF;
 
-    /// Request button id of a catalogue tier: this value plus the tier.
     private static final int CATALOG_REQUEST_BASE = 130;
 
     private final Minecraft client;
@@ -162,7 +158,6 @@ public final class TradeCatalogPanel {
                 && mouseY >= this.y && mouseY < this.y + HEIGHT;
     }
 
-    /// Returns the button id to send, or -1 when the click needs no request.
     public int mouseClicked(double mouseX, double mouseY) {
         int localX = (int) (mouseX - this.x);
         int localY = (int) (mouseY - this.y);
@@ -197,7 +192,6 @@ public final class TradeCatalogPanel {
         scrollRows(amount > 0 ? -1 : 1);
     }
 
-    /// Stops at the start of the last page, so the page counter reaches its last value.
     private void scrollRows(int delta) {
         int size = entries().size();
         int lastPageStart = Math.max(0, (Mth.positiveCeilDiv(size, ROWS_PER_PAGE) - 1) * ROWS_PER_PAGE);
@@ -229,7 +223,7 @@ public final class TradeCatalogPanel {
         Font font = this.client.font;
         drawFrame(context);
 
-        // Adopt the tier that the server served. It can differ from the requested tier.
+        // The server may clamp the tier, so adopt the served tier.
         TradeCatalogPacket.Payload payload = TradeCatalogClientState.current();
 
         if (payload != null && !TradeCatalogClientState.isLoading()) {
@@ -261,7 +255,7 @@ public final class TradeCatalogPanel {
         drawRows(context, entries, mouseX, mouseY);
         drawFooter(context, entries, mouseX, mouseY);
 
-        // Last, so it lands above the vanilla trade screen's own tooltip pass.
+        // Draw last, above the vanilla tooltip pass.
         drawTooltip(context, entries, mouseX, mouseY);
     }
 

@@ -6,7 +6,6 @@ import java.util.Map;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 
-/// Immutable result of one reload. `defaults` replace a profession's vanilla trades. `additions` extend them.
 public record TradeSnapshot(
         Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> defaults,
         Map<ResourceKey<VillagerProfession>, Int2ObjectMap<List<TradeFactory>>> additions

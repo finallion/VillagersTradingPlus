@@ -28,7 +28,6 @@ public class VillagerTradingPlusNeoForge {
         NeoForge.EVENT_BUS.addListener(VillagerTradingPlusNeoForge::registerResourceReloader);
     }
 
-    // The ids match the ones that the Fabric listeners use.
     private static void registerResourceReloader(AddServerReloadListenersEvent event) {
         event.addListener(
                 Identifier.fromNamespaceAndPath(VillagerTradingPlus.MOD_ID, "default_villager_data_loader"),
