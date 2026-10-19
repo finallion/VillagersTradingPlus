@@ -17,10 +17,7 @@ import net.minecraft.village.TradeOffers;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Sells a tool with a fixed enchantment at a fixed level (e.g. a guaranteed Fortune III pickaxe),
- * unlike {@code sell_enchanted_tool} which enchants randomly.
- */
+/// Sells a tool with a fixed enchantment and level. sell_enchanted_tool enchants randomly instead.
 public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -38,8 +35,7 @@ public class JsonSellSpecificEnchantedToolTradeOffer extends JsonTradeOffer {
             throw new TradeParseException("sell_specific_enchanted_tool trade: invalid enchantment id '" + rawEnchantment + "'");
         }
 
-        // Only the key is resolved here. Enchantments live in a dynamic registry since 1.21, so the
-        // entry itself does not exist until a world is loaded - and deserialization has no world.
+        // Only the key resolves here, because the entry needs a loaded world and deserialization has none.
         RegistryKey<Enchantment> enchantmentKey = RegistryKey.of(RegistryKeys.ENCHANTMENT, enchantmentId);
         int level = readInt(json, "level", 1);
 

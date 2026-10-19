@@ -18,20 +18,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.village.TradeOffers;
 
-/**
- * Server-side handling for the trade-screen control buttons. Actions are addressed by the button id
- * received through vanilla {@code ScreenHandler.onButtonClick} (no custom networking on the way in):
- * <ul>
- *   <li>100+level -> set villager level</li>
- *   <li>110+level -> re-roll one tier</li>
- *   <li>120       -> re-roll all tiers</li>
- *   <li>130+level -> send the read-only catalogue for a tier</li>
- * </ul>
- *
- * <p>The catalogue reply does need its own packet: it carries per-trade metadata that no vanilla
- * screen sync can express, but it rides back to a client whose merchant screen is still open, so
- * the request half stays on the vanilla channel.
- */
+/// Server-side handler for the trade-screen control buttons, addressed by ScreenHandler.onButtonClick ids.
+/// 100+level sets the villager level. 110+level re-rolls one tier. 120 re-rolls all tiers.
+/// 130+level sends the catalogue for a tier. The reply needs its own packet.
 public final class TradeGuiActions {
 
     private static final int ACTION_COOLDOWN_TICKS = 10;
@@ -43,7 +32,6 @@ public final class TradeGuiActions {
     private TradeGuiActions() {
     }
 
-    /** Returns true if the button id was one of ours and was handled. */
     public static boolean handle(ServerPlayerEntity player, MerchantEntity merchant, int id) {
         VTPConfig cfg = VillagerTradingPlus.CONFIG;
 
@@ -132,7 +120,6 @@ public final class TradeGuiActions {
         return false;
     }
 
-    /** Re-sends the merchant's offers to the currently open trade screen so the client updates. */
     private static void refresh(ServerPlayerEntity player, MerchantEntity merchant) {
         if (player.currentScreenHandler instanceof MerchantScreenHandler handler) {
             int level = merchant instanceof VillagerEntity villager ? villager.getVillagerData().getLevel() : 1;
@@ -141,7 +128,6 @@ public final class TradeGuiActions {
         }
     }
 
-    /** Builds the requested tier and ships it to the panel docked beside the player's trade screen. */
     private static void sendCatalog(ServerPlayerEntity player, MerchantEntity merchant, int requestedLevel) {
         int maxLevel = maxLevel(merchant);
         int level = MathHelper.clamp(requestedLevel, 1, maxLevel);
@@ -162,21 +148,12 @@ public final class TradeGuiActions {
         }
     }
 
-    /** Villagers have five tiers; the wandering trader has two pools (common, rare). */
+    /// Villagers have five tiers. The wandering trader has two pools.
     public static int maxLevel(MerchantEntity merchant) {
         return merchant instanceof VillagerEntity ? 5 : 2;
     }
 
-    /**
-     * Enumerates every trade a merchant could roll at a tier.
-     *
-     * <p>Derived from what the trade JSON <em>defines</em>, never from sampling {@code create}. The
-     * old approach rolled each factory eight times and de-duplicated the results, which meant the
-     * list changed size between openings: a weighted pool might not surface its rare member, a
-     * random price made two identical books look like two different trades, and a conditional trade
-     * simply vanished whenever its condition happened to be false. {@link CatalogExpansion} walks
-     * the factories instead, so the same tier always produces the same rows.
-     */
+    /// Derives rows from the JSON definition, so a tier always yields the same rows.
     public static CatalogBuilder buildCatalog(MerchantEntity merchant, int level) {
         TradeOffers.Factory[] pool = poolFor(merchant, level);
         int poolSize = pool == null ? 0 : pool.length;

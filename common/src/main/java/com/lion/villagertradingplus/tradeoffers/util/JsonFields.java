@@ -4,21 +4,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-/// Reads fields a datapack *must* provide, failing with a [TradeParseException] that names the
-/// field instead of the `NullPointerException` a bare `get(...).getAsString()` would throw.
-///
-/// The distinction matters: a `TradeParseException` is understood as "this datapack is wrong",
-/// gets logged with its message and costs exactly the trade it came from. Anything else reads as
-/// a defect in this mod and is logged with a stack trace.
-///
-/// Optional fields keep using the `read*` helpers with a default on `JsonTradeOffer`.
+/// Reads required datapack fields and fails with a TradeParseException that names the field.
+/// A TradeParseException means the datapack is wrong. It is logged with its message and costs one trade.
+/// Any other exception reads as a defect in this mod and is logged with a stack trace.
+/// Optional fields use the read helpers with a default on JsonTradeOffer.
 public final class JsonFields {
 
     private JsonFields() {
     }
 
-    /// `owner` names what is being parsed, e.g. `"weather" condition` or `sell_item trade`, and
-    /// goes into the message so the log line points at the right place in the file.
+    /// The owner names what is parsed, for example a weather condition. It goes into the error message.
     public static String requireString(JsonObject json, String owner, String field) {
         JsonElement value = require(json, owner, field);
         if (!value.isJsonPrimitive()) {
@@ -61,8 +56,7 @@ public final class JsonFields {
 
     private static JsonElement require(JsonObject json, String owner, String field) {
         JsonElement value = json.get(field);
-        // A JSON null is as unusable as a missing key, and reporting it as "missing" is the more
-        // useful of the two messages.
+        // A JSON null is reported as missing, which is the more useful message.
         if (value == null || value.isJsonNull()) {
             throw new TradeParseException(owner + " needs a \"" + field + "\" field: " + json);
         }

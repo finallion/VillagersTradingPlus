@@ -16,23 +16,16 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-/**
- * Accumulates catalogue rows while {@link CatalogExpansion} walks a tier's factory pool.
- *
- * <p>A trade's metadata is not all known at the point a row is emitted: a {@code weighted_pool}
- * knows the weights but not the items, and the leaf factory knows the items but not that it sits
- * inside a pool at all. So the walk maintains three scope stacks (conditions, pool weight, price
- * factor) that each row snapshots on the way out. Push on the way down, pop on the way back up, and
- * arbitrarily nested pools compose without any expander knowing its own depth.
- */
+/// Accumulates catalogue rows while CatalogExpansion walks a tier's factory pool.
+/// Row metadata spans nesting levels, so the builder keeps three scope stacks.
+/// The stacks hold conditions, pool weight and price factor. Each row snapshots them.
+/// Expanders push on the way down and pop on the way back up.
 public final class CatalogBuilder {
 
-    /**
-     * Hard row cap. The binding constraint downstream is the 1 MiB {@code CustomPayloadS2CPacket}payload limit.
-     **/
+    /// The 1 MiB CustomPayloadS2CPacket limit bounds the row count.
     public static final int MAX_ENTRIES = 512;
 
-    /** Fixed seed for the unenumerable-factory fallback, so those rows never change between opens. */
+    /// The fixed seed keeps fallback rows stable between opens.
     private static final long CATALOG_SEED = 0L;
 
     private record ConditionGroup(List<ConditionInfo> infos, boolean satisfied) {
@@ -40,14 +33,11 @@ public final class CatalogBuilder {
 
     private final List<CatalogEntry> entries = new ArrayList<>();
 
-    /** {weight, totalWeight} of each enclosing weighted_pool, innermost last. */
+    /// {weight, totalWeight} of each enclosing weighted_pool, innermost last.
     private final Deque<int[]> weightStack = new ArrayDeque<>();
     private final List<ConditionGroup> conditionStack = new ArrayList<>();
 
-    /**
-     * Saved {@code composedShare} / {@code composedPriceFactor} values, restored on pop. Kept as
-     * snapshots rather than unwound by division so nesting cannot accumulate float drift.
-     */
+    /// Saved composed values, restored on pop. Snapshots avoid float drift from division.
     private final Deque<Float> shareStack = new ArrayDeque<>();
     private final Deque<Float> priceFactorStack = new ArrayDeque<>();
 
@@ -58,7 +48,6 @@ public final class CatalogBuilder {
     private float composedPriceFactor = 1.0f;
     private int skipped;
 
-    /** Flattened view of {@link #conditionStack}, rebuilt only when the stack actually changes. */
     private List<ConditionInfo> flatConditions = List.of();
     private boolean conditionsMet = true;
 
@@ -67,7 +56,6 @@ public final class CatalogBuilder {
         this.tierPicks = tierPicks;
     }
 
-    /** Clears all scope state before walking the next top-level factory in the tier pool. */
     public void reset() {
         this.weightStack.clear();
         this.conditionStack.clear();
@@ -78,12 +66,7 @@ public final class CatalogBuilder {
         refreshConditions();
     }
 
-    // --- scopes --------------------------------------------------------------------------------
-
-    /**
-     * Enters a {@code weighted_pool} branch. The weight is both displayed verbatim ("3 of 14") and
-     * folded into the row's overall probability.
-     */
+    /// The weight is shown verbatim and folded into the row probability.
     public void pushWeight(int weight, int totalWeight) {
         this.weightStack.addLast(new int[]{weight, totalWeight});
         pushShare(totalWeight > 0 ? (float) weight / totalWeight : 1.0f);
@@ -94,12 +77,7 @@ public final class CatalogBuilder {
         popShare();
     }
 
-    /**
-     * Narrows the probability of everything added until {@link #popShare} without claiming a JSON
-     * weight. Used where a factory splits uniformly over variants it enumerates: one enchantment
-     * of forty, one tag member of eight. That is a real chance the player wants to see but is not
-     * a {@code weight} anyone wrote down.
-     */
+    /// Narrows the row probability without a JSON weight, for uniform splits such as one enchantment of forty.
     public void pushShare(float share) {
         this.shareStack.addLast(this.composedShare);
         this.composedShare *= share;
@@ -112,10 +90,7 @@ public final class CatalogBuilder {
         }
     }
 
-    /**
-     * Enters a conditional branch. Nested gates all have to open, so a row's conditions are the
-     * concatenation of every enclosing group and it counts as satisfied only when all of them are.
-     */
+    /// Nested gates must all open, so a row lists the conditions of every enclosing group.
     public void pushConditions(List<ConditionInfo> infos, boolean satisfied) {
         this.conditionStack.add(new ConditionGroup(infos, satisfied));
         refreshConditions();
@@ -128,11 +103,7 @@ public final class CatalogBuilder {
         }
     }
 
-    /**
-     * Enters a pricing wrapper. In practice there is only ever one, since {@code weighted_pool} strips the
-     * wrapper off its sub-trades so the cost scale is not applied twice, but factors still compose
-     * multiplicatively here so the catalogue keeps matching a generated offer whatever the nesting.
-     */
+    /// Factors compose multiplicatively, so the catalogue matches a generated offer at any nesting depth.
     public void pushPriceFactor(float factor) {
         this.priceFactorStack.addLast(this.composedPriceFactor);
         this.composedPriceFactor *= factor;
@@ -145,19 +116,13 @@ public final class CatalogBuilder {
         }
     }
 
-    // --- emission ------------------------------------------------------------------------------
-
-    /** Adds a row whose price is fixed. */
     public void add(ItemStack firstBuy, ItemStack secondBuy, ItemStack sell,
                     int maxUses, int villagerExperience, float priceMultiplier, int demand) {
         int price = firstBuy.getCount();
         add(firstBuy, secondBuy, sell, maxUses, villagerExperience, priceMultiplier, demand, price, price);
     }
 
-    /**
-     * Adds a row whose price varies between {@code rawMinPrice} and {@code rawMaxPrice} (both
-     * pre-pricing-factor). The displayed stack shows the low end.
-     */
+    /// Raw prices are before the pricing factor. The displayed stack shows the low end.
     public void add(ItemStack firstBuy, ItemStack secondBuy, ItemStack sell,
                     int maxUses, int villagerExperience, float priceMultiplier, int demand,
                     int rawMinPrice, int rawMaxPrice) {
@@ -182,7 +147,6 @@ public final class CatalogBuilder {
                 this.flatConditions, this.conditionsMet));
     }
 
-    /** Adds a row straight from a generated offer, reading its economics back off the offer. */
     public void addOffer(TradeOffer offer) {
         int price = offer.getOriginalFirstBuyItem().getCount();
         addOffer(offer, price, price);
@@ -194,10 +158,7 @@ public final class CatalogBuilder {
                 offer.getDemandBonus(), rawMinPrice, rawMaxPrice);
     }
 
-    /**
-     * Fallback for factories that cannot enumerate themselves: rolls the factory once with a fixed
-     * seed, so the row is stable across openings even when {@code create} is random.
-     */
+    /// Rolls the factory once with a fixed seed, so the row stays stable when create is random.
     public void addSampled(TradeOffers.Factory factory, Entity merchant) {
         if (isStructureMapFactory(factory)) {
             countSkipped(1);
@@ -210,7 +171,7 @@ public final class CatalogBuilder {
         }
     }
 
-    /// Vanilla map trades search for a structure when rolled. The factory class is private, so match it by its structure tag field.
+    /// Vanilla map trades search for a structure when rolled. The factory class is private, so match its tag field.
     private static boolean isStructureMapFactory(TradeOffers.Factory factory) {
         Class<?> type = factory.getClass();
 
@@ -229,13 +190,10 @@ public final class CatalogBuilder {
         return false;
     }
 
-    // --- caps ----------------------------------------------------------------------------------
-
     public boolean isFull() {
         return this.entries.size() >= MAX_ENTRIES;
     }
 
-    /** Records rows an expander chose not to emit because the cap was already reached. */
     public void countSkipped(int count) {
         this.skipped += Math.max(0, count);
     }
@@ -244,12 +202,9 @@ public final class CatalogBuilder {
         return this.entries;
     }
 
-    /** How many rows exist beyond the ones collected, so the panel can say what it is hiding. */
     public int skipped() {
         return this.skipped;
     }
-
-    // --- internals -----------------------------------------------------------------------------
 
     private void refreshConditions() {
         if (this.conditionStack.isEmpty()) {

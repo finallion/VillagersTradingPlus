@@ -17,11 +17,7 @@ import net.neoforged.neoforge.event.AddReloadListenerEvent;
 @Mod(VillagerTradingPlus.MOD_ID)
 public class VillagerTradingPlusNeoForge {
 
-    /**
-     * NeoForge hands the mod bus to the constructor. The two buses are not interchangeable: payload
-     * registration is a mod-bus event fired once during startup, while the reload listener hook is a
-     * game-bus event fired on every datapack load.
-     */
+    /// The mod bus fires payload registration once. The game bus fires the reload listener hook on every datapack load.
     public VillagerTradingPlusNeoForge(IEventBus modEventBus) {
         VillagerTradingPlus.init();
 

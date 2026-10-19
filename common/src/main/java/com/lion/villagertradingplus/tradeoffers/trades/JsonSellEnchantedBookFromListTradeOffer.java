@@ -31,21 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Sells an enchanted book whose enchantment is a weighted random pick from a curated list, each
- * entry carrying its own level range. Price scales with the chosen level and doubles for
- * enchantments tagged {@code #minecraft:double_trade_price}, capped at 64 (mirrors the vanilla-style
- * pricing of {@code sell_enchanted_book}).
- *
- * <pre>
- * { "type": "villagertradingplus:sell_enchanted_book_from_list",
- *   "currency": { "item": "minecraft:emerald" },
- *   "enchantments": [
- *     { "id": "minecraft:sharpness", "min_level": 1, "max_level": 3, "weight": 5 },
- *     { "id": "minecraft:mending",   "min_level": 1, "max_level": 1, "weight": 1 } ],
- *   "base_cost": 2, "cost_per_level": 3, "treasure_multiplier": 2 }
- * </pre>
- */
+/// Sells an enchanted book with a weighted random pick from a curated list, each with its own level range.
+/// The price scales with the level, doubles for treasure enchantments and caps at 64.
 public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -55,8 +42,7 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
 
         ItemStack currency = getItemStackFromJsonWithoutCount(JsonFields.requireObject(json, "sell_enchanted_book_from_list trade", "currency"));
 
-        // Present while a datapack load is running, which is the only time this parses. Used to read
-        // an enchantment's own level bounds as defaults - not to keep the entry, see Entry below.
+        // Present only while a datapack load runs, which is the only time this parses. Used for default level bounds.
         Optional<Registry<Enchantment>> registry = DatapackRegistries.registry(RegistryKeys.ENCHANTMENT);
 
         List<Entry> entries = new ArrayList<>();
@@ -90,15 +76,11 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
                 maxUses, experience, priceMultiplier, demand);
     }
 
-    /**
-     * Holds the enchantment's <em>key</em>, never a resolved entry: the factory outlives the registry
-     * this was parsed against, and a captured entry would point into a world that has since been
-     * closed. Resolution happens per call, where an {@link Entity} supplies the live registry.
-     */
+    /// Holds the enchantment key, not an entry. The factory outlives the registry that it parsed against.
     private record Entry(RegistryKey<Enchantment> key, int minLevel, int maxLevel, int weight) {
     }
 
-    /** An {@link Entry} paired with the entry it resolved to in the world being traded in. */
+    /// An Entry paired with the entry it resolved to in the world being traded in.
     private record Resolved(Entry entry, RegistryEntry<Enchantment> enchantment) {
     }
 
@@ -142,10 +124,7 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
                     0, maxUses, experience, multiplier, demand);
         }
 
-        /**
-         * Both the enchantment and its level are enumerable and the price follows from them, so every
-         * (enchantment, level) pair the list can yield gets its own row with no randomness left.
-         */
+        /// Every (enchantment, level) pair gets a row, because the price follows from them.
         @Override
         public void expandCatalog(Entity merchant, CatalogBuilder out) {
             List<Resolved> resolved = resolve(merchant.getWorld());
@@ -154,8 +133,7 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
             for (Resolved candidate : resolved) {
                 Entry entry = candidate.entry();
                 out.pushWeight(entry.weight(), totalWeight);
-                // The level within a chosen entry is then picked uniformly, so each row is worth a
-                // fraction of the entry's weight rather than all of it.
+                // The level is picked uniformly, so each row gets a fraction of the entry weight.
                 out.pushShare(1.0f / (entry.maxLevel() - entry.minLevel() + 1));
                 for (int level = entry.minLevel(); level <= entry.maxLevel(); level++) {
                     if (out.isFull()) {
@@ -171,12 +149,7 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
             }
         }
 
-        /**
-         * Resolves the list against the world's enchantment registry, dropping entries this world does
-         * not have. Shared by {@code create} and the catalogue so both agree on which trades exist and
-         * on the weights they compete with - a missing enchantment must not leave a hole in the odds
-         * that only one of the two knows about.
-         */
+        /// Shared by create and the catalogue, so both agree on the trades and the weights.
         private List<Resolved> resolve(World world) {
             Registry<Enchantment> registry = world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
             List<Resolved> resolved = new ArrayList<>(this.entries.size());
@@ -200,8 +173,7 @@ public class JsonSellEnchantedBookFromListTradeOffer extends JsonTradeOffer {
 
         private int cost(RegistryEntry<Enchantment> enchantment, int level) {
             int cost = baseCost + level * costPerLevel;
-            // isTreasure() is gone; which enchantments cost double in a trade is data-driven now, and
-            // this is the tag vanilla created for exactly that decision.
+            // The DOUBLE_TRADE_PRICE tag marks the enchantments that cost double.
             if (enchantment.isIn(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
                 cost *= treasureMultiplier;
             }

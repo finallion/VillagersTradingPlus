@@ -34,22 +34,12 @@ public abstract class JsonTradeOffer {
         this.priceMultiplier = base * VillagerTradingPlus.CONFIG.trade_price_multiplier_scale;
     }
 
-    /**
-     * Builds a vanilla offer using the loaded stats, including the initial {@code demand}. Uses the
-     * 8-arg {@link TradeOffer} constructor so the demand field is honoured by vanilla price math.
-     */
+    /// Uses the 8-argument TradeOffer constructor, so vanilla price math honors demand.
     protected TradeOffer buildOffer(ItemStack buy, ItemStack second, ItemStack sell) {
         return new TradeOffer(traded(buy), tradedOrEmpty(second), sell, 0, maxUses, experience, priceMultiplier, demand);
     }
 
-    /**
-     * Turns a parsed buy stack into the {@link TradedItem} the offer wants.
-     * <p>
-     * A {@code TradedItem} is a match rule rather than a stack: it names the item, the count, and the
-     * components a player's stack must carry. Everything the JSON put on the buy side - a name, an
-     * enchantment, a potion - therefore has to become part of that rule. Dropping it would leave a
-     * trade that used to demand an enchanted pickaxe quietly accepting a plain one.
-     */
+    /// Converts the buy stack to a TradedItem. The rule must carry name, enchantments and potion.
     protected static TradedItem traded(ItemStack stack) {
         TradedItem tradedItem = new TradedItem(stack.getItem(), stack.getCount());
         ComponentChanges changes = stack.getComponentChanges();
@@ -62,13 +52,12 @@ public abstract class JsonTradeOffer {
         });
     }
 
-    /** The empty stack means "no second slot", which the offer expresses as an absent optional. */
+    /// An empty stack means no second slot, which maps to an absent optional.
     protected static Optional<TradedItem> tradedOrEmpty(ItemStack stack) {
         return stack.isEmpty() ? Optional.empty() : Optional.of(traded(stack));
     }
 
-    // The component type and its value are a matched pair by construction, but ComponentChanges
-    // erases that link to ComponentType<?> plus Optional<?>, so the cast cannot be avoided here.
+    // The cast is unavoidable: ComponentChanges erases the pairing of type and value.
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void addChanges(ComponentPredicate.Builder builder, ComponentChanges changes) {
         for (Map.Entry<ComponentType<?>, Optional<?>> entry : changes.entrySet()) {

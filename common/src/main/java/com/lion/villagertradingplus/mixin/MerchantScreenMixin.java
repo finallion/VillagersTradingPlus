@@ -19,18 +19,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Adds the config-gated trade controls (set level, re-roll, catalog) to the vanilla trade screen,
- * and hosts the catalogue panel docked against its left edge.
- *
- * <p>Control buttons send their action through the vanilla ButtonClick packet (see
- * {@link MerchantScreenHandlerMixin}); only the catalogue's <em>reply</em> needs a custom packet,
- * because it carries per-trade metadata no vanilla screen sync can express.
- *
- * <p>Extends the real superclass {@link HandledScreen} so inherited members ({@code x}, {@code y},
- * {@code backgroundWidth}, {@code width}, {@code addDrawableChild}, {@code getScreenHandler}) are
- * used directly without shadows.
- */
+/// Adds the config-gated trade controls and hosts the catalogue panel at the left edge.
+/// Control buttons use the vanilla ButtonClick packet. Only the catalogue reply needs a custom packet.
+/// The mixin extends HandledScreen to use inherited members without shadows.
 @Mixin(MerchantScreen.class)
 public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHandler> {
 
@@ -38,14 +29,11 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         super(null, null, null); // never executed; present only to satisfy the compiler
     }
 
-    /**
-     * Vanilla's trade-list scrollbar drag flag. {@code MerchantScreen.mouseClicked} is the only
-     * place it is ever cleared, so cancelling that method would strand a drag in progress.
-     */
+    /// MerchantScreen.mouseClicked is the only place that clears this flag, so cancelling it strands a drag.
     @Shadow
     private boolean scrolling;
 
-    /** Which trade the right-hand panel shows. Vanilla indexes the offer list with it unguarded. */
+    /// Vanilla indexes the offer list with this field and does not check bounds.
     @Shadow
     private int selectedIndex;
 
@@ -68,8 +56,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
 
         if (allowView && this.villagertradingplus$catalog == null) {
             this.villagertradingplus$catalog = new TradeCatalogPanel(MinecraftClient.getInstance());
-            // First init of this screen: drop whatever the last merchant sent. Guarded on the panel
-            // being absent because init also re-runs on window resize, which must keep the data.
+            // Init also re-runs on window resize, so reset only when the panel is absent.
             TradeCatalogClientState.clear();
         }
 
@@ -79,11 +66,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         int maxWidth = 110;
         int minWidth = 68;
 
-        // The control column takes the right gutter and the catalogue takes the left, so the two
-        // never compete. The column is width-adaptive because the gutter is not: MerchantScreen is
-        // 276 units wide and centred, so at 1920x1080 with GUI scale 4 the screen is only 480 units
-        // across and each gutter only 102, too narrow for a fixed 110-wide column. It used to fall back
-        // to stacking below the panel and then get clamped straight back up on top of the trades.
+        // The control column takes the right gutter and adapts to it, because the gutter varies with the GUI scale.
         int gutter = this.width - (this.x + this.backgroundWidth) - gap - margin;
         int rows = 1 + (allowSetLevel ? 1 : 0) + (allowReroll ? 2 : 0) + (allowView ? 1 : 0);
 
@@ -95,21 +78,17 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
             baseX = this.x + this.backgroundWidth + gap;
             row = this.y;
         } else {
-            // Only reachable on a window narrower than any standard resolution produces. Sit below
-            // the trade panel and, if that runs off the bottom, ride the bottom edge; overlapping
-            // the hotbar is far less destructive than overlapping the trades.
+            // Sit below the trade panel, or ride the bottom edge. Covering the hotbar harms less than covering trades.
             w = maxWidth;
             baseX = Math.max(margin, Math.min(this.x, this.width - w - margin));
             row = Math.min(this.y + this.backgroundHeight + 4, this.height - rows * step - margin);
         }
         row = Math.max(margin, row);
 
-        // "Re-roll level 1" is about 74px wide, so below this the full labels clip and the short
-        // variants are used instead.
+        // The full labels clip below about 74px, so the short variants apply.
         this.villagertradingplus$shortLabels = w < 90;
 
-        // Shared level selector (used by set-level, per-level reroll and catalog). The arrows shrink
-        // alongside the labels so the readout between them keeps a usable width.
+        // The arrows shrink with the labels, so the readout between them keeps a usable width.
         int arrowWidth = villagertradingplus$shortLabels ? 16 : 20;
         villagertradingplus$levelDisplay = addDrawableChild(ButtonWidget.builder(villagertradingplus$levelText(), b -> {})
                 .dimensions(baseX + arrowWidth + 4, row, w - 2 * arrowWidth - 8, 20).build());
@@ -151,22 +130,13 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         }
     }
 
-    /** Picks the full or short label variant for a level-parameterised button. */
     @Unique
     private Text villagertradingplus$label(String key) {
         return Text.translatable("gui.villagertradingplus." + key + (villagertradingplus$shortLabels ? "_short" : ""),
                 villagertradingplus$level);
     }
 
-    /**
-     * Keeps {@link #selectedIndex} inside the offer list.
-     *
-     * <p>{@code MerchantScreen.render} does {@code getRecipes().get(this.selectedIndex)} with no
-     * bounds check, and setting a villager's level or re-rolling its trades replaces that list with
-     * a shorter one while the screen stays open - the selection then points past the end and the
-     * next frame throws. Clamped here rather than where the offers arrive, so it holds no matter
-     * which side shortened the list or in what order the packets landed.
-     */
+    /// MerchantScreen.render has no bounds check, and a shorter offer list can leave the selection past the end.
     @Inject(method = "render", at = @At("HEAD"))
     private void villagertradingplus$clampSelectedIndex(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         int size = this.getScreenHandler().getRecipes().size();
@@ -175,11 +145,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         }
     }
 
-    /**
-     * Drawn at TAIL so it lands after vanilla's own {@code drawMouseoverTooltip} and after
-     * {@code Screen.render} has drawn the control buttons; the panel is entirely hand-drawn, so
-     * there are no widgets of ours underneath for it to paint over.
-     */
+    /// Drawn at TAIL, after the vanilla tooltip and the control buttons.
     @Inject(method = "render", at = @At("TAIL"))
     private void villagertradingplus$renderCatalog(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (this.villagertradingplus$catalog == null) {
@@ -199,8 +165,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
             return;
         }
 
-        // Vanilla would treat this as a click outside the GUI and throw the cursor stack on the
-        // ground; cancel both halves of the click instead.
+        // Vanilla throws the cursor stack on the ground for an outside click, so cancel both click halves.
         this.scrolling = false;
         ((HandledScreenAccessor) this).villagertradingplus$setCancelNextRelease(true);
 
@@ -211,14 +176,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         cir.setReturnValue(true);
     }
 
-    /**
-     * Vanilla's {@code mouseScrolled} scrolls the trade list from anywhere on screen: it does no
-     * bounds check and never calls {@code super}, so the panel has to claim the wheel explicitly.
-     *
-     * <p>Four parameters since 1.20.5: the wheel reports a horizontal axis as well. The panel is a
-     * vertical list, so it reads {@code verticalAmount}, which is also the only axis vanilla's own
-     * trade list looks at.
-     */
+    /// Vanilla scrolls the trade list from anywhere on screen and never calls super, so the panel claims the wheel.
     @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
     private void villagertradingplus$catalogScroll(double mouseX, double mouseY, double horizontalAmount,
                                                   double verticalAmount, CallbackInfoReturnable<Boolean> cir) {

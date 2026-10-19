@@ -12,16 +12,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Routes our custom trade-screen button clicks (sent via the vanilla ButtonClick packet) to the
- * server-side {@link TradeGuiActions}. Runs only server-side, where the handler's merchant is the
- * real entity; the catalog's {@code SimpleMerchant} (not a {@link MerchantEntity}) is ignored.
- *
- * <p>Targets {@link ScreenHandler} rather than {@link MerchantScreenHandler} because
- * {@code onButtonClick} is only declared on the superclass, and {@code @Inject}, unlike
- * {@code @Shadow}, can only bind to a method physically present in the target class. The
- * {@code instanceof} guard below narrows it back to merchant screens.
- */
+/// Routes custom trade-screen button clicks to TradeGuiActions on the server.
+/// It targets ScreenHandler, because onButtonClick exists only on the superclass.
+/// The instanceof guard narrows the target back to merchant screens.
 @Mixin(ScreenHandler.class)
 public abstract class MerchantScreenHandlerMixin {
 

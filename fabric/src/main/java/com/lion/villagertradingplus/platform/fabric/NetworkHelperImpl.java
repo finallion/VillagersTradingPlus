@@ -16,11 +16,7 @@ public final class NetworkHelperImpl {
     private NetworkHelperImpl() {
     }
 
-    /**
-     * Payload types are registered on both sides from common init: the codec has to exist before a
-     * packet of that type can be encoded or decoded, and a client that never registered it would drop
-     * the payload as unknown.
-     */
+    /// Both sides register payload types, because a client without the codec drops the payload as unknown.
     public static void init() {
         PayloadTypeRegistry.playS2C().register(TradeCatalogPayload.ID, TradeCatalogPayload.CODEC);
     }
@@ -31,8 +27,7 @@ public final class NetworkHelperImpl {
 
     @Environment(EnvType.CLIENT)
     public static void registerCatalogReceiver(Consumer<TradeCatalogPayload> receiver) {
-        // The payload is already a decoded, immutable record here - unlike the old raw-buffer
-        // receiver, nothing has to be copied off the network thread before handing it over.
+        // The payload is a decoded immutable record, so nothing needs a copy off the network thread.
         ClientPlayNetworking.registerGlobalReceiver(TradeCatalogPayload.ID,
                 (payload, context) -> context.client().execute(() -> receiver.accept(payload)));
     }

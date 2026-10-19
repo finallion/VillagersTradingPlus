@@ -15,10 +15,7 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Sells an enchanted book with a fixed enchantment at a fixed level (e.g. a guaranteed
- * Blast Protection I book), unlike {@code sell_enchanted_book} which picks a random enchantment.
- */
+/// Sells an enchanted book with a fixed enchantment and level. sell_enchanted_book picks randomly instead.
 public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
 
     @Override
@@ -35,8 +32,7 @@ public class JsonSellSpecificEnchantedBookTradeOffer extends JsonTradeOffer {
             throw new TradeParseException("sell_specific_enchanted_book trade: invalid enchantment id '" + rawEnchantment + "'");
         }
 
-        // Only the key is resolved here. Enchantments live in a dynamic registry since 1.21, so the
-        // entry itself does not exist until a world is loaded - and deserialization has no world.
+        // Only the key resolves here, because the entry needs a loaded world and deserialization has none.
         RegistryKey<Enchantment> enchantmentKey = RegistryKey.of(RegistryKeys.ENCHANTMENT, enchantmentId);
         int level = readInt(json, "level", 1);
 
