@@ -164,6 +164,14 @@ public final class TradeGuiActions {
     }
 
     public static int maxLevel(AbstractVillager merchant) {
+        if (merchant instanceof TradeControl control) {
+            int maxLevel = control.villagertradingplus$catalogMaxLevel();
+
+            if (maxLevel > 0) {
+                return maxLevel;
+            }
+        }
+
         return merchant instanceof Villager ? 5 : 2;
     }
 
@@ -181,6 +189,14 @@ public final class TradeGuiActions {
     }
 
     private static int picksPerLevel(ServerLevel serverLevel, AbstractVillager merchant, int level) {
+        if (merchant instanceof TradeControl control) {
+            int picks = control.villagertradingplus$catalogPicks(level);
+
+            if (picks > 0) {
+                return picks;
+            }
+        }
+
         if (merchant instanceof Villager villager) {
             return TradePools.villagerPicks(serverLevel, merchant, villager.getVillagerData().profession(), level);
         }
@@ -189,6 +205,14 @@ public final class TradeGuiActions {
     }
 
     private static List<TradeFactory> poolFor(ServerLevel serverLevel, AbstractVillager merchant, int level) {
+        if (merchant instanceof TradeControl control) {
+            List<TradeFactory> custom = control.villagertradingplus$catalogPool(level);
+
+            if (custom != null) {
+                return custom;
+            }
+        }
+
         if (merchant instanceof Villager villager) {
             return TradePools.forVillager(serverLevel, villager.getVillagerData().profession(), level);
         }
