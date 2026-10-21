@@ -14,12 +14,18 @@ public final class TradeCatalogClientState {
 
     private static boolean awaitingReply;
 
+    private static int requestedLevel;
+
     private TradeCatalogClientState() {}
 
     public static void register() {
         NetworkHelper.registerClientReceiver(TradeCatalogPacket.CHANNEL, buf -> {
-            current = TradeCatalogPacket.read(buf);
-            awaitingReply = false;
+            TradeCatalogPacket.Payload payload = TradeCatalogPacket.read(buf);
+
+            if (answersRequest(payload)) {
+                current = payload;
+                awaitingReply = false;
+            }
         });
     }
 
@@ -32,8 +38,13 @@ public final class TradeCatalogClientState {
         return current == null || awaitingReply;
     }
 
-    public static void requesting() {
+    public static void requesting(int level) {
         awaitingReply = true;
+        requestedLevel = level;
+    }
+
+    private static boolean answersRequest(TradeCatalogPacket.Payload payload) {
+        return !awaitingReply || payload.level() == requestedLevel || requestedLevel > payload.maxLevel();
     }
 
     public static void clear() {

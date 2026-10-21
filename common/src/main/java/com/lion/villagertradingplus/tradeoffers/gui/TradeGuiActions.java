@@ -8,6 +8,7 @@ import com.lion.villagertradingplus.tradeoffers.catalog.CatalogExpansion;
 import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.passive.VillagerEntity;
@@ -25,7 +26,7 @@ public final class TradeGuiActions {
     private static final int CATALOG_COOLDOWN_TICKS = 20;
     private static final Map<ServerPlayerEntity, Integer> LAST_ACTION_TICK = new WeakHashMap<>();
     private static final Map<ServerPlayerEntity, Integer> LAST_CATALOG_TICK = new WeakHashMap<>();
-    private static final Map<ServerPlayerEntity, PacketByteBuf> LAST_CATALOG = new WeakHashMap<>();
+    private static final Map<ServerPlayerEntity, LastCatalog> LAST_CATALOG = new WeakHashMap<>();
 
     private TradeGuiActions() {}
 
@@ -91,8 +92,8 @@ public final class TradeGuiActions {
                 return false;
             }
 
-            if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)) {
-                resendLastCatalog(player);
+            if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)
+                    && resendLastCatalog(player, merchant, id - 130)) {
                 return true;
             }
 
@@ -164,17 +165,24 @@ public final class TradeGuiActions {
 
         CatalogBuilder builder = buildCatalog(merchant, level);
         PacketByteBuf payload = TradeCatalogPacket.write(level, maxLevel, builder.entries(), builder.skipped());
-        LAST_CATALOG.put(player, payload);
+        LAST_CATALOG.put(player, new LastCatalog(merchant.getUuid(), level, payload));
         NetworkHelper.sendToPlayer(player, TradeCatalogPacket.CHANNEL, new PacketByteBuf(payload.copy()));
     }
 
-    private static void resendLastCatalog(ServerPlayerEntity player) {
-        PacketByteBuf last = LAST_CATALOG.get(player);
+    private static boolean resendLastCatalog(ServerPlayerEntity player, MerchantEntity merchant, int requestedLevel) {
+        LastCatalog last = LAST_CATALOG.get(player);
 
-        if (last != null) {
-            NetworkHelper.sendToPlayer(player, TradeCatalogPacket.CHANNEL, new PacketByteBuf(last.copy()));
+        if (last == null
+                || !last.merchant().equals(merchant.getUuid())
+                || last.level() != MathHelper.clamp(requestedLevel, 1, maxLevel(merchant))) {
+            return false;
         }
+
+        NetworkHelper.sendToPlayer(player, TradeCatalogPacket.CHANNEL, new PacketByteBuf(last.payload().copy()));
+        return true;
     }
+
+    private record LastCatalog(UUID merchant, int level, PacketByteBuf payload) {}
 
     public static int maxLevel(MerchantEntity merchant) {
         if (merchant instanceof TradeControl control) {
