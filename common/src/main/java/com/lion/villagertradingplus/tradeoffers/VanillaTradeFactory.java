@@ -3,6 +3,7 @@ package com.lion.villagertradingplus.tradeoffers;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import java.lang.reflect.Field;
 import java.util.Optional;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.Identifier;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.VillagerTrade;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.functions.EnchantRandomlyFunction;
 import net.minecraft.world.level.storage.loot.functions.ExplorationMapFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.SequenceFunction;
@@ -37,6 +39,38 @@ public final class VanillaTradeFactory implements TradeFactory {
 
     public boolean rollsStructureSearch() {
         return rollsStructureSearch;
+    }
+
+    public VillagerTrade trade() {
+        return trade.value();
+    }
+
+    @Nullable
+    public EnchantRandomlyFunction enchantRandomlyFunction() {
+        if (!(read(GIVEN_ITEM_MODIFIER, trade.value()) instanceof Optional<?> modifier) || modifier.isEmpty()) {
+            return null;
+        }
+
+        return modifier.get() instanceof Holder<?> holder ? findEnchantRandomly(holder.value()) : null;
+    }
+
+    private static EnchantRandomlyFunction findEnchantRandomly(Object function) {
+        if (function instanceof EnchantRandomlyFunction enchantRandomly) {
+            return enchantRandomly;
+        }
+
+        if (function instanceof SequenceFunction sequence
+                && read(SEQUENCE_FUNCTIONS, sequence) instanceof HolderSet<?> inner) {
+            for (Holder<?> holder : inner) {
+                EnchantRandomlyFunction nested = findEnchantRandomly(holder.value());
+
+                if (nested != null) {
+                    return nested;
+                }
+            }
+        }
+
+        return null;
     }
 
     private static Field findField(Class<?> owner, String name) {
@@ -77,7 +111,8 @@ public final class VanillaTradeFactory implements TradeFactory {
             return true;
         }
 
-        if (function instanceof SequenceFunction sequence && read(SEQUENCE_FUNCTIONS, sequence) instanceof HolderSet<?> inner) {
+        if (function instanceof SequenceFunction sequence
+                && read(SEQUENCE_FUNCTIONS, sequence) instanceof HolderSet<?> inner) {
             for (Holder<?> holder : inner) {
                 if (holder.value() instanceof LootItemFunction nested && searchesStructures(nested)) {
                     return true;

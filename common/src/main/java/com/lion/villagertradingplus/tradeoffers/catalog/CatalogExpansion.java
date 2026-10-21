@@ -52,6 +52,10 @@ public final class CatalogExpansion {
             return;
         }
 
+        if (VanillaEnchantedBookCatalog.expand(factory, merchant, out)) {
+            return;
+        }
+
         out.addSampled(factory, merchant);
     }
 }
