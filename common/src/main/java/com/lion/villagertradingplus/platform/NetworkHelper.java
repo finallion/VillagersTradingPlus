@@ -1,6 +1,7 @@
 package com.lion.villagertradingplus.platform;
 
 import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPacket;
+import com.lion.villagertradingplus.tradeoffers.gui.TradeControlsPacket;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -12,7 +13,7 @@ import java.util.function.Consumer;
 public class NetworkHelper {
 
     /// Forge creates channels before the registry locks.
-    public static final List<Identifier> CHANNELS = List.of(TradeCatalogPacket.CHANNEL);
+    public static final List<Identifier> CHANNELS = List.of(TradeCatalogPacket.CHANNEL, TradeControlsPacket.CHANNEL);
 
     @ExpectPlatform
     public static void init() {
