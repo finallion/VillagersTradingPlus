@@ -5,9 +5,11 @@
   "minVersion": "0.8",
   "mixins": [
     "DataPackContentsMixin",
+    "EnchantRandomlyFunctionAccessor",
     "MerchantScreenHandlerAccessor",
     "MerchantScreenHandlerMixin",
     "VillagerEntityMixin",
+    "VillagerTradeAccessor",
     "WanderingTraderMixin"
   ],
   "client": [
