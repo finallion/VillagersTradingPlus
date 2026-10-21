@@ -4,6 +4,7 @@ import com.lion.villagertradingplus.VillagerTradingPlus;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.VillagerTrade;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.functions.EnchantRandomlyFunction;
 import net.minecraft.world.level.storage.loot.functions.ExplorationMapFunction;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -34,6 +36,25 @@ public final class VanillaTradeFactory implements TradeFactory {
 
     public boolean rollsStructureSearch() {
         return rollsStructureSearch;
+    }
+
+    public VillagerTrade trade() {
+        return trade.value();
+    }
+
+    @Nullable
+    public EnchantRandomlyFunction enchantRandomlyFunction() {
+        if (!(read(GIVEN_ITEM_MODIFIERS, trade.value()) instanceof List<?> functions)) {
+            return null;
+        }
+
+        for (Object function : functions) {
+            if (function instanceof EnchantRandomlyFunction enchantRandomly) {
+                return enchantRandomly;
+            }
+        }
+
+        return null;
     }
 
     private static Field findField(Class<?> owner, String name) {
