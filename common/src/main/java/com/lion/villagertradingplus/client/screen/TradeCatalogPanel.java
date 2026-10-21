@@ -112,7 +112,7 @@ public final class TradeCatalogPanel {
     private int requestLevel(int newLevel) {
         this.level = newLevel;
         this.firstRow = 0;
-        TradeCatalogClientState.requesting();
+        TradeCatalogClientState.requesting(newLevel);
         return CATALOG_REQUEST_BASE + newLevel;
     }
 

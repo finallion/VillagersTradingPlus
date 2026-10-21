@@ -14,6 +14,8 @@ public final class TradeCatalogClientState {
 
     private static boolean awaitingReply;
 
+    private static int requestedLevel;
+
     private TradeCatalogClientState() {}
 
     public static void register() {
@@ -25,7 +27,7 @@ public final class TradeCatalogClientState {
             TradeCatalogPacket.Payload payload =
                     REASSEMBLER.accept(slice, MinecraftClient.getInstance().world.getRegistryManager());
 
-            if (payload != null) {
+            if (payload != null && answersRequest(payload)) {
                 current = payload;
                 awaitingReply = false;
             }
@@ -41,8 +43,13 @@ public final class TradeCatalogClientState {
         return current == null || awaitingReply;
     }
 
-    public static void requesting() {
+    public static void requesting(int level) {
         awaitingReply = true;
+        requestedLevel = level;
+    }
+
+    private static boolean answersRequest(TradeCatalogPacket.Payload payload) {
+        return !awaitingReply || payload.level() == requestedLevel || requestedLevel > payload.maxLevel();
     }
 
     public static void clear() {
