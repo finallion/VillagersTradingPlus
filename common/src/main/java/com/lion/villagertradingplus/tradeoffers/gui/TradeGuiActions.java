@@ -22,7 +22,7 @@ import com.lion.villagertradingplus.tradeoffers.TradeFactory;
 import net.minecraft.world.inventory.MerchantMenu;
 
 /// Button ids: 100+level sets the level, 110+level re-rolls a tier, 120 re-rolls all tiers.
-/// 130+level sends the catalogue of a tier.
+/// 130+level requests a catalogue. 140 requests the allowed controls.
 public final class TradeGuiActions {
 
     private static final int ACTION_COOLDOWN_TICKS = 10;
@@ -104,7 +104,29 @@ public final class TradeGuiActions {
             return true;
         }
 
+        if (id == 140) {
+            sendControls(player, merchant);
+            return true;
+        }
+
         return false;
+    }
+
+    private static void sendControls(ServerPlayer player, AbstractVillager merchant) {
+        VTPConfig cfg = VillagerTradingPlus.CONFIG;
+        boolean may = mayControlTrades(player);
+        boolean control = merchant instanceof TradeControl;
+        boolean levels = merchant instanceof TradeControl tc && tc.villagertradingplus$supportsLevels();
+
+        NetworkHelper.sendToPlayer(
+                player,
+                new TradeControlsPayload(
+                        cfg.allow_set_villager_level && levels && may,
+                        cfg.allow_trade_reroll && control && may,
+                        cfg.allow_view_all_trades,
+                        maxLevel(merchant)
+                )
+        );
     }
 
     private static boolean mayControlTrades(ServerPlayer player) {
