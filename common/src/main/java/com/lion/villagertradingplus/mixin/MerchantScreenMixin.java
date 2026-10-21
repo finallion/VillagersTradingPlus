@@ -2,7 +2,9 @@ package com.lion.villagertradingplus.mixin;
 
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.client.TradeCatalogClientState;
+import com.lion.villagertradingplus.client.TradeControlsClientState;
 import com.lion.villagertradingplus.client.screen.TradeCatalogPanel;
+import com.lion.villagertradingplus.tradeoffers.gui.TradeControlsPayload;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -26,6 +28,8 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         super(null, null, null);
     }
 
+    @Unique private static final int CONTROLS_REQUEST_ID = 140;
+
     /// MerchantScreen.mouseClicked is the only place that clears this flag, so cancelling it strands a drag.
     @Shadow
     private boolean scrolling;
@@ -36,11 +40,16 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
 
     @Unique private int villagertradingplus$level = 1;
     @Unique private ButtonWidget villagertradingplus$levelDisplay;
+    @Unique private ButtonWidget villagertradingplus$levelDown;
+    @Unique private ButtonWidget villagertradingplus$levelUp;
     @Unique private ButtonWidget villagertradingplus$setLevelButton;
     @Unique private ButtonWidget villagertradingplus$rerollLevelButton;
+    @Unique private ButtonWidget villagertradingplus$rerollAllButton;
     @Unique private ButtonWidget villagertradingplus$catalogButton;
     @Unique private TradeCatalogPanel villagertradingplus$catalog;
     @Unique private boolean villagertradingplus$shortLabels;
+    @Unique private boolean villagertradingplus$controlsRequested;
+    @Unique private int villagertradingplus$controlsVersion = -1;
 
     @Inject(method = "init", at = @At("TAIL"))
     private void villagertradingplus$addControls(CallbackInfo ci) {
@@ -58,6 +67,70 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
             TradeCatalogClientState.clear();
         }
 
+        if (!this.villagertradingplus$controlsRequested) {
+            this.villagertradingplus$controlsRequested = true;
+            TradeControlsClientState.clear();
+            villagertradingplus$click(CONTROLS_REQUEST_ID);
+        }
+
+        villagertradingplus$levelDisplay = villagertradingplus$addButton(villagertradingplus$levelText(), b -> {});
+        villagertradingplus$levelDisplay.active = false;
+        villagertradingplus$levelDown = villagertradingplus$addButton(Text.literal("<"), b -> villagertradingplus$changeLevel(-1));
+        villagertradingplus$levelUp = villagertradingplus$addButton(Text.literal(">"), b -> villagertradingplus$changeLevel(1));
+
+        if (allowSetLevel) {
+            villagertradingplus$setLevelButton = villagertradingplus$addButton(
+                    villagertradingplus$label("set_level"),
+                    b -> villagertradingplus$click(100 + villagertradingplus$level)
+            );
+        }
+
+        if (allowReroll) {
+            villagertradingplus$rerollLevelButton = villagertradingplus$addButton(
+                    villagertradingplus$label("reroll_level"),
+                    b -> villagertradingplus$click(110 + villagertradingplus$level)
+            );
+            villagertradingplus$rerollAllButton = villagertradingplus$addButton(
+                    villagertradingplus$rerollAllText(),
+                    b -> villagertradingplus$click(120)
+            );
+        }
+
+        if (allowView) {
+            villagertradingplus$catalogButton = villagertradingplus$addButton(
+                    villagertradingplus$label("catalog_button"),
+                    b -> villagertradingplus$toggleCatalog()
+            );
+        }
+
+        villagertradingplus$layoutControls();
+    }
+
+    @Unique
+    private ButtonWidget villagertradingplus$addButton(Text text, ButtonWidget.PressAction action) {
+        ButtonWidget button = addDrawableChild(
+                ButtonWidget.builder(text, action)
+                        .dimensions(0, 0, 20, 20)
+                        .build()
+        );
+        button.visible = false;
+        return button;
+    }
+
+    @Unique
+    private void villagertradingplus$layoutControls() {
+        TradeControlsPayload controls = TradeControlsClientState.current();
+        this.villagertradingplus$controlsVersion = TradeControlsClientState.version();
+
+        boolean hasLevels = controls != null && controls.maxLevel() > 1;
+        boolean showSetLevel = hasLevels && controls.allowSetLevel() && villagertradingplus$setLevelButton != null;
+        boolean showRerollLevel = hasLevels && controls.allowReroll() && villagertradingplus$rerollLevelButton != null;
+        boolean showRerollAll = controls != null && controls.allowReroll() && villagertradingplus$rerollAllButton != null;
+        boolean showCatalog = controls != null && controls.allowView() && villagertradingplus$catalogButton != null;
+        boolean showLevelRow = hasLevels && (showSetLevel || showRerollLevel || showCatalog);
+
+        this.villagertradingplus$level = MathHelper.clamp(this.villagertradingplus$level, 1, villagertradingplus$maxLevel());
+
         int step = 23;
         int gap = 5;
         int margin = 2;
@@ -65,7 +138,11 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         int minWidth = 68;
 
         int gutter = this.width - (this.x + this.backgroundWidth) - gap - margin;
-        int rows = 1 + (allowSetLevel ? 1 : 0) + (allowReroll ? 2 : 0) + (allowView ? 1 : 0);
+        int rows = (showLevelRow ? 1 : 0)
+                + (showSetLevel ? 1 : 0)
+                + (showRerollLevel ? 1 : 0)
+                + (showRerollAll ? 1 : 0)
+                + (showCatalog ? 1 : 0);
 
         int w;
         int baseX;
@@ -83,73 +160,73 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
 
         row = Math.max(margin, row);
 
-        // The full labels clip below about 74px, so the short variants apply.
+        // Full labels do not fit below 74 px. Use the short labels.
         this.villagertradingplus$shortLabels = w < 90;
+        villagertradingplus$refreshMessages();
 
         int arrowWidth = villagertradingplus$shortLabels ? 16 : 20;
-        villagertradingplus$levelDisplay = addDrawableChild(
-                ButtonWidget.builder(villagertradingplus$levelText(), b -> {})
-                        .dimensions(baseX + arrowWidth + 4, row, w - 2 * arrowWidth - 8, 20)
-                        .build()
-        );
-        villagertradingplus$levelDisplay.active = false;
-        addDrawableChild(
-                ButtonWidget.builder(Text.literal("<"), b -> villagertradingplus$changeLevel(-1))
-                        .dimensions(baseX, row, arrowWidth, 20)
-                        .build()
-        );
-        addDrawableChild(
-                ButtonWidget.builder(Text.literal(">"), b -> villagertradingplus$changeLevel(1))
-                        .dimensions(baseX + w - arrowWidth, row, arrowWidth, 20)
-                        .build()
-        );
-        row += step;
+        villagertradingplus$place(villagertradingplus$levelDisplay, showLevelRow, baseX + arrowWidth + 4, row, w - 2 * arrowWidth - 8);
+        villagertradingplus$place(villagertradingplus$levelDown, showLevelRow, baseX, row, arrowWidth);
+        villagertradingplus$place(villagertradingplus$levelUp, showLevelRow, baseX + w - arrowWidth, row, arrowWidth);
 
-        if (allowSetLevel) {
-            villagertradingplus$setLevelButton = addDrawableChild(
-                    ButtonWidget.builder(
-                            villagertradingplus$label("set_level"),
-                            b -> villagertradingplus$click(100 + villagertradingplus$level)
-                    )
-                            .dimensions(baseX, row, w, 20)
-                            .build()
-            );
+        if (showLevelRow) {
             row += step;
         }
 
-        if (allowReroll) {
-            villagertradingplus$rerollLevelButton = addDrawableChild(
-                    ButtonWidget.builder(
-                            villagertradingplus$label("reroll_level"),
-                            b -> villagertradingplus$click(110 + villagertradingplus$level)
-                    )
-                            .dimensions(baseX, row, w, 20)
-                            .build()
-            );
-            row += step;
-            addDrawableChild(
-                    ButtonWidget.builder(
-                            villagertradingplus$shortLabels
-                                    ? Text.translatable("gui.villagertradingplus.reroll_all_short")
-                                    : Text.translatable("gui.villagertradingplus.reroll_all"),
-                            b -> villagertradingplus$click(120)
-                    )
-                            .dimensions(baseX, row, w, 20)
-                            .build()
-            );
+        villagertradingplus$place(villagertradingplus$setLevelButton, showSetLevel, baseX, row, w);
+
+        if (showSetLevel) {
             row += step;
         }
 
-        if (allowView) {
-            villagertradingplus$catalogButton = addDrawableChild(
-                    ButtonWidget.builder(
-                            villagertradingplus$label("catalog_button"),
-                            b -> villagertradingplus$toggleCatalog()
-                    )
-                            .dimensions(baseX, row, w, 20)
-                            .build()
-            );
+        villagertradingplus$place(villagertradingplus$rerollLevelButton, showRerollLevel, baseX, row, w);
+
+        if (showRerollLevel) {
+            row += step;
         }
+
+        villagertradingplus$place(villagertradingplus$rerollAllButton, showRerollAll, baseX, row, w);
+
+        if (showRerollAll) {
+            row += step;
+        }
+
+        villagertradingplus$place(villagertradingplus$catalogButton, showCatalog, baseX, row, w);
+    }
+
+    @Unique
+    private void villagertradingplus$place(ButtonWidget button, boolean show, int x, int y, int width) {
+        if (button == null) {
+            return;
+        }
+
+        button.visible = show;
+
+        if (show) {
+            button.setX(x);
+            button.setY(y);
+            button.setWidth(width);
+        }
+    }
+
+    @Unique
+    private void villagertradingplus$syncControls() {
+        if (this.villagertradingplus$controlsRequested && this.villagertradingplus$controlsVersion != TradeControlsClientState.version()) {
+            villagertradingplus$layoutControls();
+        }
+    }
+
+    @Unique
+    private int villagertradingplus$maxLevel() {
+        TradeControlsPayload controls = TradeControlsClientState.current();
+        return controls == null ? 5 : Math.max(1, controls.maxLevel());
+    }
+
+    @Unique
+    private Text villagertradingplus$rerollAllText() {
+        return villagertradingplus$shortLabels
+                ? Text.translatable("gui.villagertradingplus.reroll_all_short")
+                : Text.translatable("gui.villagertradingplus.reroll_all");
     }
 
     @Unique
@@ -169,6 +246,8 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
             float delta,
             CallbackInfo ci
     ) {
+        villagertradingplus$syncControls();
+
         int size = this.getScreenHandler().getRecipes().size();
 
         if (this.selectedIndex >= size) {
@@ -259,8 +338,12 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
 
     @Unique
     private void villagertradingplus$changeLevel(int delta) {
-        villagertradingplus$level = MathHelper.clamp(villagertradingplus$level + delta, 1, 5);
+        villagertradingplus$level = MathHelper.clamp(villagertradingplus$level + delta, 1, villagertradingplus$maxLevel());
+        villagertradingplus$refreshMessages();
+    }
 
+    @Unique
+    private void villagertradingplus$refreshMessages() {
         if (villagertradingplus$levelDisplay != null) {
             villagertradingplus$levelDisplay.setMessage(villagertradingplus$levelText());
         }
@@ -271,6 +354,10 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
 
         if (villagertradingplus$rerollLevelButton != null) {
             villagertradingplus$rerollLevelButton.setMessage(villagertradingplus$label("reroll_level"));
+        }
+
+        if (villagertradingplus$rerollAllButton != null) {
+            villagertradingplus$rerollAllButton.setMessage(villagertradingplus$rerollAllText());
         }
 
         if (villagertradingplus$catalogButton != null) {

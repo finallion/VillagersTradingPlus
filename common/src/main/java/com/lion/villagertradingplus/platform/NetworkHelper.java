@@ -1,6 +1,7 @@
 package com.lion.villagertradingplus.platform;
 
 import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPayload;
+import com.lion.villagertradingplus.tradeoffers.gui.TradeControlsPayload;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -21,6 +22,11 @@ public class NetworkHelper {
 
     @ExpectPlatform
     public static void registerCatalogReceiver(Consumer<TradeCatalogPayload> receiver) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static void registerControlsReceiver(Consumer<TradeControlsPayload> receiver) {
         throw new AssertionError();
     }
 }

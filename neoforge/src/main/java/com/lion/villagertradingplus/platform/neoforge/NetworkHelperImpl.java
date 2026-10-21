@@ -2,6 +2,7 @@ package com.lion.villagertradingplus.platform.neoforge;
 
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPayload;
+import com.lion.villagertradingplus.tradeoffers.gui.TradeControlsPayload;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -16,6 +17,7 @@ public final class NetworkHelperImpl {
     private static final String PROTOCOL_VERSION = "1";
 
     private static Consumer<TradeCatalogPayload> catalogReceiver;
+    private static Consumer<TradeControlsPayload> controlsReceiver;
 
     private NetworkHelperImpl() {}
 
@@ -30,12 +32,25 @@ public final class NetworkHelperImpl {
         catalogReceiver = receiver;
     }
 
+    public static void registerControlsReceiver(Consumer<TradeControlsPayload> receiver) {
+        controlsReceiver = receiver;
+    }
+
     /// Both sides register the handler, because NeoForge rejects a client without it. Only a client gets a receiver.
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
         registrar.playToClient(TradeCatalogPayload.ID, TradeCatalogPayload.CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
                     Consumer<TradeCatalogPayload> receiver = catalogReceiver;
+
+                    if (receiver != null) {
+                        receiver.accept(payload);
+                    }
+                }));
+
+        registrar.playToClient(TradeControlsPayload.ID, TradeControlsPayload.CODEC,
+                (payload, context) -> context.enqueueWork(() -> {
+                    Consumer<TradeControlsPayload> receiver = controlsReceiver;
 
                     if (receiver != null) {
                         receiver.accept(payload);
