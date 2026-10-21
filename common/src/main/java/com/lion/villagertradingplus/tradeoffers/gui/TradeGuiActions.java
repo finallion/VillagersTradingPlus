@@ -10,6 +10,7 @@ import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPacket;
 import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPayload;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,7 +30,7 @@ public final class TradeGuiActions {
     private static final int CATALOG_COOLDOWN_TICKS = 20;
     private static final Map<ServerPlayer, Integer> LAST_ACTION_TICK = new WeakHashMap<>();
     private static final Map<ServerPlayer, Integer> LAST_CATALOG_TICK = new WeakHashMap<>();
-    private static final Map<ServerPlayer, List<TradeCatalogPayload>> LAST_CATALOG = new WeakHashMap<>();
+    private static final Map<ServerPlayer, LastCatalog> LAST_CATALOG = new WeakHashMap<>();
 
     private TradeGuiActions() {}
 
@@ -95,8 +96,8 @@ public final class TradeGuiActions {
                 return false;
             }
 
-            if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)) {
-                resendLastCatalog(player);
+            if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)
+                    && resendLastCatalog(player, merchant, id - 130)) {
                 return true;
             }
 
@@ -173,17 +174,24 @@ public final class TradeGuiActions {
                 builder.entries(),
                 builder.skipped()
         );
-        LAST_CATALOG.put(player, slices);
+        LAST_CATALOG.put(player, new LastCatalog(merchant.getUUID(), level, slices));
         slices.forEach(slice -> NetworkHelper.sendToPlayer(player, slice));
     }
 
-    private static void resendLastCatalog(ServerPlayer player) {
-        List<TradeCatalogPayload> last = LAST_CATALOG.get(player);
+    private static boolean resendLastCatalog(ServerPlayer player, AbstractVillager merchant, int requestedLevel) {
+        LastCatalog last = LAST_CATALOG.get(player);
 
-        if (last != null) {
-            last.forEach(slice -> NetworkHelper.sendToPlayer(player, slice));
+        if (last == null
+                || !last.merchant().equals(merchant.getUUID())
+                || last.level() != Mth.clamp(requestedLevel, 1, maxLevel(merchant))) {
+            return false;
         }
+
+        last.slices().forEach(slice -> NetworkHelper.sendToPlayer(player, slice));
+        return true;
     }
+
+    private record LastCatalog(UUID merchant, int level, List<TradeCatalogPayload> slices) {}
 
     public static int maxLevel(AbstractVillager merchant) {
         if (merchant instanceof TradeControl control) {
