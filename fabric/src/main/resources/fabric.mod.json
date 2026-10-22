@@ -29,5 +29,13 @@
     "fabric-api": "*",
     "minecraft": ">=1.21.11 <1.21.12",
     "java": ">=21"
+  },
+
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.donate": "https://www.patreon.com/cw/LithiumPlus"
+      }
+    }
   }
 }
