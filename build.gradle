@@ -137,7 +137,7 @@ publishMods {
 	// A single GitHub release carrying both jars.
 	github {
 		accessToken = providers.environmentVariable("GITHUB_TOKEN").getOrElse("")
-		repository = "finallion/VillagerTradingPlus"
+		repository = "finallion/VillagersTradingPlus"
 		commitish = providers.environmentVariable("GITHUB_SHA").getOrElse(rootProject.minecraft_version)
 		file project(":fabric")
 		additionalFiles.from(project(":neoforge").tasks.named("remapJar").flatMap { it.archiveFile })
