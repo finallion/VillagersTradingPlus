@@ -10,6 +10,11 @@ public interface TradeControl {
         villagertradingplus$rerollAll();
     }
 
+    default boolean villagertradingplus$rerollLevelChecked(int level) {
+        villagertradingplus$rerollLevel(level);
+        return true;
+    }
+
     default boolean villagertradingplus$supportsLevels() {
         return false;
     }

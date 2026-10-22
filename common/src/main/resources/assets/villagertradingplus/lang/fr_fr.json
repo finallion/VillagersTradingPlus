@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "Config %s = %s",
   "condition.villagertradingplus.gamerule": "Règle de jeu %s = %s",
   "condition.villagertradingplus.job_site_block": "Bloc de travail : %s",
-  "condition.villagertradingplus.job_site_wood": "Bois du bloc de travail : %s"
+  "condition.villagertradingplus.job_site_wood": "Bois du bloc de travail : %s",
+  "message.villagertradingplus.reroll_level_unavailable": "Les échanges de ce villageois ne peuvent pas être retirés par niveau. Utilise le retirage complet."
 }

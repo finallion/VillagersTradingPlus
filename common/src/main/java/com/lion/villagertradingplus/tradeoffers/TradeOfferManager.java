@@ -111,7 +111,7 @@ public class TradeOfferManager {
         }
     }
 
-    private static String fileSuffix() {
+    public static String fileSuffix() {
         return sourceFile == null ? "" : " [file " + sourceFile + "]";
     }
 

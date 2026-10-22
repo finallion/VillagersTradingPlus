@@ -4,8 +4,10 @@ import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.client.TradeCatalogClientState;
 import com.lion.villagertradingplus.client.TradeControlsClientState;
 import com.lion.villagertradingplus.client.screen.TradeCatalogPanel;
+import com.lion.villagertradingplus.platform.ModCheck;
 import com.lion.villagertradingplus.tradeoffers.gui.TradeControlsPayload;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.MerchantScreen;
@@ -29,6 +31,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
     }
 
     @Unique private static final int CONTROLS_REQUEST_ID = 140;
+    @Unique private static Boolean villagertradingplus$recipeViewer;
 
     /// MerchantScreen.mouseClicked is the only place that clears this flag, so cancelling it strands a drag.
     @Shadow
@@ -144,6 +147,11 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
                 + (showRerollAll ? 1 : 0)
                 + (showCatalog ? 1 : 0);
 
+        if (villagertradingplus$recipeViewerLoaded()
+                && villagertradingplus$layoutBelow(showLevelRow, showSetLevel, showRerollLevel, showRerollAll, showCatalog)) {
+            return;
+        }
+
         int w;
         int baseX;
         int row;
@@ -195,6 +203,134 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
     }
 
     @Unique
+    private boolean villagertradingplus$layoutBelow(
+            boolean showLevelRow,
+            boolean showSetLevel,
+            boolean showRerollLevel,
+            boolean showRerollAll,
+            boolean showCatalog
+    ) {
+        ButtonWidget[] buttons = {
+                null,
+                villagertradingplus$setLevelButton,
+                villagertradingplus$rerollLevelButton,
+                villagertradingplus$rerollAllButton,
+                villagertradingplus$catalogButton
+        };
+        boolean[] shown = {showLevelRow, showSetLevel, showRerollLevel, showRerollAll, showCatalog};
+        // The level row counts 1.5 times a button, so weights are in half units.
+        int[] weights = {3, 2, 2, 2, 2};
+        int[] order = new int[5];
+        int count = 0;
+
+        for (int i = 0; i < shown.length; i++) {
+            if (shown[i]) {
+                order[count++] = i;
+            }
+        }
+
+        if (count == 0) {
+            return false;
+        }
+
+        int step = 23;
+        int gap = 4;
+        int margin = 2;
+        int minUnit = 23;
+        int maxUnit = 55;
+        int shortBelow = 45;
+        int available = Math.min(this.width - 2 * margin, 360);
+        int top = this.y + this.backgroundHeight + 4;
+
+        for (int lines = 1; lines <= 2; lines++) {
+            if (top + (lines - 1) * step + 20 > this.height - margin) {
+                return false;
+            }
+
+            int perLine = (count + lines - 1) / lines;
+            int unit = maxUnit;
+
+            for (int line = 0; line < lines; line++) {
+                int from = line * perLine;
+                int to = Math.min(count, from + perLine);
+                int weightSum = 0;
+
+                for (int i = from; i < to; i++) {
+                    weightSum += weights[order[i]];
+                }
+
+                unit = Math.min(unit, (available - gap * (to - from - 1)) / weightSum);
+            }
+
+            if (unit < minUnit) {
+                continue;
+            }
+
+            this.villagertradingplus$shortLabels = unit < shortBelow;
+            villagertradingplus$refreshMessages();
+
+            int arrowWidth = villagertradingplus$shortLabels ? 16 : 20;
+
+            for (int line = 0; line < lines; line++) {
+                int from = line * perLine;
+                int to = Math.min(count, from + perLine);
+                int used = gap * (to - from - 1);
+
+                for (int i = from; i < to; i++) {
+                    used += unit * weights[order[i]];
+                }
+
+                int bx = Math.max(margin, Math.min(this.x + this.backgroundWidth / 2 - used / 2, this.width - used - margin));
+                int by = top + line * step;
+
+                for (int i = from; i < to; i++) {
+                    int kind = order[i];
+                    int w = unit * weights[kind];
+
+                    if (kind == 0) {
+                        villagertradingplus$place(villagertradingplus$levelDisplay, true, bx + arrowWidth + 4, by, w - 2 * arrowWidth - 8);
+                        villagertradingplus$place(villagertradingplus$levelDown, true, bx, by, arrowWidth);
+                        villagertradingplus$place(villagertradingplus$levelUp, true, bx + w - arrowWidth, by, arrowWidth);
+                    } else {
+                        villagertradingplus$place(buttons[kind], true, bx, by, w);
+                    }
+
+                    bx += w + gap;
+                }
+            }
+
+            for (int kind = 0; kind < shown.length; kind++) {
+                if (shown[kind]) {
+                    continue;
+                }
+
+                if (kind == 0) {
+                    villagertradingplus$place(villagertradingplus$levelDisplay, false, 0, 0, 0);
+                    villagertradingplus$place(villagertradingplus$levelDown, false, 0, 0, 0);
+                    villagertradingplus$place(villagertradingplus$levelUp, false, 0, 0, 0);
+                } else {
+                    villagertradingplus$place(buttons[kind], false, 0, 0, 0);
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Unique
+    private static boolean villagertradingplus$recipeViewerLoaded() {
+        if (villagertradingplus$recipeViewer == null) {
+            villagertradingplus$recipeViewer = ModCheck.isModLoaded("jei")
+                    || ModCheck.isModLoaded("roughlyenoughitems")
+                    || ModCheck.isModLoaded("emi");
+        }
+
+        return villagertradingplus$recipeViewer;
+    }
+
+    @Unique
     private void villagertradingplus$place(ButtonWidget button, boolean show, int x, int y, int width) {
         if (button == null) {
             return;
@@ -238,7 +374,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
     }
 
     /// A re-roll can shorten the offer list, and render has no bounds check.
-    @Inject(method = "render", at = @At("HEAD"))
+    @Inject(method = "renderMain", at = @At("HEAD"))
     private void villagertradingplus$clampSelectedIndex(
             DrawContext context,
             int mouseX,
@@ -255,7 +391,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         }
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
+    @Inject(method = "renderMain", at = @At("TAIL"))
     private void villagertradingplus$renderCatalog(
             DrawContext context,
             int mouseX,
@@ -273,11 +409,13 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void villagertradingplus$catalogClick(
-            double mouseX,
-            double mouseY,
-            int button,
+            Click click,
+            boolean doubleClick,
             CallbackInfoReturnable<Boolean> cir
     ) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+
         if (this.villagertradingplus$catalog == null) {
             return;
         }

@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "配置 %s = %s",
   "condition.villagertradingplus.gamerule": "游戏规则 %s = %s",
   "condition.villagertradingplus.job_site_block": "工作方块：%s",
-  "condition.villagertradingplus.job_site_wood": "工作方块木材：%s"
+  "condition.villagertradingplus.job_site_wood": "工作方块木材：%s",
+  "message.villagertradingplus.reroll_level_unavailable": "无法按等级重新随机该村民的交易。请使用“全部重新随机”。"
 }

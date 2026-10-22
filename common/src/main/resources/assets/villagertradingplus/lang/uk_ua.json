@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "Налаштування %s = %s",
   "condition.villagertradingplus.gamerule": "Ігрове правило %s = %s",
   "condition.villagertradingplus.job_site_block": "Робоче місце: %s",
-  "condition.villagertradingplus.job_site_wood": "Деревина робочого місця: %s"
+  "condition.villagertradingplus.job_site_wood": "Деревина робочого місця: %s",
+  "message.villagertradingplus.reroll_level_unavailable": "Обміни цього селянина не можна перегенерувати за рівнем. Використайте повне перегенерування."
 }
