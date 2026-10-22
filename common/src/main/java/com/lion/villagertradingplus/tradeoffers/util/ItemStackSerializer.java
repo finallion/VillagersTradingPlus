@@ -124,16 +124,15 @@ public final class ItemStackSerializer {
             Optional<RegistryEntry.Reference<Potion>> potion = potionId == null
                     ? Optional.empty()
                     : Registries.POTION.getEntry(potionId);
-            stack.set(
-                    DataComponentTypes.POTION_CONTENTS,
-                    new PotionContentsComponent(
-                            potion.orElseThrow(
-                                    () -> new TradeParseException(
-                                            "unknown potion id \"" + rawPotion + "\" on a trade item"
-                                    )
-                            )
-                    )
-            );
+            if (potion.isEmpty()) {
+                VillagerTradingPlus.LOGGER.warn(
+                        "Unknown potion id \"{}\" on a trade item{}, skipping it.",
+                        rawPotion,
+                        TradeOfferManager.fileSuffix()
+                );
+            } else {
+                stack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(potion.get()));
+            }
         }
 
         if (json.has("skull_owner")) {
@@ -179,7 +178,12 @@ public final class ItemStackSerializer {
                     : registry.get().getOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, identifier));
 
             if (enchantment.isEmpty()) {
-                throw new TradeParseException("unknown enchantment \"" + id + "\" on a trade item");
+                VillagerTradingPlus.LOGGER.warn(
+                        "Unknown enchantment \"{}\" on a trade item{}, skipping it.",
+                        id,
+                        TradeOfferManager.fileSuffix()
+                );
+                continue;
             }
 
             builder.set(enchantment.get(), entry.has("lvl") ? entry.get("lvl").getAsInt() : 1);
@@ -222,10 +226,13 @@ public final class ItemStackSerializer {
         try {
             NbtCompound parsed = StringNbtReader.readCompound(snbt);
             componentize(stack, parsed).ifPresent(stack::applyChanges);
-        } catch (TradeParseException e) {
-            throw e;
         } catch (Exception e) {
-            throw new TradeParseException("invalid \"nbt\" on a trade item: " + snbt + " (" + e.getMessage() + ")");
+            VillagerTradingPlus.LOGGER.warn(
+                    "Invalid \"nbt\" on a trade item{}, skipping it: {} ({})",
+                    TradeOfferManager.fileSuffix(),
+                    snbt,
+                    e.getMessage()
+            );
         }
     }
 
