@@ -120,16 +120,15 @@ public final class ItemStackSerializer {
             Optional<Holder.Reference<Potion>> potion = potionId == null
                     ? Optional.empty()
                     : BuiltInRegistries.POTION.get(potionId);
-            stack.set(
-                    DataComponents.POTION_CONTENTS,
-                    new PotionContents(
-                            potion.orElseThrow(
-                                    () -> new TradeParseException(
-                                            "unknown potion id \"" + rawPotion + "\" on a trade item"
-                                    )
-                            )
-                    )
-            );
+            if (potion.isEmpty()) {
+                VillagerTradingPlus.LOGGER.warn(
+                        "Unknown potion id \"{}\" on a trade item{}, skipping it.",
+                        rawPotion,
+                        TradeOfferManager.fileSuffix()
+                );
+            } else {
+                stack.set(DataComponents.POTION_CONTENTS, new PotionContents(potion.get()));
+            }
         }
 
         if (json.has("skull_owner")) {
@@ -178,7 +177,12 @@ public final class ItemStackSerializer {
                     : registry.get().get(ResourceKey.create(Registries.ENCHANTMENT, identifier));
 
             if (enchantment.isEmpty()) {
-                throw new TradeParseException("unknown enchantment \"" + id + "\" on a trade item");
+                VillagerTradingPlus.LOGGER.warn(
+                        "Unknown enchantment \"{}\" on a trade item{}, skipping it.",
+                        id,
+                        TradeOfferManager.fileSuffix()
+                );
+                continue;
             }
 
             builder.set(enchantment.get(), entry.has("lvl") ? entry.get("lvl").getAsInt() : 1);
@@ -220,10 +224,13 @@ public final class ItemStackSerializer {
         try {
             CompoundTag parsed = TagParser.parseCompoundFully(snbt);
             componentize(stack, parsed).ifPresent(stack::applyComponentsAndValidate);
-        } catch (TradeParseException e) {
-            throw e;
         } catch (Exception e) {
-            throw new TradeParseException("invalid \"nbt\" on a trade item: " + snbt + " (" + e.getMessage() + ")");
+            VillagerTradingPlus.LOGGER.warn(
+                    "Invalid \"nbt\" on a trade item{}, skipping it: {} ({})",
+                    TradeOfferManager.fileSuffix(),
+                    snbt,
+                    e.getMessage()
+            );
         }
     }
 
