@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "Konfiguracja %s = %s",
   "condition.villagertradingplus.gamerule": "Reguła gry %s = %s",
   "condition.villagertradingplus.job_site_block": "Miejsce pracy: %s",
-  "condition.villagertradingplus.job_site_wood": "Drewno miejsca pracy: %s"
+  "condition.villagertradingplus.job_site_wood": "Drewno miejsca pracy: %s",
+  "message.villagertradingplus.reroll_level_unavailable": "Ofert tego osadnika nie można przelosować według poziomu. Użyj losowania wszystkiego od nowa."
 }
