@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "Настройка %s = %s",
   "condition.villagertradingplus.gamerule": "Игровое правило %s = %s",
   "condition.villagertradingplus.job_site_block": "Рабочее место: %s",
-  "condition.villagertradingplus.job_site_wood": "Древесина рабочего места: %s"
+  "condition.villagertradingplus.job_site_wood": "Древесина рабочего места: %s",
+  "message.villagertradingplus.reroll_level_unavailable": "Обмены этого жителя нельзя перебросить по уровню. Используйте «Перебросить всё»."
 }

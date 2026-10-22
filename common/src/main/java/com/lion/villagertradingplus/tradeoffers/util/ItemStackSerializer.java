@@ -3,6 +3,8 @@ package com.lion.villagertradingplus.tradeoffers.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.lion.villagertradingplus.VillagerTradingPlus;
+import com.lion.villagertradingplus.tradeoffers.TradeOfferManager;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.EnchantedBookItem;
@@ -43,10 +45,31 @@ public final class ItemStackSerializer {
             throw new TradeParseException("unknown item id \"" + id + "\" (is the mod that provides it installed?)");
         }
 
-        int count = withCount && json.has("count") ? json.get("count").getAsInt() : 1;
-        ItemStack stack = new ItemStack(item.get(), count);
+        ItemStack stack = new ItemStack(item.get(), 1);
+
+        if (withCount && json.has("count")) {
+            stack.setCount(clampCount(json.get("count").getAsInt(), stack.getMaxCount(), id));
+        }
+
         applyComponents(stack, json);
         return stack;
+    }
+
+    public static int clampCount(int requested, int maxCount, String itemId) {
+        int clamped = Math.max(1, Math.min(requested, maxCount));
+
+        if (clamped != requested) {
+            VillagerTradingPlus.LOGGER.warn(
+                    "Trade item {}{} has count {}, using {} (allowed 1 to {}).",
+                    itemId,
+                    TradeOfferManager.fileSuffix(),
+                    requested,
+                    clamped,
+                    maxCount
+            );
+        }
+
+        return clamped;
     }
 
     public static void applyComponents(ItemStack stack, JsonObject json) {
