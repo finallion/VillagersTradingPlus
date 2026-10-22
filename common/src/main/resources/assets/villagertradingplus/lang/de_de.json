@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "Konfiguration %s = %s",
   "condition.villagertradingplus.gamerule": "Spielregel %s = %s",
   "condition.villagertradingplus.job_site_block": "Arbeitsplatz: %s",
-  "condition.villagertradingplus.job_site_wood": "Arbeitsplatz-Holz: %s"
+  "condition.villagertradingplus.job_site_wood": "Arbeitsplatz-Holz: %s",
+  "message.villagertradingplus.reroll_level_unavailable": "Die Angebote dieses Dorfbewohners lassen sich nicht stufenweise neu würfeln. Nutze „Alle neu würfeln“."
 }

@@ -11,8 +11,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.random.Random;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /// Vanilla TradeOffer matches one concrete stack, so a tag input is not an any-of match.
 public final class Ingredient {
@@ -21,6 +23,7 @@ public final class Ingredient {
     private final TagKey<net.minecraft.item.Item> tag;
     private final int count;
     private final JsonObject componentSugar;
+    private final Set<String> clampedOnce = new HashSet<>();
 
     private Ingredient(ItemStack fixed, TagKey<net.minecraft.item.Item> tag, int count, JsonObject componentSugar) {
         this.fixed = fixed;
@@ -30,9 +33,10 @@ public final class Ingredient {
     }
 
     public static Ingredient fromJson(JsonObject json) {
-        int count = json.has("count") ? json.get("count").getAsInt() : 1;
-
         if (json.has("tag")) {
+            int count = json.has("count")
+                    ? ItemStackSerializer.clampCount(json.get("count").getAsInt(), 64, "#" + json.get("tag").getAsString())
+                    : 1;
             TagKey<net.minecraft.item.Item> tag = TagKey.of(
                     RegistryKeys.ITEM,
                     Identifier.tryParse(json.get("tag").getAsString())
@@ -40,7 +44,7 @@ public final class Ingredient {
             return new Ingredient(null, tag, count, json);
         }
 
-        return new Ingredient(ItemStackSerializer.fromJson(json), null, count, null);
+        return new Ingredient(ItemStackSerializer.fromJson(json), null, 1, null);
     }
 
     public boolean isTag() {
@@ -81,12 +85,20 @@ public final class Ingredient {
     }
 
     private ItemStack build(RegistryEntry<net.minecraft.item.Item> entry) {
-        ItemStack stack = new ItemStack(entry.value(), count);
+        ItemStack stack = new ItemStack(entry.value(), 1);
 
         if (componentSugar != null) {
             ItemStackSerializer.applyComponents(stack, componentSugar);
         }
 
+        String label = "#" + tag.id() + " member " + Registries.ITEM.getId(entry.value());
+        int max = stack.getMaxCount();
+
+        if (clampedOnce.add(label)) {
+            ItemStackSerializer.clampCount(count, max, label);
+        }
+
+        stack.setCount(Math.max(1, Math.min(count, max)));
         return stack;
     }
 }
