@@ -10,6 +10,7 @@ import net.minecraft.world.item.trading.Merchant;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractContainerMenu.class)
@@ -29,6 +30,26 @@ public abstract class MerchantScreenHandlerMixin {
 
         if (TradeGuiActions.handle(serverPlayer, entity, id)) {
             cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = "broadcastChanges", at = @At("HEAD"))
+    private void villagertradingplus$servePendingCatalog(CallbackInfo ci) {
+        if (!((Object) this instanceof MerchantMenu handler)) {
+            return;
+        }
+
+        Merchant merchant = ((MerchantScreenHandlerAccessor) handler).getMerchant();
+
+        if (merchant instanceof AbstractVillager entity && entity.getTradingPlayer() instanceof ServerPlayer player) {
+            TradeGuiActions.servePending(player, entity);
+        }
+    }
+
+    @Inject(method = "removed", at = @At("HEAD"))
+    private void villagertradingplus$forgetPendingCatalog(Player player, CallbackInfo ci) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            TradeGuiActions.forgetPending(serverPlayer);
         }
     }
 }

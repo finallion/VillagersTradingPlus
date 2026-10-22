@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permission;
@@ -30,7 +31,7 @@ public final class TradeGuiActions {
     private static final int CATALOG_COOLDOWN_TICKS = 20;
     private static final Map<ServerPlayer, Integer> LAST_ACTION_TICK = new WeakHashMap<>();
     private static final Map<ServerPlayer, Integer> LAST_CATALOG_TICK = new WeakHashMap<>();
-    private static final Map<ServerPlayer, LastCatalog> LAST_CATALOG = new WeakHashMap<>();
+    private static final Map<ServerPlayer, PendingCatalog> PENDING_CATALOG = new WeakHashMap<>();
 
     private TradeGuiActions() {}
 
@@ -68,7 +69,10 @@ public final class TradeGuiActions {
                 return true;
             }
 
-            tc.villagertradingplus$rerollLevel(id - 110);
+            if (!tc.villagertradingplus$rerollLevelChecked(id - 110)) {
+                player.sendSystemMessage(Component.translatable("message.villagertradingplus.reroll_level_unavailable"), true);
+            }
+
             refresh(player, merchant);
             return true;
         }
@@ -92,15 +96,16 @@ public final class TradeGuiActions {
         }
 
         if (id >= 130 && id < 140) {
-            if (!cfg.allow_view_all_trades) {
+            if (!cfg.allow_view_all_trades || !hasCatalog(merchant)) {
                 return false;
             }
 
-            if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)
-                    && resendLastCatalog(player, merchant, id - 130)) {
+            if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)) {
+                PENDING_CATALOG.put(player, new PendingCatalog(merchant.getUUID(), id - 130));
                 return true;
             }
 
+            PENDING_CATALOG.remove(player);
             sendCatalog(player, merchant, id - 130);
             return true;
         }
@@ -124,7 +129,7 @@ public final class TradeGuiActions {
                 new TradeControlsPayload(
                         cfg.allow_set_villager_level && levels && may,
                         cfg.allow_trade_reroll && control && may,
-                        cfg.allow_view_all_trades,
+                        cfg.allow_view_all_trades && hasCatalog(merchant),
                         maxLevel(merchant)
                 )
         );
@@ -174,24 +179,38 @@ public final class TradeGuiActions {
                 builder.entries(),
                 builder.skipped()
         );
-        LAST_CATALOG.put(player, new LastCatalog(merchant.getUUID(), level, slices));
         slices.forEach(slice -> NetworkHelper.sendToPlayer(player, slice));
     }
 
-    private static boolean resendLastCatalog(ServerPlayer player, AbstractVillager merchant, int requestedLevel) {
-        LastCatalog last = LAST_CATALOG.get(player);
+    private record PendingCatalog(UUID merchant, int level) {}
 
-        if (last == null
-                || !last.merchant().equals(merchant.getUUID())
-                || last.level() != Mth.clamp(requestedLevel, 1, maxLevel(merchant))) {
-            return false;
+    public static void servePending(ServerPlayer player, AbstractVillager merchant) {
+        PendingCatalog pending = PENDING_CATALOG.get(player);
+
+        if (pending == null) {
+            return;
         }
 
-        last.slices().forEach(slice -> NetworkHelper.sendToPlayer(player, slice));
-        return true;
+        if (!pending.merchant().equals(merchant.getUUID()) || !hasCatalog(merchant)) {
+            PENDING_CATALOG.remove(player);
+            return;
+        }
+
+        if (isCoolingDown(player, LAST_CATALOG_TICK, CATALOG_COOLDOWN_TICKS)) {
+            return;
+        }
+
+        PENDING_CATALOG.remove(player);
+        sendCatalog(player, merchant, pending.level());
     }
 
-    private record LastCatalog(UUID merchant, int level, List<TradeCatalogPayload> slices) {}
+    public static void forgetPending(ServerPlayer player) {
+        PENDING_CATALOG.remove(player);
+    }
+
+    public static boolean hasCatalog(AbstractVillager merchant) {
+        return merchant instanceof Villager || merchant instanceof TradeControl;
+    }
 
     public static int maxLevel(AbstractVillager merchant) {
         if (merchant instanceof TradeControl control) {

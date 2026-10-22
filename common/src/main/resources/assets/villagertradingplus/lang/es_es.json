@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "Config %s = %s",
   "condition.villagertradingplus.gamerule": "Regla de juego %s = %s",
   "condition.villagertradingplus.job_site_block": "Lugar de trabajo: %s",
-  "condition.villagertradingplus.job_site_wood": "Madera del lugar de trabajo: %s"
+  "condition.villagertradingplus.job_site_wood": "Madera del lugar de trabajo: %s",
+  "message.villagertradingplus.reroll_level_unavailable": "Los intercambios de este aldeano no se pueden volver a sortear por nivel. Usa volver a sortear todo."
 }
