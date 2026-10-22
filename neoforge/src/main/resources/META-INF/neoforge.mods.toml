@@ -8,7 +8,10 @@ license = "GPL-3.0-only"
 modId = "villagertradingplus"
 version = "${version}"
 displayName = "VillagerTradingPlus"
-authors = "Lion"
+authors = "Finallion"
+displayURL = "https://modrinth.com/mod/villagerstradingplus"
+issueTrackerURL = "https://github.com/finallion/VillagersTradingPlus/issues"
+logoFile = "villagertradingplus_logo.png"
 description = '''
 A library for defining villager and wandering trader trades in JSON, with conditions, dynamic pricing and an in-game trade catalog.
 '''
@@ -24,13 +27,13 @@ config = "villagertradingplus-common.mixins.json"
 modId = "neoforge"
 # "mandatory" was replaced by "type" in the 1.20.5 loader generation.
 type = "required"
-versionRange = "[21.8.0,21.9.0)"
+versionRange = "[21.6.20-beta,21.9.0)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.villagertradingplus]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.8,1.21.9)"
+versionRange = "[1.21.6,1.21.9)"
 ordering = "NONE"
 side = "BOTH"
