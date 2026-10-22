@@ -1,12 +1,15 @@
 modLoader = "javafml"
-loaderVersion = "[47,)"
+loaderVersion = "[46,)"
 license = "GPL-3.0-only"
 
 [[mods]]
 modId = "villagertradingplus"
 version = "${version}"
 displayName = "VillagerTradingPlus"
-authors = "Lion"
+authors = "Finallion"
+displayURL = "https://modrinth.com/mod/villagerstradingplus"
+issueTrackerURL = "https://github.com/finallion/VillagersTradingPlus/issues"
+logoFile = "villagertradingplus_logo.png"
 description = '''
 A library for defining villager and wandering trader trades in JSON, with conditions, dynamic pricing and an in-game trade catalog.
 '''
@@ -14,13 +17,13 @@ A library for defining villager and wandering trader trades in JSON, with condit
 [[dependencies.villagertradingplus]]
 modId = "forge"
 mandatory = true
-versionRange = "[47.0.0,)"
+versionRange = "[46.0.14,48)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.villagertradingplus]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20.1,1.20.2)"
+versionRange = "[1.20,1.20.2)"
 ordering = "NONE"
 side = "BOTH"

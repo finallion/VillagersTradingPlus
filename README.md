@@ -8,7 +8,7 @@ is the reference consumer.
 
 **Get it:** [Modrinth](https://modrinth.com/mod/villagerstradingplus)
 
-**Version:** Minecraft 1.20.1. **Loaders:** Fabric (needs Fabric API) and Forge.
+**Versions:** Minecraft 1.20.1 (Fabric, Forge), 1.21.1 and 1.21.8 (Fabric, NeoForge). Fabric needs Fabric API.
 
 ## What it does
 

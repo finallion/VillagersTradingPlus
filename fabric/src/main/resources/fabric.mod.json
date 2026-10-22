@@ -7,9 +7,14 @@
   "authors": [
     "Finallion"
   ],
-  "contact": {},
+  "contact": {
+    "homepage": "https://modrinth.com/mod/villagerstradingplus",
+    "sources": "https://github.com/finallion/VillagersTradingPlus",
+    "issues": "https://github.com/finallion/VillagersTradingPlus/issues"
+  },
 
   "license": "GPL-3.0-only",
+  "icon": "villagertradingplus_logo.png",
 
   "environment": "*",
   "entrypoints": {
@@ -26,8 +31,8 @@
 
   "depends": {
     "fabricloader": ">=0.14.21",
-    "fabric-api": "*",
-    "minecraft": ">=1.20.1 <1.20.2",
+    "fabric-api": ">=0.83.0",
+    "minecraft": ">=1.20 <1.20.2-",
     "java": ">=17"
   }
 }
