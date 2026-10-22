@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "설정 %s = %s",
   "condition.villagertradingplus.gamerule": "게임 규칙 %s = %s",
   "condition.villagertradingplus.job_site_block": "직업 블록: %s",
-  "condition.villagertradingplus.job_site_wood": "직업 블록 목재: %s"
+  "condition.villagertradingplus.job_site_wood": "직업 블록 목재: %s",
+  "message.villagertradingplus.reroll_level_unavailable": "이 주민의 거래는 레벨별로 다시 뽑을 수 없습니다. 전체 다시 뽑기를 사용하세요."
 }

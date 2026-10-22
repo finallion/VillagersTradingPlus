@@ -47,5 +47,6 @@
   "condition.villagertradingplus.config_flag": "Config %s = %s",
   "condition.villagertradingplus.gamerule": "Gamerule %s = %s",
   "condition.villagertradingplus.job_site_block": "Job site: %s",
-  "condition.villagertradingplus.job_site_wood": "Job site wood: %s"
+  "condition.villagertradingplus.job_site_wood": "Job site wood: %s",
+  "message.villagertradingplus.reroll_level_unavailable": "This villager's trades cannot be re-rolled by level. Use re-roll all."
 }

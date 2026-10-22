@@ -2,7 +2,6 @@ package com.lion.villagertradingplus.mixin;
 
 import com.lion.villagertradingplus.tradeoffers.TradePools;
 import com.lion.villagertradingplus.tradeoffers.gui.TradeControl;
-import java.util.Arrays;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -40,6 +39,7 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
     @Shadow public abstract void refreshBrain(ServerLevel world);
 
     @Unique private int[] villagertradingplus$levelCounts = null;
+    @Unique private int villagertradingplus$offersBeforeFill;
 
     @Inject(method = "updateTrades", at = @At("HEAD"), cancellable = true)
     private void villagertradingplus$drawFromPool(ServerLevel level, CallbackInfo ci) {
@@ -50,14 +50,26 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
         }
 
         MerchantOffers offers = getOffers();
-
-        if (offers.isEmpty()) {
-            villagertradingplus$levelCounts = null;
-        }
-
         int tier = getVillagerData().level();
-        villagertradingplus$recordCount(tier, TradePools.addVillagerOffers(level, this, profession, tier, offers));
+        int before = offers.size();
+        int added = TradePools.addVillagerOffers(level, this, profession, tier, offers);
+        villagertradingplus$recordTier(level, tier, before, added);
         ci.cancel();
+    }
+
+    @Inject(method = "updateTrades", at = @At("HEAD"))
+    private void villagertradingplus$markFillStart(ServerLevel level, CallbackInfo ci) {
+        villagertradingplus$offersBeforeFill = getOffers().size();
+    }
+
+    @Inject(method = "updateTrades", at = @At("TAIL"))
+    private void villagertradingplus$recordVanillaTier(ServerLevel level, CallbackInfo ci) {
+        villagertradingplus$recordTier(
+                level,
+                getVillagerData().level(),
+                villagertradingplus$offersBeforeFill,
+                getOffers().size() - villagertradingplus$offersBeforeFill
+        );
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
@@ -97,23 +109,29 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
 
     @Override
     public void villagertradingplus$rerollLevel(int targetLevel) {
+        villagertradingplus$rerollLevelChecked(targetLevel);
+    }
+
+    @Override
+    public boolean villagertradingplus$rerollLevelChecked(int targetLevel) {
         if (!(level() instanceof ServerLevel serverWorld)) {
-            return;
+            return true;
         }
 
         int level = getVillagerData().level();
 
         if (targetLevel < 1 || targetLevel > level) {
-            return;
+            return true;
         }
 
         MerchantOffers offers = getOffers();
-        int[] counts = villagertradingplus$levelCounts;
+        int[] counts = villagertradingplus$resolveCounts(serverWorld, level, offers.size());
 
-        if (counts == null || counts.length <= level || villagertradingplus$sum(counts, 1, level) != offers.size()) {
-            villagertradingplus$rerollAll();
-            return;
+        if (counts == null) {
+            return false;
         }
+
+        villagertradingplus$levelCounts = counts;
 
         int start = villagertradingplus$sum(counts, 1, targetLevel - 1);
         int oldCount = counts[targetLevel];
@@ -125,6 +143,7 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
         villagertradingplus$addTier(serverWorld, fresh, targetLevel);
         offers.addAll(start, fresh);
         counts[targetLevel] = fresh.size();
+        return true;
     }
 
     @Override
@@ -158,16 +177,56 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
     }
 
     @Unique
-    private void villagertradingplus$recordCount(int tier, int added) {
-        int size = Math.max(tier, VillagerData.MAX_VILLAGER_LEVEL) + 1;
+    private void villagertradingplus$recordTier(ServerLevel level, int tier, int before, int added) {
+        int[] known = villagertradingplus$levelCounts;
+        int[] base;
 
-        if (villagertradingplus$levelCounts == null) {
-            villagertradingplus$levelCounts = new int[size];
-        } else if (villagertradingplus$levelCounts.length < size) {
-            villagertradingplus$levelCounts = Arrays.copyOf(villagertradingplus$levelCounts, size);
+        if (tier == 1 || (known != null && known.length >= tier && villagertradingplus$sum(known, 1, tier - 1) == before)) {
+            base = known;
+        } else {
+            base = villagertradingplus$inferCounts(level, tier - 1, before);
+
+            if (base == null) {
+                return;
+            }
         }
 
-        villagertradingplus$levelCounts[tier] = added;
+        int[] updated = new int[Math.max(tier, VillagerData.MAX_VILLAGER_LEVEL) + 1];
+
+        if (base != null) {
+            System.arraycopy(base, 0, updated, 0, Math.min(base.length, tier));
+        }
+
+        updated[tier] = added;
+        villagertradingplus$levelCounts = updated;
+    }
+
+    @Unique
+    private int[] villagertradingplus$resolveCounts(ServerLevel level, int villagerLevel, int offerCount) {
+        int[] counts = villagertradingplus$levelCounts;
+
+        if (counts != null
+                && counts.length > villagerLevel
+                && villagertradingplus$sum(counts, 1, villagerLevel) == offerCount) {
+            return counts;
+        }
+
+        return villagertradingplus$inferCounts(level, villagerLevel, offerCount);
+    }
+
+    @Unique
+    private int[] villagertradingplus$inferCounts(ServerLevel level, int upToLevel, int offerCount) {
+        Holder<VillagerProfession> profession = getVillagerData().profession();
+        int[] inferred = new int[Math.max(upToLevel, VillagerData.MAX_VILLAGER_LEVEL) + 1];
+
+        for (int tier = 1; tier <= upToLevel; tier++) {
+            inferred[tier] = Math.min(
+                    TradePools.villagerPicks(level, this, profession, tier),
+                    TradePools.forVillager(level, profession, tier).size()
+            );
+        }
+
+        return villagertradingplus$sum(inferred, 1, upToLevel) == offerCount ? inferred : null;
     }
 
     @Unique
