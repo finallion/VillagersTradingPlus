@@ -4,6 +4,7 @@ import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.client.TradeCatalogClientState;
 import com.lion.villagertradingplus.client.TradeControlsClientState;
 import com.lion.villagertradingplus.client.screen.TradeCatalogPanel;
+import com.lion.villagertradingplus.platform.ModCheck;
 import com.lion.villagertradingplus.tradeoffers.gui.TradeControlsPayload;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -29,6 +30,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
     }
 
     @Unique private static final int CONTROLS_REQUEST_ID = 140;
+    @Unique private static Boolean villagertradingplus$recipeViewer;
 
     /// MerchantScreen.mouseClicked is the only place that clears this flag, so cancelling it strands a drag.
     @Shadow
@@ -144,6 +146,11 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
                 + (showRerollAll ? 1 : 0)
                 + (showCatalog ? 1 : 0);
 
+        if (villagertradingplus$recipeViewerLoaded()
+                && villagertradingplus$layoutBelow(showLevelRow, showSetLevel, showRerollLevel, showRerollAll, showCatalog)) {
+            return;
+        }
+
         int w;
         int baseX;
         int row;
@@ -192,6 +199,134 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         }
 
         villagertradingplus$place(villagertradingplus$catalogButton, showCatalog, baseX, row, w);
+    }
+
+    @Unique
+    private boolean villagertradingplus$layoutBelow(
+            boolean showLevelRow,
+            boolean showSetLevel,
+            boolean showRerollLevel,
+            boolean showRerollAll,
+            boolean showCatalog
+    ) {
+        ButtonWidget[] buttons = {
+                null,
+                villagertradingplus$setLevelButton,
+                villagertradingplus$rerollLevelButton,
+                villagertradingplus$rerollAllButton,
+                villagertradingplus$catalogButton
+        };
+        boolean[] shown = {showLevelRow, showSetLevel, showRerollLevel, showRerollAll, showCatalog};
+        // The level row counts 1.5 times a button, so weights are in half units.
+        int[] weights = {3, 2, 2, 2, 2};
+        int[] order = new int[5];
+        int count = 0;
+
+        for (int i = 0; i < shown.length; i++) {
+            if (shown[i]) {
+                order[count++] = i;
+            }
+        }
+
+        if (count == 0) {
+            return false;
+        }
+
+        int step = 23;
+        int gap = 4;
+        int margin = 2;
+        int minUnit = 23;
+        int maxUnit = 55;
+        int shortBelow = 45;
+        int available = Math.min(this.width - 2 * margin, 360);
+        int top = this.y + this.backgroundHeight + 4;
+
+        for (int lines = 1; lines <= 2; lines++) {
+            if (top + (lines - 1) * step + 20 > this.height - margin) {
+                return false;
+            }
+
+            int perLine = (count + lines - 1) / lines;
+            int unit = maxUnit;
+
+            for (int line = 0; line < lines; line++) {
+                int from = line * perLine;
+                int to = Math.min(count, from + perLine);
+                int weightSum = 0;
+
+                for (int i = from; i < to; i++) {
+                    weightSum += weights[order[i]];
+                }
+
+                unit = Math.min(unit, (available - gap * (to - from - 1)) / weightSum);
+            }
+
+            if (unit < minUnit) {
+                continue;
+            }
+
+            this.villagertradingplus$shortLabels = unit < shortBelow;
+            villagertradingplus$refreshMessages();
+
+            int arrowWidth = villagertradingplus$shortLabels ? 16 : 20;
+
+            for (int line = 0; line < lines; line++) {
+                int from = line * perLine;
+                int to = Math.min(count, from + perLine);
+                int used = gap * (to - from - 1);
+
+                for (int i = from; i < to; i++) {
+                    used += unit * weights[order[i]];
+                }
+
+                int bx = Math.max(margin, Math.min(this.x + this.backgroundWidth / 2 - used / 2, this.width - used - margin));
+                int by = top + line * step;
+
+                for (int i = from; i < to; i++) {
+                    int kind = order[i];
+                    int w = unit * weights[kind];
+
+                    if (kind == 0) {
+                        villagertradingplus$place(villagertradingplus$levelDisplay, true, bx + arrowWidth + 4, by, w - 2 * arrowWidth - 8);
+                        villagertradingplus$place(villagertradingplus$levelDown, true, bx, by, arrowWidth);
+                        villagertradingplus$place(villagertradingplus$levelUp, true, bx + w - arrowWidth, by, arrowWidth);
+                    } else {
+                        villagertradingplus$place(buttons[kind], true, bx, by, w);
+                    }
+
+                    bx += w + gap;
+                }
+            }
+
+            for (int kind = 0; kind < shown.length; kind++) {
+                if (shown[kind]) {
+                    continue;
+                }
+
+                if (kind == 0) {
+                    villagertradingplus$place(villagertradingplus$levelDisplay, false, 0, 0, 0);
+                    villagertradingplus$place(villagertradingplus$levelDown, false, 0, 0, 0);
+                    villagertradingplus$place(villagertradingplus$levelUp, false, 0, 0, 0);
+                } else {
+                    villagertradingplus$place(buttons[kind], false, 0, 0, 0);
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Unique
+    private static boolean villagertradingplus$recipeViewerLoaded() {
+        if (villagertradingplus$recipeViewer == null) {
+            villagertradingplus$recipeViewer = ModCheck.isModLoaded("jei")
+                    || ModCheck.isModLoaded("roughlyenoughitems")
+                    || ModCheck.isModLoaded("emi");
+        }
+
+        return villagertradingplus$recipeViewer;
     }
 
     @Unique

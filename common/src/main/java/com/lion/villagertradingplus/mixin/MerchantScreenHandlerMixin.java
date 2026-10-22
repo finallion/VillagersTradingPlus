@@ -10,6 +10,7 @@ import net.minecraft.village.Merchant;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ScreenHandler.class)
@@ -29,6 +30,26 @@ public abstract class MerchantScreenHandlerMixin {
 
         if (TradeGuiActions.handle(serverPlayer, entity, id)) {
             cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = "sendContentUpdates", at = @At("HEAD"))
+    private void villagertradingplus$servePendingCatalog(CallbackInfo ci) {
+        if (!((Object) this instanceof MerchantScreenHandler handler)) {
+            return;
+        }
+
+        Merchant merchant = ((MerchantScreenHandlerAccessor) handler).getMerchant();
+
+        if (merchant instanceof MerchantEntity entity && entity.getCustomer() instanceof ServerPlayerEntity player) {
+            TradeGuiActions.servePending(player, entity);
+        }
+    }
+
+    @Inject(method = "onClosed", at = @At("HEAD"))
+    private void villagertradingplus$forgetPendingCatalog(PlayerEntity player, CallbackInfo ci) {
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            TradeGuiActions.forgetPending(serverPlayer);
         }
     }
 }

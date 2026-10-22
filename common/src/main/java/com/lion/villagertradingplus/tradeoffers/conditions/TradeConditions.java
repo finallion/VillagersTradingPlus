@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public final class TradeConditions {
 
@@ -236,15 +237,14 @@ public final class TradeConditions {
         if (json.has("wood_variant")) {
             String variant = JsonFields.requireString(json, "\"job_site_block\" condition", "wood_variant");
             boolean listed = WOOD_VARIANTS.contains(variant);
-            return villager -> jobSiteBlockId(villager)
-                    .map(id -> listed ? variant.equals(woodOf(id.getPath())) : id.getPath().contains(variant))
-                    .orElse(false);
+            return villager -> matchesJobSite(
+                    villager,
+                    id -> listed ? variant.equals(woodOf(id.getPath())) : id.getPath().contains(variant)
+            );
         }
 
         Set<String> blocks = toStringSet(JsonFields.requireArray(json, "\"job_site_block\" condition", "blocks"));
-        return villager -> jobSiteBlockId(villager)
-                .map(id -> blocks.contains(id.toString()))
-                .orElse(false);
+        return villager -> matchesJobSite(villager, id -> blocks.contains(id.toString()));
     }
 
     /// The longest wood name inside the path, so `dark_oak` never counts as `oak`.
@@ -350,25 +350,29 @@ public final class TradeConditions {
         return id.startsWith("minecraft:") ? id.substring("minecraft:".length()) : id;
     }
 
-    private static Optional<Identifier> jobSiteBlockId(Entity villager) {
-        if (!(villager instanceof VillagerEntity villagerEntity)) {
-            return Optional.empty();
+    private static boolean matchesJobSite(Entity entity, Predicate<Identifier> test) {
+        if (!(entity instanceof VillagerEntity villager)) {
+            return false;
         }
 
-        Optional<GlobalPos> jobSite = villagerEntity.getBrain().getOptionalRegisteredMemory(MemoryModuleType.JOB_SITE);
+        Optional<GlobalPos> jobSite = villager.getBrain().getOptionalRegisteredMemory(MemoryModuleType.JOB_SITE);
 
         if (jobSite.isEmpty()) {
-            return Optional.empty();
+            return true;
         }
 
         GlobalPos pos = jobSite.get();
+        World world = villager.getWorld();
 
-        if (!pos.dimension().equals(villager.getWorld().getRegistryKey())) {
-            return Optional.empty();
+        if (!pos.dimension().equals(world.getRegistryKey()) || !world.isChunkLoaded(pos.pos())) {
+            return true;
         }
 
-        return Optional.of(
-                net.minecraft.registry.Registries.BLOCK.getId(villager.getWorld().getBlockState(pos.pos()).getBlock())
+        return test.test(
+                net.minecraft.registry.Registries.BLOCK.getId(
+                        world.getBlockState(pos.pos())
+                                .getBlock()
+                )
         );
     }
 

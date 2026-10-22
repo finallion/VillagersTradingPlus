@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "設定 %s = %s",
   "condition.villagertradingplus.gamerule": "ゲームルール %s = %s",
   "condition.villagertradingplus.job_site_block": "職業ブロック: %s",
-  "condition.villagertradingplus.job_site_wood": "職業ブロックの木材: %s"
+  "condition.villagertradingplus.job_site_wood": "職業ブロックの木材: %s",
+  "message.villagertradingplus.reroll_level_unavailable": "この村人の取引はレベル単位で再抽選できません。「すべて再抽選」を使ってください。"
 }

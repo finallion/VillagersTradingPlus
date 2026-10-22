@@ -46,5 +46,6 @@
   "condition.villagertradingplus.config_flag": "Config %s = %s",
   "condition.villagertradingplus.gamerule": "Spelregel %s = %s",
   "condition.villagertradingplus.job_site_block": "Werkplek: %s",
-  "condition.villagertradingplus.job_site_wood": "Werkplekhout: %s"
+  "condition.villagertradingplus.job_site_wood": "Werkplekhout: %s",
+  "message.villagertradingplus.reroll_level_unavailable": "De handel van deze dorpeling kan niet per niveau opnieuw worden bepaald. Gebruik alles opnieuw bepalen."
 }
