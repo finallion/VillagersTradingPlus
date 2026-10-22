@@ -14,6 +14,8 @@ issueTrackerURL = "https://github.com/finallion/VillagersTradingPlus/issues"
 logoFile = "villagertradingplus_logo.png"
 description = '''
 A library for defining villager and wandering trader trades in JSON, with conditions, dynamic pricing and an in-game trade catalog.
+
+Support: https://www.patreon.com/cw/LithiumPlus
 '''
 
 # NeoForge does not read mixin configs from anywhere else — Fabric picks them up from
