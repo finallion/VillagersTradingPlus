@@ -98,10 +98,14 @@ public final class ItemStackSerializer {
             Identifier potionId = Identifier.tryParse(rawPotion);
 
             if (potionId == null || !Registries.POTION.containsId(potionId)) {
-                throw new TradeParseException("unknown potion id \"" + rawPotion + "\" on a trade item");
+                VillagerTradingPlus.LOGGER.warn(
+                        "Unknown potion id \"{}\" on a trade item{}, skipping it.",
+                        rawPotion,
+                        TradeOfferManager.fileSuffix()
+                );
+            } else {
+                PotionUtil.setPotion(stack, Registries.POTION.get(potionId));
             }
-
-            PotionUtil.setPotion(stack, Registries.POTION.get(potionId));
         }
 
         if (json.has("skull_owner")) {
@@ -132,7 +136,12 @@ public final class ItemStackSerializer {
             Enchantment enchantment = Registries.ENCHANTMENT.get(Identifier.tryParse(obj.get("id").getAsString()));
 
             if (enchantment == null) {
-                throw new TradeParseException("unknown enchantment \"" + obj.get("id").getAsString() + "\" on a trade item");
+                VillagerTradingPlus.LOGGER.warn(
+                        "Unknown enchantment \"{}\" on a trade item{}, skipping it.",
+                        obj.get("id").getAsString(),
+                        TradeOfferManager.fileSuffix()
+                );
+                continue;
             }
 
             int level = obj.has("lvl") ? obj.get("lvl").getAsInt() : 1;
@@ -170,7 +179,12 @@ public final class ItemStackSerializer {
             NbtCompound parsed = StringNbtReader.parse(snbt);
             stack.getOrCreateNbt().copyFrom(parsed);
         } catch (Exception e) {
-            throw new TradeParseException("invalid \"nbt\" on a trade item: " + snbt + " (" + e.getMessage() + ")");
+            VillagerTradingPlus.LOGGER.warn(
+                    "Invalid \"nbt\" on a trade item{}, skipping it: {} ({})",
+                    TradeOfferManager.fileSuffix(),
+                    snbt,
+                    e.getMessage()
+            );
         }
     }
 
