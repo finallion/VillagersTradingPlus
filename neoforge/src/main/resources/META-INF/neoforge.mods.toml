@@ -9,6 +9,8 @@ displayName = "VillagerTradingPlus"
 authors = "Lion"
 description = '''
 A library for defining villager and wandering trader trades in JSON, with conditions, dynamic pricing and an in-game trade catalog.
+
+Support: https://www.patreon.com/cw/LithiumPlus
 '''
 
 [[mixins]]
