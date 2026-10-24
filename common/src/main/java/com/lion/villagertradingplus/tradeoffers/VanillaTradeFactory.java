@@ -79,7 +79,7 @@ public final class VanillaTradeFactory implements TradeFactory {
             field.setAccessible(true);
             return field;
         } catch (ReflectiveOperationException | RuntimeException e) {
-            VillagerTradingPlus.LOGGER.warn("Cannot read {}.{}; the catalog may roll map trades.", owner.getSimpleName(), name);
+            VillagerTradingPlus.LOGGER.warn("Cannot read {}.{}; the catalog skips or simplifies map trade rows.", owner.getSimpleName(), name);
             return null;
         }
     }
@@ -97,8 +97,9 @@ public final class VanillaTradeFactory implements TradeFactory {
     }
 
     private static boolean searchesStructures(Object modifiers) {
+        // Treat an unreadable list as a structure search.
         if (!(modifiers instanceof List<?> functions)) {
-            return false;
+            return true;
         }
 
         for (Object function : functions) {
