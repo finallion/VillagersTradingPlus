@@ -31,6 +31,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
     }
 
     @Unique private static final int CONTROLS_REQUEST_ID = 140;
+    @Unique private static final int villagertradingplus$VISIBLE_OFFER_ROWS = 7;
     @Unique private static Boolean villagertradingplus$recipeViewer;
 
     @Shadow
@@ -38,6 +39,10 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
     @Shadow
     private int shopItem;
+
+    /// Vanilla draws and indexes the rows from this offset and does not check bounds.
+    @Shadow
+    private int scrollOff;
 
     @Unique private int villagertradingplus$level = 1;
     @Unique private Button villagertradingplus$levelDisplay;
@@ -387,6 +392,14 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
         if (this.shopItem >= size) {
             this.shopItem = Math.max(0, size - 1);
         }
+
+        villagertradingplus$clampScrollOffset(size);
+    }
+
+    @Unique
+    private void villagertradingplus$clampScrollOffset(int size) {
+        int maxOffset = Math.max(0, size - villagertradingplus$VISIBLE_OFFER_ROWS);
+        this.scrollOff = Math.max(0, Math.min(this.scrollOff, maxOffset));
     }
 
     @Inject(method = "extractContents", at = @At("TAIL"))
@@ -411,6 +424,8 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
             boolean doubleClick,
             CallbackInfoReturnable<Boolean> cir
     ) {
+        villagertradingplus$clampScrollOffset(this.getMenu().getOffers().size());
+
         double mouseX = event.x();
         double mouseY = event.y();
 
