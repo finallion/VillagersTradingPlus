@@ -6,6 +6,7 @@
   "mixins": [
     "DataPackContentsMixin",
     "EnchantBookFactoryAccessor",
+    "SellMapFactoryAccessor",
     "MerchantScreenHandlerAccessor",
     "MerchantScreenHandlerMixin",
     "VillagerEntityMixin",

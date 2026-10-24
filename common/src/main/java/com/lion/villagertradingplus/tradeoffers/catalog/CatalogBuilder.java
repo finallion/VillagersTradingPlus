@@ -1,9 +1,13 @@
 package com.lion.villagertradingplus.tradeoffers.catalog;
 
+import com.lion.villagertradingplus.mixin.SellMapFactoryAccessor;
 import com.lion.villagertradingplus.tradeoffers.PricingTradeFactory;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
@@ -22,6 +26,8 @@ public final class CatalogBuilder {
     public static final int MAX_ENTRIES = 512;
 
     private static final long CATALOG_SEED = 0L;
+
+    private static final float VANILLA_MAP_PRICE_MULTIPLIER = 0.2f;
 
     private record ConditionGroup(List<ConditionInfo> infos, boolean satisfied) {
     }
@@ -189,7 +195,7 @@ public final class CatalogBuilder {
 
     public void addSampled(TradeOffers.Factory factory, Entity merchant) {
         if (isStructureMapFactory(factory)) {
-            countSkipped(1);
+            addStaticMapRow(factory);
             return;
         }
 
@@ -217,6 +223,27 @@ public final class CatalogBuilder {
         }
 
         return false;
+    }
+
+    /// Create runs a structure search, so the row is built from the factory fields only.
+    private void addStaticMapRow(TradeOffers.Factory factory) {
+        if (!(factory instanceof SellMapFactoryAccessor accessor)) {
+            countSkipped(1);
+            return;
+        }
+
+        ItemStack map = new ItemStack(Items.FILLED_MAP);
+        map.set(DataComponentTypes.ITEM_NAME, Text.translatable(accessor.villagertradingplus$nameKey()));
+
+        add(
+                new ItemStack(Items.EMERALD, accessor.villagertradingplus$price()),
+                new ItemStack(Items.COMPASS),
+                map,
+                accessor.villagertradingplus$maxUses(),
+                accessor.villagertradingplus$experience(),
+                VANILLA_MAP_PRICE_MULTIPLIER,
+                0
+        );
     }
 
     public boolean isFull() {
