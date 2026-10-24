@@ -64,5 +64,9 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
         if (common != null) {
             fillRecipesFromPool(serverWorld, offers, common, WanderingTraderTradeLoader.countForLevel(1));
         }
+
+        for (Pair<TradeOffers.Factory[], Integer> extra : WanderingTraderTradeLoader.extraPairs()) {
+            fillRecipesFromPool(serverWorld, offers, extra.getLeft(), extra.getRight());
+        }
     }
 }

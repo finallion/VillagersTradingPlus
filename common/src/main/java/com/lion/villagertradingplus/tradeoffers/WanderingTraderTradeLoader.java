@@ -197,6 +197,16 @@ public final class WanderingTraderTradeLoader {
                 : vanillaCounts.getOrDefault(level, 1);
     }
 
+    public static List<Pair<TradeOffers.Factory[], Integer>> extraPairs() {
+        if (servedByLoaderEvent) {
+            List<Pair<TradeOffers.Factory[], Integer>> live = TradeOffers.WANDERING_TRADER_TRADES;
+            return live.size() > VANILLA_POOL_COUNT ? live.subList(VANILLA_POOL_COUNT, live.size()) : List.of();
+        }
+
+        ensureBaseline();
+        return extraPairs;
+    }
+
     public static List<Pair<TradeOffers.Factory[], Integer>> pools() {
         ensureBaseline();
         Int2ObjectMap<TradeOffers.Factory[]> pools = mergedPools != null ? mergedPools : vanillaBaseline;
