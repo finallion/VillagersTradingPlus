@@ -95,7 +95,7 @@ public final class VanillaTradeFactory implements TradeFactory {
             field.setAccessible(true);
             return field;
         } catch (ReflectiveOperationException | RuntimeException e) {
-            VillagerTradingPlus.LOGGER.warn("Cannot read {}.{}; the catalog may roll map trades.", owner.getSimpleName(), name);
+            VillagerTradingPlus.LOGGER.warn("Cannot read {}.{}; the catalog skips or simplifies map trade rows.", owner.getSimpleName(), name);
             return null;
         }
     }
@@ -113,7 +113,12 @@ public final class VanillaTradeFactory implements TradeFactory {
     }
 
     private static boolean givenModifierSearchesStructures(VillagerTrade trade) {
-        if (!(read(GIVEN_ITEM_MODIFIER, trade) instanceof Optional<?> modifier) || modifier.isEmpty()) {
+        // Treat an unreadable field as a structure search.
+        if (!(read(GIVEN_ITEM_MODIFIER, trade) instanceof Optional<?> modifier)) {
+            return true;
+        }
+
+        if (modifier.isEmpty()) {
             return false;
         }
 
@@ -127,8 +132,11 @@ public final class VanillaTradeFactory implements TradeFactory {
             return true;
         }
 
-        if (function instanceof SequenceFunction sequence
-                && read(SEQUENCE_FUNCTIONS, sequence) instanceof HolderSet<?> inner) {
+        if (function instanceof SequenceFunction sequence) {
+            if (!(read(SEQUENCE_FUNCTIONS, sequence) instanceof HolderSet<?> inner)) {
+                return true;
+            }
+
             for (Holder<?> holder : inner) {
                 if (holder.value() instanceof LootItemFunction nested && searchesStructures(nested)) {
                     return true;
