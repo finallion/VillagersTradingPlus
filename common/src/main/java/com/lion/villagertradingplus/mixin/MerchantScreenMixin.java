@@ -31,6 +31,7 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
     }
 
     @Unique private static final int CONTROLS_REQUEST_ID = 140;
+    @Unique private static final int villagertradingplus$VISIBLE_OFFER_ROWS = 7;
     @Unique private static Boolean villagertradingplus$recipeViewer;
 
     /// MerchantScreen.mouseClicked is the only place that clears this flag, so cancelling it strands a drag.
@@ -40,6 +41,10 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
     /// Vanilla indexes the offer list with this field and does not check bounds.
     @Shadow
     private int selectedIndex;
+
+    /// Vanilla draws and indexes the rows from this offset and does not check bounds.
+    @Shadow
+    private int indexStartOffset;
 
     @Unique private int villagertradingplus$level = 1;
     @Unique private ButtonWidget villagertradingplus$levelDisplay;
@@ -389,6 +394,14 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
         if (this.selectedIndex >= size) {
             this.selectedIndex = Math.max(0, size - 1);
         }
+
+        villagertradingplus$clampScrollOffset(size);
+    }
+
+    @Unique
+    private void villagertradingplus$clampScrollOffset(int size) {
+        int maxOffset = Math.max(0, size - villagertradingplus$VISIBLE_OFFER_ROWS);
+        this.indexStartOffset = Math.max(0, Math.min(this.indexStartOffset, maxOffset));
     }
 
     @Inject(method = "renderMain", at = @At("TAIL"))
@@ -413,6 +426,8 @@ public abstract class MerchantScreenMixin extends HandledScreen<MerchantScreenHa
             boolean doubleClick,
             CallbackInfoReturnable<Boolean> cir
     ) {
+        villagertradingplus$clampScrollOffset(this.getScreenHandler().getRecipes().size());
+
         double mouseX = click.x();
         double mouseY = click.y();
 
