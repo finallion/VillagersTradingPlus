@@ -1,16 +1,20 @@
 package com.lion.villagertradingplus.tradeoffers.catalog;
 
 import com.lion.villagertradingplus.mixin.SellMapFactoryAccessor;
+import com.lion.villagertradingplus.mixin.TypedWrapperFactoryAccessor;
 import com.lion.villagertradingplus.tradeoffers.PricingTradeFactory;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
+import net.minecraft.village.VillagerDataContainer;
+import net.minecraft.village.VillagerType;
 import net.minecraft.world.gen.structure.Structure;
 
 import java.lang.reflect.Field;
@@ -194,6 +198,14 @@ public final class CatalogBuilder {
     }
 
     public void addSampled(TradeOffers.Factory factory, Entity merchant) {
+        if (factory instanceof TypedWrapperFactoryAccessor typed) {
+            factory = typed.villagertradingplus$typeToFactory().get(villagerType(merchant));
+
+            if (factory == null) {
+                return;
+            }
+        }
+
         if (isStructureMapFactory(factory)) {
             addStaticMapRow(factory);
             return;
@@ -208,6 +220,14 @@ public final class CatalogBuilder {
         if (offer != null) {
             addOffer(offer);
         }
+    }
+
+    private static RegistryKey<VillagerType> villagerType(Entity merchant) {
+        if (!(merchant instanceof VillagerDataContainer villager)) {
+            return null;
+        }
+
+        return villager.getVillagerData().type().getKey().orElse(null);
     }
 
     /// Vanilla map trades search for a structure when rolled. The factory class is private, so match its tag field.
