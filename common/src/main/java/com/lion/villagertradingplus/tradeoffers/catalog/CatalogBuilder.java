@@ -6,6 +6,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import com.lion.villagertradingplus.tradeoffers.TradeFactory;
@@ -185,7 +186,7 @@ public final class CatalogBuilder {
 
     public void addSampled(TradeFactory factory, Entity merchant) {
         if (factory instanceof VanillaTradeFactory vanilla && vanilla.rollsStructureSearch()) {
-            countSkipped(1);
+            addStaticMapRow(vanilla, merchant);
             return;
         }
 
@@ -198,6 +199,40 @@ public final class CatalogBuilder {
         if (offer != null) {
             addOffer(offer);
         }
+    }
+
+    /// The row comes from the trade data, so no structure search runs.
+    private void addStaticMapRow(VanillaTradeFactory factory, Entity merchant) {
+        if (!(merchant.level() instanceof ServerLevel level)) {
+            countSkipped(1);
+            return;
+        }
+
+        try {
+            if (!factory.offeredTo(level, merchant, RandomSource.create(CATALOG_SEED))) {
+                return;
+            }
+        } catch (RuntimeException e) {
+            countSkipped(1);
+            return;
+        }
+
+        MerchantOffer offer = factory.staticMapOffer(level, merchant, RandomSource.create(CATALOG_SEED));
+
+        if (offer == null) {
+            countSkipped(1);
+            return;
+        }
+
+        add(
+                offer.getBaseCostA(),
+                offer.getCostB(),
+                offer.getResult(),
+                offer.getMaxUses(),
+                offer.getXp(),
+                offer.getPriceMultiplier(),
+                0
+        );
     }
 
     public boolean isFull() {
