@@ -14,6 +14,7 @@ public final class WanderingTraderTradeLoader {
     public static final Map<String, Integer> LEVEL_MAPPING = new HashMap<>();
 
     static {
+        LEVEL_MAPPING.put("buying", 0);
         LEVEL_MAPPING.put("common", 1);
         LEVEL_MAPPING.put("rare", 2);
     }

@@ -60,7 +60,7 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
                     entity.level()
                             .registryAccess()
                             .lookupOrThrow(Registries.ENCHANTMENT)
-                            .getOrThrow(EnchantmentTags.IN_ENCHANTING_TABLE)
+                            .getOrThrow(EnchantmentTags.ON_TRADED_EQUIPMENT)
                             .stream()
             );
 

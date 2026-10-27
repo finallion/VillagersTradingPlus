@@ -1,0 +1,741 @@
+{
+  "profession": "minecraft:cartographer",
+  "trades": {
+    "novice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:paper",
+          "count": 24
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:map",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 7
+        },
+        "max_uses": 12,
+        "villager_experience": 1,
+        "price_multiplier": 0.05
+      }
+    ],
+    "apprentice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:glass_pane",
+          "count": 11
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 8
+        },
+        "structure_id": "minecraft:on_taiga_village_maps",
+        "decoration": "minecraft:village_taiga",
+        "name": "filled_map.village_taiga",
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.2,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:swamp",
+                "minecraft:snow",
+                "minecraft:plains"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 8
+        },
+        "structure_id": "minecraft:on_swamp_explorer_maps",
+        "decoration": "minecraft:swamp_hut",
+        "name": "filled_map.explorer_swamp",
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.2,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:taiga",
+                "minecraft:snow",
+                "minecraft:jungle"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 8
+        },
+        "structure_id": "minecraft:on_snowy_village_maps",
+        "decoration": "minecraft:village_snowy",
+        "name": "filled_map.village_snowy",
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.2,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:taiga",
+                "minecraft:swamp"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 8
+        },
+        "structure_id": "minecraft:on_savanna_village_maps",
+        "decoration": "minecraft:village_savanna",
+        "name": "filled_map.village_savanna",
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.2,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:plains",
+                "minecraft:jungle",
+                "minecraft:desert"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 8
+        },
+        "structure_id": "minecraft:on_plains_village_maps",
+        "decoration": "minecraft:village_plains",
+        "name": "filled_map.village_plains",
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.2,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:taiga",
+                "minecraft:snow",
+                "minecraft:savanna",
+                "minecraft:desert"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 8
+        },
+        "structure_id": "minecraft:on_jungle_explorer_maps",
+        "decoration": "minecraft:jungle_temple",
+        "name": "filled_map.explorer_jungle",
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.2,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:swamp",
+                "minecraft:savanna",
+                "minecraft:desert"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 8
+        },
+        "structure_id": "minecraft:on_desert_village_maps",
+        "decoration": "minecraft:village_desert",
+        "name": "filled_map.village_desert",
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.2,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:savanna",
+                "minecraft:jungle"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "journeyman": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 20,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 13
+        },
+        "structure_id": "minecraft:on_ocean_explorer_maps",
+        "decoration": "minecraft:monument",
+        "name": "filled_map.monument",
+        "max_uses": 12,
+        "villager_experience": 10,
+        "price_multiplier": 0.2
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 12
+        },
+        "structure_id": "minecraft:on_trial_chambers_maps",
+        "decoration": "minecraft:trial_chambers",
+        "name": "filled_map.trial_chambers",
+        "max_uses": 12,
+        "villager_experience": 10,
+        "price_multiplier": 0.2
+      }
+    ],
+    "expert": [
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:item_frame",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 7
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:white_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:snow",
+                "minecraft:plains"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:orange_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:savanna",
+                "minecraft:desert"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:magenta_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": "minecraft:savanna"
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:blue_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:snow",
+                "minecraft:taiga"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:light_blue_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:snow",
+                "minecraft:swamp"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:yellow_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:plains",
+                "minecraft:jungle"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:lime_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:desert",
+                "minecraft:taiga"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:pink_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:taiga",
+                "minecraft:plains"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:gray_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": "minecraft:desert"
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:cyan_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:desert",
+                "minecraft:snow"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:purple_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:taiga",
+                "minecraft:swamp"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:brown_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:plains",
+                "minecraft:jungle"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:green_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:desert",
+                "minecraft:savanna",
+                "minecraft:jungle"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:red_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:snow",
+                "minecraft:savanna"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:black_banner",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "predicates": {
+              "minecraft:villager/variant": "minecraft:swamp"
+            }
+          }
+        }
+      }
+    ],
+    "master": [
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:globe_banner_pattern",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 8
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "buy": {
+          "item": "minecraft:compass",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 14
+        },
+        "structure_id": "minecraft:on_woodland_explorer_maps",
+        "decoration": "minecraft:mansion",
+        "name": "filled_map.mansion",
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.2
+      }
+    ]
+  }
+}

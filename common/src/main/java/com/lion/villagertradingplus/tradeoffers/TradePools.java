@@ -22,6 +22,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 
 public final class TradePools {
 
+    public static final int WANDERING_BUYING_PAGE = 3;
     private static final int VANILLA_OFFERS_PER_LEVEL = 2;
     private static final int VANILLA_WANDERING_COMMON_OFFERS = 5;
 
@@ -89,7 +90,7 @@ public final class TradePools {
             }
 
             if (offer != null) {
-                target.add(offer);
+                target.add(TradePricing.apply(offer, trader));
                 added++;
             }
         }
@@ -116,7 +117,7 @@ public final class TradePools {
 
         int configured = VillagerTradingPlus.CONFIG.trade_offers_per_level;
 
-        if (replacesVanillaSet(villagers, profession.unwrapKey()) || !hasTradeSet(level, set)) {
+        if (!hasTradeSet(level, set)) {
             return configured;
         }
 
@@ -143,10 +144,18 @@ public final class TradePools {
     }
 
     public static List<TradeFactory> forWanderingTrader(ServerLevel level, int tier) {
+        if (tier == WANDERING_BUYING_PAGE) {
+            return wanderingPool(level, TradeSets.WANDERING_TRADER_BUYING, 0);
+        }
+
         return wanderingPool(level, tier == 2 ? TradeSets.WANDERING_TRADER_UNCOMMON : TradeSets.WANDERING_TRADER_COMMON, tier);
     }
 
     public static int wanderingPicks(ServerLevel level, Entity trader, int tier) {
+        if (tier == WANDERING_BUYING_PAGE) {
+            return vanillaAmount(level, trader, TradeSets.WANDERING_TRADER_BUYING, 2);
+        }
+
         if (tier == 1) {
             return VillagerTradingPlus.CONFIG.trade_offers_wandering_trader;
         }
@@ -170,7 +179,7 @@ public final class TradePools {
 
     private static List<TradeFactory> wanderingPool(ServerLevel level, ResourceKey<TradeSet> setKey, int vtpTier) {
         WanderingTraderTradeLoader.Snapshot snapshot = WanderingTraderTradeLoader.snapshot();
-        List<TradeFactory> custom = vtpTier == 0 ? List.of() : snapshot.tier(vtpTier);
+        List<TradeFactory> custom = snapshot.tier(vtpTier);
         List<TradeFactory> pool = new ArrayList<>();
 
         if (!(snapshot.replaceVanilla() && !custom.isEmpty())) {

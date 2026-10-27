@@ -20,7 +20,7 @@ public class VTPConfig implements Config {
         return "villagertradingplus";
     }
 
-    @Description("Amount of new trades per level a villager can have at max. (Default: 2)")
+    @Description("New trades per level. Vanilla number + (value - 2) for a profession with a vanilla trade set; exactly this number for one without. (Default: 2)")
     public int trade_offers_per_level = 2;
 
     @Description("Amount of trades the wandering trader can have at max. (Default: 5)")
