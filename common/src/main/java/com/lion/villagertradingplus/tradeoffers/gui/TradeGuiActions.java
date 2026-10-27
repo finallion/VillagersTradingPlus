@@ -3,6 +3,7 @@ package com.lion.villagertradingplus.tradeoffers.gui;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.config.VTPConfig;
 import com.lion.villagertradingplus.platform.NetworkHelper;
+import com.lion.villagertradingplus.tradeoffers.TradeTables;
 import com.lion.villagertradingplus.tradeoffers.catalog.CatalogBuilder;
 import com.lion.villagertradingplus.tradeoffers.catalog.CatalogExpansion;
 import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPacket;
@@ -268,7 +269,7 @@ public final class TradeGuiActions {
 
         if (merchant instanceof VillagerEntity villager) {
             Int2ObjectMap<TradeOffers.Factory[]> map =
-                    TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(villager.getVillagerData().getProfession());
+                    TradeTables.villagerLevels(villager.getWorld(), villager.getVillagerData().getProfession());
             return map == null ? null : map.get(level);
         }
 

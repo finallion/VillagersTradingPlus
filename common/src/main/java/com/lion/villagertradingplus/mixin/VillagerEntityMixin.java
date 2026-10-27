@@ -1,6 +1,8 @@
 package com.lion.villagertradingplus.mixin;
 
 import com.lion.villagertradingplus.VillagerTradingPlus;
+import com.lion.villagertradingplus.tradeoffers.LevelCounts;
+import com.lion.villagertradingplus.tradeoffers.TradeTables;
 import com.lion.villagertradingplus.tradeoffers.gui.TradeControl;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.MerchantEntity;
@@ -86,7 +88,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void villagertradingplus$readLevelCounts(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("VillagerTradingPlusLevelCounts")) {
-            villagertradingplus$levelCounts = nbt.getIntArray("VillagerTradingPlusLevelCounts");
+            villagertradingplus$levelCounts = LevelCounts.clamp(nbt.getIntArray("VillagerTradingPlusLevelCounts"));
         }
     }
 
@@ -98,7 +100,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
     @Override
     public void villagertradingplus$rerollAll() {
         VillagerProfession profession = getVillagerData().getProfession();
-        Int2ObjectMap<TradeOffers.Factory[]> map = TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(profession);
+        Int2ObjectMap<TradeOffers.Factory[]> map = TradeTables.villagerLevels(getWorld(), profession);
 
         TradeOfferList offers = getOffers();
         offers.clear();
@@ -146,7 +148,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
         villagertradingplus$levelCounts = counts;
 
         VillagerProfession profession = getVillagerData().getProfession();
-        Int2ObjectMap<TradeOffers.Factory[]> map = TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(profession);
+        Int2ObjectMap<TradeOffers.Factory[]> map = TradeTables.villagerLevels(getWorld(), profession);
         TradeOffers.Factory[] pool = map == null ? null : map.get(targetLevel);
 
         int start = villagertradingplus$sum(counts, 1, targetLevel - 1);
@@ -191,7 +193,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
 
     @Unique
     private int[] villagertradingplus$inferCounts(int upToLevel, int offerCount) {
-        Int2ObjectMap<TradeOffers.Factory[]> map = TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(getVillagerData().getProfession());
+        Int2ObjectMap<TradeOffers.Factory[]> map = TradeTables.villagerLevels(getWorld(), getVillagerData().getProfession());
         int[] inferred = new int[upToLevel + 1];
 
         for (int tier = 1; tier <= upToLevel; tier++) {

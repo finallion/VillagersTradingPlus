@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.tradeoffers.TradeOfferManager;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
@@ -43,8 +44,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/// Raw `nbt` applies last.
 public final class ItemStackSerializer {
+
+    private static final int COST_COUNT_LIMIT = 64;
 
     private ItemStackSerializer() {}
 
@@ -52,7 +54,16 @@ public final class ItemStackSerializer {
         return fromJson(json, true);
     }
 
+    /// A slot A cost may exceed the stack size.
+    public static ItemStack fromJsonCost(JsonObject json) {
+        return fromJson(json, true, true);
+    }
+
     public static ItemStack fromJson(JsonObject json, boolean withCount) {
+        return fromJson(json, withCount, false);
+    }
+
+    private static ItemStack fromJson(JsonObject json, boolean withCount, boolean cost) {
         JsonElement idElement = json.get("item");
 
         if (idElement == null) {
@@ -71,7 +82,9 @@ public final class ItemStackSerializer {
         applyComponents(stack, json);
 
         if (withCount && json.has("count")) {
-            stack.setCount(clampCount(json.get("count").getAsInt(), stack.getMaxCount(), id));
+            int limit = cost && stack.getMaxCount() == 1 ? COST_COUNT_LIMIT : stack.getMaxCount();
+
+            stack.setCount(clampCount(json.get("count").getAsInt(), limit, id));
         }
 
         return stack;
@@ -153,6 +166,10 @@ public final class ItemStackSerializer {
         if (json.has("nbt")) {
             applyRawNbt(stack, json.get("nbt").getAsString());
         }
+
+        if (json.has("components")) {
+            applyComponentPatch(stack, json.get("components"));
+        }
     }
 
     private static void applyEnchantments(ItemStack stack, JsonArray enchantments) {
@@ -227,6 +244,40 @@ public final class ItemStackSerializer {
                 DataComponentTypes.WRITTEN_BOOK_CONTENT,
                 new WrittenBookContentComponent(RawFilteredPair.of(title), author, 0, pages, true)
         );
+    }
+
+    private static void applyComponentPatch(ItemStack stack, JsonElement patch) {
+        Optional<RegistryWrapper.WrapperLookup> lookup = DatapackRegistries.lookup();
+
+        if (lookup.isEmpty()) {
+            VillagerTradingPlus.LOGGER.error(
+                    "Cannot read \"components\" on a trade item: no datapack registries are loaded. "
+                            + "The item is used without them."
+            );
+            return;
+        }
+
+        try {
+            RegistryOps<JsonElement> ops = RegistryOps.of(JsonOps.INSTANCE, lookup.get());
+            DataResult<ComponentChanges> result = ComponentChanges.CODEC.parse(ops, patch);
+
+            if (result.error().isPresent()) {
+                VillagerTradingPlus.LOGGER.warn(
+                        "Invalid \"components\" on a trade item{}, skipping them: {}",
+                        TradeOfferManager.fileSuffix(),
+                        result.error().get().message()
+                );
+                return;
+            }
+
+            stack.applyChanges(result.result().get());
+        } catch (Exception e) {
+            VillagerTradingPlus.LOGGER.warn(
+                    "Invalid \"components\" on a trade item{}, skipping them: {}",
+                    TradeOfferManager.fileSuffix(),
+                    e.getMessage()
+            );
+        }
     }
 
     private static void applyRawNbt(ItemStack stack, String snbt) {

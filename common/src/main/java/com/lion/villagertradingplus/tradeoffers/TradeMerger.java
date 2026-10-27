@@ -19,6 +19,8 @@ public final class TradeMerger {
 
     private static Map<VillagerProfession, Int2ObjectMap<TradeOffers.Factory[]>> vanilla;
 
+    private static Map<VillagerProfession, Int2ObjectMap<TradeOffers.Factory[]>> rebalancedVanilla;
+
     private static final Set<VillagerProfession> TOUCHED = new HashSet<>();
 
     private static volatile Map<VillagerProfession, ? extends Int2ObjectMap<TradeOffers.Factory[]>> stagedDefaults = Map.of();
@@ -27,6 +29,8 @@ public final class TradeMerger {
     private TradeMerger() {}
 
     public static void resetToVanilla() {
+        resetRebalanced();
+
         if (vanilla == null) {
             vanilla = new HashMap<>();
             TradeOffers.PROFESSION_TO_LEVELED_TRADE.forEach((profession, levels) -> vanilla.put(profession, copy(levels)));
@@ -53,6 +57,8 @@ public final class TradeMerger {
             TOUCHED.add(profession);
             TradeOffers.PROFESSION_TO_LEVELED_TRADE.put(profession, levels);
         });
+
+        installRebalancedDefaults(defaults);
     }
 
     public static void installStagedDefaults() {
@@ -60,6 +66,8 @@ public final class TradeMerger {
     }
 
     public static void mergeIntoVanilla() {
+        mergeIntoRebalanced(TradeOfferRegistryLoader.getRegistryForLoading());
+
         TradeOfferRegistryLoader.getRegistryForLoading().forEach((profession, loadedTrades) -> {
             TOUCHED.add(profession);
             Int2ObjectMap<TradeOffers.Factory[]> target =
@@ -84,6 +92,11 @@ public final class TradeMerger {
 
     public static void stageAdditions() {
         stagedAll = TradeOfferRegistryLoader.getRegistryForLoading();
+
+        // NeoForge's trade events only touch the default table, so the rebalanced one is filled here.
+        resetRebalanced();
+        installRebalancedDefaults(stagedDefaults);
+        mergeIntoRebalanced(stagedAll);
     }
 
     public static boolean applyStaged(VillagerProfession profession, Int2ObjectMap<List<TradeOffers.Factory>> levels) {
@@ -122,6 +135,54 @@ public final class TradeMerger {
 
     public static void markTouched(VillagerProfession profession) {
         TOUCHED.add(profession);
+    }
+
+    /// The rebalanced table is immutable, but the level maps inside it are not.
+    private static void resetRebalanced() {
+        if (rebalancedVanilla == null) {
+            rebalancedVanilla = new HashMap<>();
+            TradeOffers.REBALANCED_PROFESSION_TO_LEVELED_TRADE.forEach((profession, levels) -> rebalancedVanilla.put(profession, copy(levels)));
+            return;
+        }
+
+        TradeOffers.REBALANCED_PROFESSION_TO_LEVELED_TRADE.forEach((profession, levels) -> {
+            Int2ObjectMap<TradeOffers.Factory[]> original =
+                    rebalancedVanilla.computeIfAbsent(profession, ignored -> copy(levels));
+
+            levels.clear();
+            levels.putAll(copy(original));
+        });
+    }
+
+    private static void installRebalancedDefaults(Map<VillagerProfession, ? extends Int2ObjectMap<TradeOffers.Factory[]>> defaults) {
+        defaults.forEach((profession, levels) -> {
+            Int2ObjectMap<TradeOffers.Factory[]> rebalanced = TradeOffers.REBALANCED_PROFESSION_TO_LEVELED_TRADE.get(profession);
+
+            if (rebalanced != null) {
+                rebalanced.clear();
+                rebalanced.putAll(levels);
+            }
+        });
+    }
+
+    private static void mergeIntoRebalanced(Map<VillagerProfession, ? extends Int2ObjectMap<TradeOffers.Factory[]>> loaded) {
+        loaded.forEach((profession, loadedTrades) -> {
+            Int2ObjectMap<TradeOffers.Factory[]> target = TradeOffers.REBALANCED_PROFESSION_TO_LEVELED_TRADE.get(profession);
+
+            if (target == null) {
+                return;
+            }
+
+            for (Int2ObjectMap.Entry<TradeOffers.Factory[]> entry : loadedTrades.int2ObjectEntrySet()) {
+                TradeOffers.Factory[] existing = target.get(entry.getIntKey());
+
+                target.put(entry.getIntKey(), Stream.concat(
+                                existing != null ? Arrays.stream(existing) : Stream.empty(),
+                                Arrays.stream(entry.getValue()))
+                        .distinct()
+                        .toArray(TradeOffers.Factory[]::new));
+            }
+        });
     }
 
     private static Int2ObjectMap<TradeOffers.Factory[]> copy(Int2ObjectMap<TradeOffers.Factory[]> levels) {

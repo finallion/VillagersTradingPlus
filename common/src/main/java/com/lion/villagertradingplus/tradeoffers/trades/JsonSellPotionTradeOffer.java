@@ -8,6 +8,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
@@ -33,7 +34,14 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         ItemStack buy = getItemStackFromJson(JsonFields.requireObject(json, "sell_potion trade", "convertible"));
         ItemStack currency = getItemStackFromJson(json.get("priceIn").getAsJsonObject());
 
-        return new Factory(buy, sell, currency, maxUses, experience, priceMultiplier);
+        return new Factory(
+                buy,
+                sell,
+                currency,
+                maxUses,
+                experience,
+                priceMultiplier
+        );
     }
 
     private static class Factory implements TradeOffers.Factory, CatalogExpandable {
@@ -70,8 +78,8 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             RegistryEntry<Potion> potion = list.get(random.nextInt(list.size()));
 
             return new TradeOffer(
-                    waterBottle(),
-                    Optional.of(tradedCurrency()),
+                    tradedCurrency(),
+                    Optional.of(convertible()),
                     sellStack(potion),
                     this.maxUses,
                     this.experience,
@@ -90,8 +98,8 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                 }
 
                 out.add(
-                        waterBottle().itemStack(),
                         currency,
+                        convertible().itemStack(),
                         sellStack(potion),
                         this.maxUses,
                         this.experience,
@@ -109,8 +117,11 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     .collect(Collectors.toList());
         }
 
-        /// A TradedItem is a match rule, so the water potion is spelled out as a component predicate.
-        private TradedItem waterBottle() {
+        private TradedItem convertible() {
+            if (!this.buy.isOf(Items.POTION) && !this.buy.isOf(Items.SPLASH_POTION) && !this.buy.isOf(Items.LINGERING_POTION)) {
+                return traded(this.buy);
+            }
+
             return new TradedItem(this.buy.getItem(), this.buy.getCount())
                     .withComponents(
                             builder -> builder.add(
@@ -121,7 +132,7 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         }
 
         private TradedItem tradedCurrency() {
-            return new TradedItem(this.currency.getItem(), this.currency.getCount());
+            return traded(this.currency);
         }
 
         private ItemStack sellStack(RegistryEntry<Potion> potion) {

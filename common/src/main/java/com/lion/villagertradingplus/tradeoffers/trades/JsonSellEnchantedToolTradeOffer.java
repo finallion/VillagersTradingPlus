@@ -56,7 +56,7 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
                     entity.getWorld()
                             .getRegistryManager()
                             .get(RegistryKeys.ENCHANTMENT)
-                            .getOrCreateEntryList(EnchantmentTags.IN_ENCHANTING_TABLE)
+                            .getOrCreateEntryList(EnchantmentTags.ON_TRADED_EQUIPMENT)
                             .stream()
             );
 

@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
@@ -52,13 +53,17 @@ public class JsonSellEnchantedBookTradeOffer extends JsonTradeOffer {
         }
 
         public TradeOffer create(Entity entity, net.minecraft.util.math.random.Random random) {
-            List<RegistryEntry<Enchantment>> list = available(entity.getWorld());
+            // Draws from the tag like the vanilla factory, so the same seed gives the same enchantment.
+            Optional<RegistryEntry<Enchantment>> picked = entity.getWorld()
+                    .getRegistryManager()
+                    .get(RegistryKeys.ENCHANTMENT)
+                    .getRandomEntry(EnchantmentTags.TRADEABLE, random);
 
-            if (list.isEmpty()) {
+            if (picked.isEmpty()) {
                 return null;
             }
 
-            RegistryEntry<Enchantment> enchantment = list.get(random.nextInt(list.size()));
+            RegistryEntry<Enchantment> enchantment = picked.get();
             int level = MathHelper.nextInt(random, enchantment.value().getMinLevel(), enchantment.value().getMaxLevel());
             int price = clampPrice(2 + random.nextInt(5 + level * 10) + 3 * level, enchantment);
 

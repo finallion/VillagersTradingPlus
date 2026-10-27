@@ -25,6 +25,34 @@
         ],
         "max_uses": 12,
         "villager_experience": 2
+      },
+      {
+        "type": "villagersplus:sell_item",
+        "sell": { "item": "minecraft:cactus", "count": 3 },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "merchant_predicate": {
+          "condition": "minecraft:any_of",
+          "terms": [
+            { "condition": "minecraft:entity_properties", "entity": "this", "predicate": { "type_specific": { "type": "minecraft:villager", "variant": "minecraft:desert" } } },
+            { "condition": "minecraft:entity_properties", "entity": "this", "predicate": { "type_specific": { "type": "minecraft:villager", "variant": "minecraft:savanna" } } }
+          ]
+        },
+        "max_uses": 12,
+        "villager_experience": 2
+      },
+      {
+        "type": "villagersplus:sell_item",
+        "sell": {
+          "item": "minecraft:cactus",
+          "count": 1,
+          "components": {
+            "minecraft:custom_name": "{\"text\":\"Desert Bloom\",\"color\":\"gold\",\"italic\":false}",
+            "minecraft:enchantment_glint_override": true
+          }
+        },
+        "priceIn": { "item": "minecraft:emerald", "count": 4 },
+        "max_uses": 4,
+        "villager_experience": 5
       }
     ],
     "apprentice": [
