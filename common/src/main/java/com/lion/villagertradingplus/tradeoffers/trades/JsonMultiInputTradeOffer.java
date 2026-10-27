@@ -15,7 +15,7 @@ public class JsonMultiInputTradeOffer extends JsonTradeOffer {
     @NotNull
     public TradeOffers.Factory deserialize(JsonObject json) {
         loadDefaultStats(json);
-        ItemStack inputA = getItemStackFromJson(JsonFields.requireObject(json, "multi_input trade", "input_a"));
+        ItemStack inputA = getCostStackFromJson(JsonFields.requireObject(json, "multi_input trade", "input_a"));
         ItemStack inputB = getItemStackFromJson(JsonFields.requireObject(json, "multi_input trade", "input_b"));
         ItemStack sell = getItemStackFromJson(JsonFields.requireObject(json, "multi_input trade", "sell"));
         return new Factory(inputA, inputB, sell, maxUses, experience, priceMultiplier, demand);

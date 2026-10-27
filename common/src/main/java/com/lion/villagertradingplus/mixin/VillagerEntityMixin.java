@@ -1,6 +1,8 @@
 package com.lion.villagertradingplus.mixin;
 
 import com.lion.villagertradingplus.VillagerTradingPlus;
+import com.lion.villagertradingplus.tradeoffers.LevelCounts;
+import com.lion.villagertradingplus.tradeoffers.TradeMerger;
 import com.lion.villagertradingplus.tradeoffers.gui.TradeControl;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.MerchantEntity;
@@ -89,7 +91,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
     @Inject(method = "readCustomData", at = @At("TAIL"))
     private void villagertradingplus$readLevelCounts(ReadView view, CallbackInfo ci) {
         villagertradingplus$levelCounts =
-                view.getOptionalIntArray("VillagerTradingPlusLevelCounts").orElse(null);
+                view.getOptionalIntArray("VillagerTradingPlusLevelCounts").map(LevelCounts::clamp).orElse(null);
     }
 
     @Override
@@ -190,7 +192,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
     @Unique
     private Int2ObjectMap<TradeOffers.Factory[]> villagertradingplus$tradesForProfession() {
         return getVillagerData().profession().getKey()
-                .map(TradeOffers.PROFESSION_TO_LEVELED_TRADE::get)
+                .map(key -> TradeMerger.tradesFor(getEntityWorld(), key))
                 .orElse(null);
     }
 

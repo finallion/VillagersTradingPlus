@@ -2,6 +2,7 @@ package com.lion.villagertradingplus.tradeoffers;
 
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.google.gson.*;
+import com.lion.villagertradingplus.tradeoffers.conditions.MerchantPredicate;
 import com.lion.villagertradingplus.tradeoffers.conditions.TradeConditions;
 import com.lion.villagertradingplus.tradeoffers.trades.*;
 import com.lion.villagertradingplus.tradeoffers.util.JsonFields;
@@ -49,6 +50,8 @@ public class TradeOfferManager {
         tradeOfferRegistry.put(Identifier.of(VillagerTradingPlus.MOD_ID,"sell_tagged_item"), new JsonSellTaggedItemTradeOffer());
         tradeOfferRegistry.put(Identifier.of(VillagerTradingPlus.MOD_ID,"sell_enchanted_book_from_list"), new JsonSellEnchantedBookFromListTradeOffer());
         tradeOfferRegistry.put(Identifier.of(VillagerTradingPlus.MOD_ID,"multi_input"), new JsonMultiInputTradeOffer());
+        tradeOfferRegistry.put(Identifier.of(VillagerTradingPlus.MOD_ID,"sell_dyed_armor"), new JsonSellDyedArmorTradeOffer());
+        tradeOfferRegistry.put(Identifier.of(VillagerTradingPlus.MOD_ID,"buy_item_by_villager_type"), new JsonBuyItemByVillagerTypeTradeOffer());
     }
 
     private static final String LEGACY_NAMESPACE = "villagersplus";
@@ -150,7 +153,7 @@ public class TradeOfferManager {
                 Integer level = WanderingTraderTradeLoader.LEVEL_MAPPING.get(entry.getKey());
 
                 if (level == null) {
-                    VillagerTradingPlus.LOGGER.error("Unknown wandering trader trade tier: " + entry.getKey() + " (use 'common' or 'rare').");
+                    VillagerTradingPlus.LOGGER.error("Unknown wandering trader trade tier: " + entry.getKey() + " (use 'buying', 'common' or 'rare').");
                     continue;
                 }
 
@@ -244,7 +247,6 @@ public class TradeOfferManager {
         }
 
         try {
-            // The wrapper sits innermost, so `weighted_pool` still finds the PricingTradeFactory.
             TradeOffers.Factory factory = RegistryRebindFactory.wrap(adapter.deserialize(trade));
 
             if (VillagerTradingPlus.CONFIG.enable_conditional_trades && trade.has("conditions")) {
@@ -255,7 +257,14 @@ public class TradeOfferManager {
                 );
             }
 
-            return PricingTradeFactory.wrapIfNeeded(factory, trade);
+            if (trade.has(MerchantPredicate.FIELD)) {
+                factory = new ConditionalTradeFactory(
+                        factory,
+                        MerchantPredicate.parse(trade.get(MerchantPredicate.FIELD))
+                );
+            }
+
+            return factory;
         } catch (TradeParseException e) {
             VillagerTradingPlus.LOGGER.warn("Skipping '{}' trade{}: {}", type, fileSuffix(), e.getMessage());
             return null;

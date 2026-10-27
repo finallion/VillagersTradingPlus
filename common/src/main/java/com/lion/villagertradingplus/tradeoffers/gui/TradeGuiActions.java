@@ -5,6 +5,7 @@ import com.lion.villagertradingplus.config.VTPConfig;
 import com.lion.villagertradingplus.platform.NetworkHelper;
 import com.lion.villagertradingplus.tradeoffers.catalog.CatalogBuilder;
 import com.lion.villagertradingplus.tradeoffers.catalog.CatalogExpansion;
+import com.lion.villagertradingplus.tradeoffers.TradeMerger;
 import com.lion.villagertradingplus.tradeoffers.WanderingTraderTradeLoader;
 import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPacket;
 import com.lion.villagertradingplus.tradeoffers.catalog.TradeCatalogPayload;
@@ -271,7 +272,7 @@ public final class TradeGuiActions {
         if (merchant instanceof VillagerEntity villager) {
             Int2ObjectMap<TradeOffers.Factory[]> map =
                     villager.getVillagerData().profession().getKey()
-                            .map(TradeOffers.PROFESSION_TO_LEVELED_TRADE::get).orElse(null);
+                            .map(key -> TradeMerger.tradesFor(villager.getEntityWorld(), key)).orElse(null);
             return map == null ? null : map.get(level);
         }
 

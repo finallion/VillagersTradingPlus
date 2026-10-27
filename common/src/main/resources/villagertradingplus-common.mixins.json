@@ -10,6 +10,7 @@
     "TypedWrapperFactoryAccessor",
     "MerchantScreenHandlerAccessor",
     "MerchantScreenHandlerMixin",
+    "MerchantEntityMixin",
     "VillagerEntityMixin",
     "WanderingTraderMixin"
   ],

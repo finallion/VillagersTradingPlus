@@ -8,11 +8,14 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.stream.Stream;
 
 public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
 
@@ -59,8 +62,9 @@ public class JsonSellEnchantedToolTradeOffer extends JsonTradeOffer {
                     entity.getEntityWorld()
                             .getRegistryManager()
                             .getOrThrow(RegistryKeys.ENCHANTMENT)
-                            .getOrThrow(EnchantmentTags.IN_ENCHANTING_TABLE)
-                            .stream()
+                            .getOptional(EnchantmentTags.ON_TRADED_EQUIPMENT)
+                            .map(RegistryEntryList::stream)
+                            .orElseGet(Stream::empty)
             );
 
             return new TradeOffer(

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/// Vanilla lists three pools in this order: buying, rare, common.
+/// Vanilla lists three pools in this order: buying, rare, common. The buying pool is tier 0.
 /// The vanilla list is immutable, so `WanderingTraderMixin` serves the merged pools instead.
 /// Reloads start from the vanilla snapshot, so trades never duplicate.
 public final class WanderingTraderTradeLoader {
@@ -24,10 +24,12 @@ public final class WanderingTraderTradeLoader {
     public static final Map<String, Integer> LEVEL_MAPPING = new HashMap<>();
 
     static {
+        LEVEL_MAPPING.put("buying", 0);
         LEVEL_MAPPING.put("common", 1);
         LEVEL_MAPPING.put("rare", 2);
     }
 
+    private static final int BUYING_LEVEL = 0;
     private static final int COMMON_LEVEL = 1;
     private static final int RARE_LEVEL = 2;
     private static final int VANILLA_RARE_INDEX = 1;
@@ -36,7 +38,6 @@ public final class WanderingTraderTradeLoader {
 
     private static Int2ObjectMap<TradeOffers.Factory[]> vanillaBaseline = null;
     private static Int2IntMap vanillaCounts = null;
-    private static Pair<TradeOffers.Factory[], Integer> buyingPair = null;
     private static List<Pair<TradeOffers.Factory[], Integer>> extraPairs = List.of();
 
     private static final Map<Integer, List<TradeOffers.Factory>> accumulator = new HashMap<>();
@@ -70,7 +71,8 @@ public final class WanderingTraderTradeLoader {
                 vanillaBaseline.put(COMMON_LEVEL, pair.getLeft());
                 vanillaCounts.put(COMMON_LEVEL, pair.getRight().intValue());
             } else if (index == 0) {
-                buyingPair = pair;
+                vanillaBaseline.put(BUYING_LEVEL, pair.getLeft());
+                vanillaCounts.put(BUYING_LEVEL, pair.getRight().intValue());
             } else if (index >= VANILLA_POOL_COUNT) {
                 extras.add(pair);
             }
@@ -138,7 +140,7 @@ public final class WanderingTraderTradeLoader {
             List<TradeOffers.Factory> extra = accumulator.getOrDefault(level, List.of());
             TradeOffers.Factory[] merged = ArrayUtils.addAll(base, extra.toArray(new TradeOffers.Factory[0]));
 
-            // Vanilla picks from the rare pool with nextInt(length). An empty tier throws.
+            // A tier the pack leaves empty keeps its vanilla offers, so replace never strips a whole tier.
             if (merged.length == 0) {
                 merged = vanillaBaseline.getOrDefault(level, new TradeOffers.Factory[0]);
             }
@@ -156,7 +158,9 @@ public final class WanderingTraderTradeLoader {
 
     public static TradeOffers.Factory[] poolForLevel(int level) {
         if (servedByLoaderEvent) {
-            Pair<TradeOffers.Factory[], Integer> pair = eventPair(level == RARE_LEVEL ? VANILLA_RARE_INDEX : VANILLA_COMMON_INDEX);
+            Pair<TradeOffers.Factory[], Integer> pair = eventPair(
+                    level == BUYING_LEVEL ? 0 : level == RARE_LEVEL ? VANILLA_RARE_INDEX : VANILLA_COMMON_INDEX
+            );
             return pair == null ? null : pair.getLeft();
         }
 
@@ -187,7 +191,8 @@ public final class WanderingTraderTradeLoader {
         }
 
         ensureBaseline();
-        return buyingPair;
+        TradeOffers.Factory[] pool = poolForLevel(BUYING_LEVEL);
+        return pool == null ? null : Pair.of(pool, countForLevel(BUYING_LEVEL));
     }
 
     public static int countForLevel(int level) {
@@ -213,8 +218,8 @@ public final class WanderingTraderTradeLoader {
 
         List<Pair<TradeOffers.Factory[], Integer>> out = new ArrayList<>();
 
-        if (buyingPair != null) {
-            out.add(buyingPair);
+        if (pools.get(BUYING_LEVEL) != null) {
+            out.add(Pair.of(pools.get(BUYING_LEVEL), countForLevel(BUYING_LEVEL)));
         }
 
         if (pools.get(RARE_LEVEL) != null) {

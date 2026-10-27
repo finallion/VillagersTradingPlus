@@ -31,9 +31,16 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
 
         ItemStack sell = getItemStackFromJson(JsonFields.requireObject(json, "sell_potion trade", "sell"));
         ItemStack buy = getItemStackFromJson(JsonFields.requireObject(json, "sell_potion trade", "convertible"));
-        ItemStack currency = getItemStackFromJson(json.get("priceIn").getAsJsonObject());
+        ItemStack currency = getCostStackFromJson(JsonFields.requireObject(json, "sell_potion trade", "priceIn"));
 
-        return new Factory(buy, sell, currency, maxUses, experience, priceMultiplier);
+        return new Factory(
+                buy,
+                sell,
+                currency,
+                maxUses,
+                experience,
+                priceMultiplier
+        );
     }
 
     private static class Factory implements TradeOffers.Factory, CatalogExpandable {
@@ -74,8 +81,8 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
             RegistryEntry<Potion> potion = list.get(random.nextInt(list.size()));
 
             return new TradeOffer(
-                    waterBottle(),
-                    Optional.of(tradedCurrency()),
+                    tradedCurrency(),
+                    Optional.of(secondSlot()),
                     sellStack(potion),
                     this.maxUses,
                     this.experience,
@@ -94,8 +101,8 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                 }
 
                 out.add(
-                        waterBottle().itemStack(),
                         currency,
+                        secondSlot().itemStack(),
                         sellStack(potion),
                         this.maxUses,
                         this.experience,
@@ -113,15 +120,19 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     .collect(Collectors.toList());
         }
 
-        /// A TradedItem is a match rule, so the water potion is spelled out as a component predicate.
-        private TradedItem waterBottle() {
-            return new TradedItem(this.buy.getItem(), this.buy.getCount())
-                    .withComponents(
-                            builder -> builder.add(
-                                    DataComponentTypes.POTION_CONTENTS,
-                                    new PotionContentsComponent(Potions.WATER)
-                            )
-                    );
+        private TradedItem secondSlot() {
+            TradedItem traded = new TradedItem(this.buy.getItem(), this.buy.getCount());
+
+            if (this.buy.getItem().getDefaultStack().get(DataComponentTypes.POTION_CONTENTS) == null) {
+                return traded;
+            }
+
+            return traded.withComponents(
+                    builder -> builder.add(
+                            DataComponentTypes.POTION_CONTENTS,
+                            new PotionContentsComponent(Potions.WATER)
+                    )
+            );
         }
 
         private TradedItem tradedCurrency() {

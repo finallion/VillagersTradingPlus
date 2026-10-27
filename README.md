@@ -17,7 +17,7 @@ is the reference consumer.
 - Set amounts, max usages, villager experience and price behaviour per trade.
 - Gate trades behind **conditions** - biome, dimension, weather, time of day, moon phase, gamerule,
   job site block or a config flag.
-- Fourteen trade types, from a plain item sale to weighted pools and enchanted books drawn from a
+- Sixteen trade types, from a plain item sale to weighted pools and enchanted books drawn from a
   list you define.
 - Merge **multiple datapacks** that modify the same villager instead of letting the last one win.
 
@@ -67,7 +67,7 @@ default trade files of a consumer mod are located inside its jar under the same 
 trades as you please - your datapack JSON overwrites the default one.
 
 ### Replacing the default trades of Minecraft villagers
-_Notice: the vanilla trades aren't in JSON form yet, so modifying those is a bit more work._
+_The vanilla trades are available as ready-made files, see [Vanilla trades as templates](#vanilla-trades-as-templates)._
 
 Create a datapack with this directory structure:
 
@@ -88,6 +88,10 @@ Create a JSON named after the villager profession whose trades you would like to
     }
 
 Add trades as you like.
+
+In a world that has the "Villager Trade Rebalance" experiment turned on, vanilla draws the armorer
+and the librarian from a second table. Everything in this library (replacing, adding, re-rolling,
+the catalog) changes that table too, so a file for those two professions works in both kinds of world.
 
 ### Adding trades to villagers
 Create a datapack with this directory structure:
@@ -133,6 +137,10 @@ These fields work on **every** type and are left out of the examples to keep the
 | `demand` | Seeds vanilla's demand pricing - the cost climbs with use and decays over time. |
 | `conditions` / `logic` | See [Conditions](#conditions). |
 
+Item stacks that a villager **takes** are stored like vanilla, but the trade screen takes at most one stack in the
+first slot (`buy`, `priceIn`, `input_a`). The second slot (`convertible`, `input_b`, `buy` of `sell_map`) is limited to the stack size.
+Stacks that a villager **gives** are still limited to the stack size.
+
 ### `sell_item`
 The villager sells an item for a price.
 
@@ -172,7 +180,9 @@ The same idea for buying.
     }
 
 ### `process_item`
-Takes `convertible` plus `priceIn` and returns `sell` - the classic "bring me raw material" trade.
+Takes `priceIn` in the first slot and `convertible` in the second, and returns `sell` - the classic
+"bring me raw material" trade. The order is the one vanilla uses, so demand, reputation and the
+`trade_cost_scale` option act on the price, not on the raw material.
 
     {
       "type": "villagertradingplus:process_item",
@@ -221,29 +231,58 @@ likely as the wither rose.
     }
 
 ### `sell_potion`
-Takes `convertible` plus `priceIn` and returns `sell`, for potion-shaped trades. `sell.count` sets the stack size.
+Takes `priceIn` in the first slot and `convertible` in the second, and returns `sell` with a random
+potion that has effects and can be brewed. `sell.count` sets the stack size. A `convertible` that is
+a potion item has to be a water bottle. Any other item (arrows, glass bottles) is taken as it is.
+This is how vanilla's fletcher sells tipped arrows:
 
     {
       "type": "villagertradingplus:sell_potion",
-      "convertible": { "item": "minecraft:potion", "count": 3 },
-      "priceIn": { "item": "minecraft:emerald", "count": 5 },
-      "sell": { "item": "minecraft:splash_potion", "count": 1 }
+      "convertible": { "item": "minecraft:arrow", "count": 5 },
+      "priceIn": { "item": "minecraft:emerald", "count": 2 },
+      "sell": { "item": "minecraft:tipped_arrow", "count": 5 }
+    }
+
+### `sell_dyed_armor`
+Sells a piece of dyeable armor with a random colour, like vanilla's leatherworker. One random dye is
+used, a second one with a chance of 30 percent and a third with a chance of 20 percent. The dyes are
+mixed the way a crafting table mixes them.
+
+    {
+      "type": "villagertradingplus:sell_dyed_armor",
+      "sell": { "item": "minecraft:leather_boots", "count": 1 },
+      "priceIn": { "item": "minecraft:emerald", "count": 4 }
+    }
+
+### `buy_item_by_villager_type`
+Takes a different item depending on the type of the villager (desert, jungle, plains, savanna, snow,
+swamp, taiga) and pays `reward`. A villager of a type that is not listed does not offer the trade.
+The fisherman's boat in vanilla is this trade:
+
+    {
+      "type": "villagertradingplus:buy_item_by_villager_type",
+      "buy": {
+        "minecraft:desert": { "item": "minecraft:jungle_boat", "count": 1 },
+        "minecraft:plains": { "item": "minecraft:oak_boat", "count": 1 }
+      },
+      "reward": { "item": "minecraft:emerald", "count": 1 }
     }
 
 ### `sell_map`
-Sells a filled map pointing at a structure. `structure_id` is a structure tag. `name` is a translation key; leave it out to keep the vanilla map name.
+Sells a filled map pointing at a structure. `structure_id` is a structure tag. `name` is a translation key; leave it out to keep the vanilla map name. It is the item name, like vanilla, so an anvil rename replaces it. `decoration` is the id of the marker on the map; leave it out for the red X.
 
     {
       "type": "villagertradingplus:sell_map",
       "structure_id": "minecraft:on_woodland_explorer_maps",
       "name": "filled_map.mansion",
+      "decoration": "minecraft:mansion",
       "buy": { "item": "minecraft:compass", "count": 1 },
       "priceIn": { "item": "minecraft:emerald", "count": 2 },
       "price_multiplier": 0.2
     }
 
 ### `sell_enchanted_tool`
-Sells a tool with a **random** enchantment, vanilla-style. The price scales with what was rolled.
+Sells a tool with a **random** enchantment, vanilla-style. The price scales with what was rolled. The enchantment comes from the tag `#minecraft:on_traded_equipment`, like in vanilla.
 
     {
       "type": "villagertradingplus:sell_enchanted_tool",
@@ -342,6 +381,20 @@ take a single string.
       ]
     }
 
+### `merchant_predicate`
+
+Any trade also takes `merchant_predicate`, the trade field vanilla trades have from 26.1 on: one loot condition in the format of this Minecraft version, read with the vanilla loot condition codec and tested against the merchant (`this` is the merchant, the origin is its position). When it fails, the trade is not offered. It sits next to `conditions`, not inside it, and `enable_conditional_trades` does not switch it off. This one matches the villager's own type (the clothes, not the biome). For more than one type, put several in a `minecraft:any_of` condition:
+
+    "merchant_predicate": {
+      "condition": "minecraft:entity_properties",
+      "entity": "this",
+      "predicate": {
+        "components": { "minecraft:villager/variant": "minecraft:desert" }
+      }
+    }
+
+Wandering traders have no villager type and never match this one.
+
 ## Pricing
 
 `price_multiplier` and `demand` work on any trade and feed vanilla's own price machinery:
@@ -373,7 +426,8 @@ Any item stack in any trade type accepts this sugar - no special trade type need
 | `potion` | Potion id for potion items. |
 | `skull_owner` | Player name for player heads. |
 | `book` | `{ "title": ..., "author": ..., "pages": [...] }` for written books. |
-| `nbt` | Raw SNBT, applied **last** as an escape hatch. |
+| `nbt` | Raw SNBT, applied after the other keys and before `components`, as an escape hatch. |
+| `components` | A vanilla data component patch, read with the codec of the `components` field of a vanilla item stack, for example `{ "minecraft:custom_name": { "text": "Gem" } }`. Applied after every other key. A broken patch is logged and skipped; the trade stays. |
 
     {
       "type": "villagertradingplus:sell_item",
@@ -393,10 +447,11 @@ Create a datapack with this directory structure:
 
     data/<namespace>/wandering_trader_trades
 
-Any file name works. Instead of the five villager tiers, the wandering trader has two:
+Any file name works. Instead of the five villager tiers, the wandering trader has three:
 
+- `buying` - the offers where the trader buys something for emeralds. The count is the one vanilla uses for its buying pool (2). A file without this tier keeps vanilla's buying offers.
 - `common` - level 1. Several are picked, the count is set by `trade_offers_wandering_trader`.
-- `rare` - level 2. The count is the one vanilla uses for its rare pool. The trader also keeps vanilla's buying offers, which have no tier.
+- `rare` - level 2. The count is the one vanilla uses for its rare pool.
 
 Set `"replace": true` to drop the vanilla wandering-trader trades and use **only** yours. Omit it
 (or set `false`) to add on top of vanilla. Every trade type, the conditions block and pricing all
@@ -431,6 +486,18 @@ work here exactly as they do on villagers. A tier without custom trades keeps th
         ]
       }
     }
+
+## Vanilla trades as templates
+
+Inside the jar under `data/villagertradingplus/vanilla_trades` there is one file per vanilla
+profession (`armorer.json`, `butcher.json` and so on) and `wandering_trader.json`. They hold every vanilla
+trade of this Minecraft version in the format of this library, with all five tiers, and with
+`max_uses`, `villager_experience` and `price_multiplier` written out. The files in that folder are not loaded.
+To change a profession, copy its file to `data/<namespace>/default_villager_trades` in your datapack,
+edit it and nothing else. Do not put a template in `villager_trades`, because that adds the trades
+a second time. The wandering trader file goes to `data/<namespace>/wandering_trader_trades`.
+
+The files are generated from the game's own trade tables, and the tests of this repository compare them with vanilla.
 
 ## Ready-made example files
 

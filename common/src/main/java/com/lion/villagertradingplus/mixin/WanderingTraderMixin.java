@@ -11,6 +11,7 @@ import net.minecraft.village.TradeOffers;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 
@@ -18,6 +19,9 @@ import java.util.List;
 
 @Mixin(WanderingTraderEntity.class)
 public abstract class WanderingTraderMixin extends MerchantEntity implements TradeControl {
+
+    @Unique
+    private static final int villagertradingplus$BUYING_PAGE = 3;
 
     public WanderingTraderMixin(EntityType<? extends MerchantEntity> entityType, World world) {
         super(entityType, world);
@@ -38,6 +42,21 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
         }
 
         return WanderingTraderTradeLoader.pools();
+    }
+
+    @Override
+    public TradeOffers.Factory[] villagertradingplus$catalogPool(int level) {
+        return level == villagertradingplus$BUYING_PAGE ? WanderingTraderTradeLoader.poolForLevel(0) : null;
+    }
+
+    @Override
+    public int villagertradingplus$catalogMaxLevel() {
+        return villagertradingplus$BUYING_PAGE;
+    }
+
+    @Override
+    public int villagertradingplus$catalogPicks(int level) {
+        return level == villagertradingplus$BUYING_PAGE ? WanderingTraderTradeLoader.countForLevel(0) : 0;
     }
 
     @Override

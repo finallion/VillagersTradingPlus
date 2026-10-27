@@ -1,7 +1,6 @@
 package com.lion.villagertradingplus.tradeoffers.trades;
 
 import com.google.gson.JsonObject;
-import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.tradeoffers.util.ItemStackSerializer;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentType;
@@ -29,8 +28,7 @@ public abstract class JsonTradeOffer {
         this.maxUses = readInt(jsonObject, "max_uses", 12);
         this.experience = readInt(jsonObject, "villager_experience", 5);
         this.demand = readInt(jsonObject, "demand", 0);
-        float base = readFloat(jsonObject, "price_multiplier", 0.05f);
-        this.priceMultiplier = base * VillagerTradingPlus.CONFIG.trade_price_multiplier_scale;
+        this.priceMultiplier = readFloat(jsonObject, "price_multiplier", 0.05f);
     }
 
     /// Uses the 8-argument TradeOffer constructor, so vanilla price math honors demand.
@@ -80,6 +78,10 @@ public abstract class JsonTradeOffer {
 
     public static ItemStack getItemStackFromJson(JsonObject json) {
         return ItemStackSerializer.fromJson(json, true);
+    }
+
+    public static ItemStack getCostStackFromJson(JsonObject json) {
+        return ItemStackSerializer.fromCostJson(json);
     }
 
     public static ItemStack getItemStackFromJsonWithoutCount(JsonObject json) {
