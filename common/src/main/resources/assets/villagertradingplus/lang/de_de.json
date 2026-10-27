@@ -32,6 +32,7 @@
   "condition.villagertradingplus.generic": "Benötigt: %s",
   "condition.villagertradingplus.unknown": "Unbekannte Bedingung: %s",
   "condition.villagertradingplus.biome": "Biom: %s",
+  "condition.villagertradingplus.villager_type": "Dorfbewohner-Typ: %s",
   "condition.villagertradingplus.biome_tag": "Biom mit Tag: %s",
   "condition.villagertradingplus.dimension": "Dimension: %s",
   "condition.villagertradingplus.weather": "Wetter: %s",

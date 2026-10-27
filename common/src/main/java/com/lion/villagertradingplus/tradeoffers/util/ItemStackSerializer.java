@@ -25,13 +25,24 @@ import java.util.Optional;
 /// Raw `nbt` applies last.
 public final class ItemStackSerializer {
 
+    private static final int COST_COUNT_LIMIT = 64;
+
     private ItemStackSerializer() {}
 
     public static ItemStack fromJson(JsonObject json) {
         return fromJson(json, true);
     }
 
+    /// A slot A cost may exceed the stack size.
+    public static ItemStack fromJsonCost(JsonObject json) {
+        return fromJson(json, true, true);
+    }
+
     public static ItemStack fromJson(JsonObject json, boolean withCount) {
+        return fromJson(json, withCount, false);
+    }
+
+    private static ItemStack fromJson(JsonObject json, boolean withCount, boolean cost) {
         JsonElement idElement = json.get("item");
 
         if (idElement == null) {
@@ -48,7 +59,9 @@ public final class ItemStackSerializer {
         ItemStack stack = new ItemStack(item.get(), 1);
 
         if (withCount && json.has("count")) {
-            stack.setCount(clampCount(json.get("count").getAsInt(), stack.getMaxCount(), id));
+            int limit = cost && stack.getMaxCount() == 1 ? COST_COUNT_LIMIT : stack.getMaxCount();
+
+            stack.setCount(clampCount(json.get("count").getAsInt(), limit, id));
         }
 
         applyComponents(stack, json);

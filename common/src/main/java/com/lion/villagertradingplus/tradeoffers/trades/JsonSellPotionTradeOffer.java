@@ -7,6 +7,7 @@ import com.lion.villagertradingplus.tradeoffers.catalog.CatalogBuilder;
 import com.lion.villagertradingplus.tradeoffers.catalog.CatalogExpandable;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
@@ -30,7 +31,14 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
         ItemStack buy = getItemStackFromJson(JsonFields.requireObject(json, "sell_potion trade", "convertible"));
         ItemStack currency = getItemStackFromJson(json.get("priceIn").getAsJsonObject());
 
-        return new Factory(buy, sell, currency, maxUses, experience, priceMultiplier);
+        return new Factory(
+                buy,
+                sell,
+                currency,
+                maxUses,
+                experience,
+                priceMultiplier
+        );
     }
 
     private static class Factory implements TradeOffers.Factory, CatalogExpandable {
@@ -62,7 +70,14 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
 
             Potion potion = list.get(random.nextInt(list.size()));
 
-            return new TradeOffer(waterBottle(), currency, sellStack(potion), this.maxUses, this.experience, this.multiplier);
+            return new TradeOffer(
+                    currency,
+                    convertibleStack(),
+                    sellStack(potion),
+                    this.maxUses,
+                    this.experience,
+                    this.multiplier
+            );
         }
 
         @Override
@@ -75,7 +90,15 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     continue;
                 }
 
-                out.add(waterBottle(), currency, sellStack(potion), this.maxUses, this.experience, this.multiplier, 0);
+                out.add(
+                        currency,
+                        convertibleStack(),
+                        sellStack(potion),
+                        this.maxUses,
+                        this.experience,
+                        this.multiplier,
+                        0
+                );
             }
             out.popShare();
         }
@@ -86,9 +109,14 @@ public class JsonSellPotionTradeOffer extends JsonTradeOffer {
                     .collect(Collectors.toList());
         }
 
-        /// Copies first, because setPotion writes NBT in place and buy is shared.
-        private ItemStack waterBottle() {
-            return PotionUtil.setPotion(this.buy.copy(), Potions.WATER);
+        private ItemStack convertibleStack() {
+            ItemStack copy = this.buy.copy();
+
+            if (copy.isOf(Items.POTION) || copy.isOf(Items.SPLASH_POTION) || copy.isOf(Items.LINGERING_POTION)) {
+                return PotionUtil.setPotion(copy, Potions.WATER);
+            }
+
+            return copy;
         }
 
         private ItemStack sellStack(Potion potion) {

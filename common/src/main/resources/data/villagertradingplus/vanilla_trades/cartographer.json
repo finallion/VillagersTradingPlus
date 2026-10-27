@@ -1,0 +1,213 @@
+{
+  "profession": "minecraft:cartographer",
+  "trades": {
+    "novice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": { "item": "minecraft:paper", "count": 24 },
+        "reward": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:map", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 7 },
+        "max_uses": 12,
+        "villager_experience": 1,
+        "price_multiplier": 0.05
+      }
+    ],
+    "apprentice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": { "item": "minecraft:glass_pane", "count": 11 },
+        "reward": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 16,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "structure_id": "minecraft:on_ocean_explorer_maps",
+        "name": "filled_map.monument",
+        "decoration": "monument",
+        "buy": { "item": "minecraft:compass", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 13 },
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.2
+      }
+    ],
+    "journeyman": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": { "item": "minecraft:compass", "count": 1 },
+        "reward": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 20,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_map",
+        "structure_id": "minecraft:on_woodland_explorer_maps",
+        "name": "filled_map.mansion",
+        "decoration": "mansion",
+        "buy": { "item": "minecraft:compass", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 14 },
+        "max_uses": 12,
+        "villager_experience": 10,
+        "price_multiplier": 0.2
+      }
+    ],
+    "expert": [
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:item_frame", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 7 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:white_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:blue_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:light_blue_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:red_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:pink_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:green_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:lime_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:gray_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:black_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:purple_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:magenta_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:cyan_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:brown_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:yellow_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:orange_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:light_gray_banner", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      }
+    ],
+    "master": [
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:globe_banner_pattern", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 8 },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      }
+    ]
+  }
+}

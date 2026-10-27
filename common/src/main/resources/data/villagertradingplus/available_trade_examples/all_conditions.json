@@ -25,6 +25,17 @@
         ],
         "max_uses": 12,
         "villager_experience": 2
+      },
+      {
+        "_comment": "villager_type matches the villager type, not the biome.",
+        "type": "villagersplus:sell_item",
+        "sell": { "item": "minecraft:cactus", "count": 3 },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "conditions": [
+          { "type": "villager_type", "values": [ "minecraft:desert", "minecraft:savanna" ] }
+        ],
+        "max_uses": 12,
+        "villager_experience": 2
       }
     ],
     "apprentice": [

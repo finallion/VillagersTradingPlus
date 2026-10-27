@@ -1,0 +1,167 @@
+{
+  "profession": "minecraft:farmer",
+  "trades": {
+    "novice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": { "item": "minecraft:wheat", "count": 20 },
+        "reward": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": { "item": "minecraft:potato", "count": 26 },
+        "reward": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": { "item": "minecraft:carrot", "count": 22 },
+        "reward": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": { "item": "minecraft:beetroot", "count": 15 },
+        "reward": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:bread", "count": 6 },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 16,
+        "villager_experience": 1,
+        "price_multiplier": 0.05
+      }
+    ],
+    "apprentice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": { "item": "minecraft:pumpkin", "count": 6 },
+        "reward": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:pumpkin_pie", "count": 4 },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:apple", "count": 4 },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 16,
+        "villager_experience": 5,
+        "price_multiplier": 0.05
+      }
+    ],
+    "journeyman": [
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:cookie", "count": 18 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": { "item": "minecraft:melon", "count": 4 },
+        "reward": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 20,
+        "price_multiplier": 0.05
+      }
+    ],
+    "expert": [
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:cake", "count": 1 },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:suspicious_stew", "count": 1, "nbt": "{Effects:[{EffectDuration:100,EffectId:16}]}" },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:suspicious_stew", "count": 1, "nbt": "{Effects:[{EffectDuration:160,EffectId:8}]}" },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:suspicious_stew", "count": 1, "nbt": "{Effects:[{EffectDuration:140,EffectId:18}]}" },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:suspicious_stew", "count": 1, "nbt": "{Effects:[{EffectDuration:120,EffectId:15}]}" },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:suspicious_stew", "count": 1, "nbt": "{Effects:[{EffectDuration:280,EffectId:19}]}" },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:suspicious_stew", "count": 1, "nbt": "{Effects:[{EffectDuration:7,EffectId:23}]}" },
+        "priceIn": { "item": "minecraft:emerald", "count": 1 },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      }
+    ],
+    "master": [
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:golden_carrot", "count": 3 },
+        "priceIn": { "item": "minecraft:emerald", "count": 3 },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": { "item": "minecraft:glistering_melon_slice", "count": 3 },
+        "priceIn": { "item": "minecraft:emerald", "count": 4 },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      }
+    ]
+  }
+}

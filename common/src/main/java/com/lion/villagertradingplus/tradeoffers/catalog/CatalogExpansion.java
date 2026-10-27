@@ -1,7 +1,7 @@
 package com.lion.villagertradingplus.tradeoffers.catalog;
 
 import com.lion.villagertradingplus.tradeoffers.ConditionalTradeFactory;
-import com.lion.villagertradingplus.tradeoffers.PricingTradeFactory;
+import com.lion.villagertradingplus.tradeoffers.TradePricing;
 import com.lion.villagertradingplus.tradeoffers.conditions.ParsedConditions;
 import com.lion.villagertradingplus.tradeoffers.conditions.TradeCondition;
 import net.minecraft.entity.Entity;
@@ -15,19 +15,13 @@ public final class CatalogExpansion {
 
     public static void expandTrade(TradeOffers.Factory factory, Entity merchant, CatalogBuilder out) {
         out.reset();
+        out.setPriceFactor(TradePricing.priceFactor(merchant));
         expand(factory, merchant, out);
     }
 
     public static void expand(TradeOffers.Factory factory, Entity merchant, CatalogBuilder out) {
         if (out.isFull()) {
             out.countSkipped(1);
-            return;
-        }
-
-        if (factory instanceof PricingTradeFactory pricing) {
-            out.pushPriceFactor(pricing.priceFactor(merchant));
-            expand(pricing.delegate(), merchant, out);
-            out.popPriceFactor();
             return;
         }
 

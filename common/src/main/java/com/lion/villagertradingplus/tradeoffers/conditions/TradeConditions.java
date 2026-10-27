@@ -4,11 +4,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lion.villagertradingplus.VillagerTradingPlus;
+import com.lion.villagertradingplus.tradeoffers.TradeOfferManager;
 import com.lion.villagertradingplus.tradeoffers.util.JsonFields;
 import com.lion.villagertradingplus.tradeoffers.util.TradeParseException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
@@ -125,6 +127,7 @@ public final class TradeConditions {
 
     private static void registerBuiltins() {
         register("biome", TradeConditions::parseBiome, TradeConditions::describeBiome);
+        register("villager_type", TradeConditions::parseVillagerType, TradeConditions::describeVillagerType);
         register("dimension", TradeConditions::parseDimension, TradeConditions::describeDimension);
         register("weather", TradeConditions::parseWeather, TradeConditions::describeWeather);
         register("day_night", TradeConditions::parseDayNight, TradeConditions::describeDayNight);
@@ -147,6 +150,28 @@ public final class TradeConditions {
         return villager -> villager.getWorld().getBiome(villager.getBlockPos()).getKey()
                 .map(key -> biomes.contains(key.getValue().toString()))
                 .orElse(false);
+    }
+
+    private static TradeCondition parseVillagerType(JsonObject json) {
+        Set<String> types = new HashSet<>();
+
+        for (String type : toStringSet(JsonFields.requireArray(json, "\"villager_type\" condition", "values"))) {
+            Identifier id = Identifier.tryParse(type);
+
+            if (id == null || !Registries.VILLAGER_TYPE.containsId(id)) {
+                VillagerTradingPlus.LOGGER.warn(
+                        "Unknown villager type \"{}\" in a \"villager_type\" condition{}, it never matches.",
+                        type,
+                        TradeOfferManager.fileSuffix()
+                );
+            }
+
+            // A value without namespace means minecraft, like in vanilla ids.
+            types.add(id == null ? type : id.toString());
+        }
+
+        return villager -> villager instanceof VillagerEntity merchant
+                && types.contains(Registries.VILLAGER_TYPE.getId(merchant.getVillagerData().getType()).toString());
     }
 
     private static TradeCondition parseDimension(JsonObject json) {
@@ -268,6 +293,10 @@ public final class TradeConditions {
         return Text.translatable("condition.villagertradingplus.biome", joinArray(json.getAsJsonArray("biomes")));
     }
 
+    private static Text describeVillagerType(JsonObject json) {
+        return Text.translatable("condition.villagertradingplus.villager_type", joinArray(json.getAsJsonArray("values")));
+    }
+
     private static Text describeDimension(JsonObject json) {
         return Text.translatable("condition.villagertradingplus.dimension", prettify(json.get("dimension").getAsString()));
     }
@@ -369,7 +398,7 @@ public final class TradeConditions {
         }
 
         return test.test(
-                net.minecraft.registry.Registries.BLOCK.getId(
+                Registries.BLOCK.getId(
                         world.getBlockState(pos.getPos())
                                 .getBlock()
                 )

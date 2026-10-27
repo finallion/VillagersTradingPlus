@@ -1,5 +1,7 @@
 package com.lion.villagertradingplus.tradeoffers.trades;
 
+import com.lion.villagertradingplus.VillagerTradingPlus;
+import com.lion.villagertradingplus.tradeoffers.TradeOfferManager;
 import com.lion.villagertradingplus.tradeoffers.util.JsonFields;
 
 import com.google.gson.JsonObject;
@@ -33,13 +35,47 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
         ItemStack currency = getItemStackFromJson(json.get("priceIn").getAsJsonObject());
         ItemStack buy = getItemStackFromJson(JsonFields.requireObject(json, "sell_structure_map trade", "buy"));
 
-        return new Factory(buy, currency, structure, name, maxUses, experience, priceMultiplier);
+        MapIcon.Type decoration = readDecoration(json);
+
+        return new Factory(
+                buy,
+                currency,
+                structure,
+                name,
+                decoration,
+                maxUses,
+                experience,
+                priceMultiplier
+        );
+    }
+
+    private static MapIcon.Type readDecoration(JsonObject json) {
+        if (!json.has("decoration")) {
+            return MapIcon.Type.RED_X;
+        }
+
+        String raw = json.get("decoration").getAsString();
+        String key = raw.contains(":") ? raw.substring(raw.indexOf(':') + 1) : raw;
+
+        for (MapIcon.Type type : MapIcon.Type.values()) {
+            if (type.name().equalsIgnoreCase(key)) {
+                return type;
+            }
+        }
+
+        VillagerTradingPlus.LOGGER.warn(
+                "Unknown map decoration \"{}\" in a sell_map trade{}, using the red X.",
+                raw,
+                TradeOfferManager.fileSuffix()
+        );
+        return MapIcon.Type.RED_X;
     }
 
     private static class Factory implements TradeOffers.Factory, CatalogExpandable {
         private final ItemStack currency;
         private final ItemStack buy;
         private final String nameKey;
+        private final MapIcon.Type decoration;
         private final TagKey<Structure> structure;
         private final int maxUses;
         private final int experience;
@@ -50,6 +86,7 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
                 ItemStack currency,
                 TagKey<Structure> structure,
                 String nameKey,
+                MapIcon.Type decoration,
                 int maxUses,
                 int experience,
                 float multiplier
@@ -58,6 +95,7 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
             this.currency = currency;
             this.structure = structure;
             this.nameKey = nameKey;
+            this.decoration = decoration;
             this.maxUses = maxUses;
             this.experience = experience;
             this.multiplier = multiplier;
@@ -72,9 +110,16 @@ public class JsonSellStructureMapTradeOffer extends JsonTradeOffer {
                 if (blockPos != null) {
                     ItemStack itemStack = FilledMapItem.createMap(serverWorld, blockPos.getX(), blockPos.getZ(), (byte)2, true, true);
                     FilledMapItem.fillExplorationMap(serverWorld, itemStack);
-                    MapState.addDecorationsNbt(itemStack, blockPos, "+", MapIcon.Type.RED_X);
+                    MapState.addDecorationsNbt(itemStack, blockPos, "+", this.decoration);
                     nameMap(itemStack);
-                    return new TradeOffer(currency, buy, itemStack, this.maxUses, this.experience, this.multiplier);
+                    return new TradeOffer(
+                            currency,
+                            buy,
+                            itemStack,
+                            this.maxUses,
+                            this.experience,
+                            this.multiplier
+                    );
                 } else {
                     return null;
                 }

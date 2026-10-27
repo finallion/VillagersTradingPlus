@@ -14,3 +14,25 @@ loom {
 processResources {
 	from(rootProject.file("LICENSE"))
 }
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	testImplementation platform("org.junit:junit-bom:5.10.2")
+	testImplementation "org.junit.jupiter:junit-jupiter"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+test {
+	useJUnitPlatform()
+	workingDir = file("$buildDir/test-run")
+	doFirst { workingDir.mkdirs() }
+	systemProperty "vtp.rootDir", rootProject.projectDir.absolutePath
+	systemProperty "vtp.regenerate", project.findProperty("vtp.regenerate") ?: "false"
+	testLogging {
+		events "failed", "skipped"
+		exceptionFormat "short"
+	}
+}

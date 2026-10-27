@@ -1,6 +1,7 @@
 package com.lion.villagertradingplus.mixin;
 
 import com.lion.villagertradingplus.VillagerTradingPlus;
+import com.lion.villagertradingplus.tradeoffers.TradePricing;
 import com.lion.villagertradingplus.tradeoffers.gui.TradeControl;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.MerchantEntity;
@@ -9,11 +10,16 @@ import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.TradeOffers;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(WanderingTraderEntity.class)
 public abstract class WanderingTraderMixin extends MerchantEntity implements TradeControl {
+    @Unique private int villagertradingplus$fillStart;
 
     public WanderingTraderMixin(EntityType<? extends MerchantEntity> entityType, World world) {
         super(entityType, world);
@@ -22,6 +28,17 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
     @ModifyConstant(method = "fillRecipes", constant = @Constant(intValue = 5))
     private int changeTradeOfferCount(int value) {
         return VillagerTradingPlus.CONFIG.trade_offers_wandering_trader;
+    }
+
+    @Inject(method = "fillRecipes", at = @At("HEAD"))
+    private void villagertradingplus$markFillStart(CallbackInfo ci) {
+        villagertradingplus$fillStart = getOffers().size();
+    }
+
+    /// The rare offer is added without fillRecipesFromPool, so the trader prices its whole fill here.
+    @Inject(method = "fillRecipes", at = @At("TAIL"))
+    private void villagertradingplus$priceFill(CallbackInfo ci) {
+        TradePricing.applyFrom(getOffers(), villagertradingplus$fillStart, this);
     }
 
     @Override
@@ -39,5 +56,7 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
         if (rare != null) {
             fillRecipesFromPool(offers, rare, 1);
         }
+
+        TradePricing.applyFrom(offers, 0, this);
     }
 }

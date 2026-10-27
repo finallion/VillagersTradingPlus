@@ -16,7 +16,7 @@ public class JsonBuyItemTradeOffer extends JsonTradeOffer {
     public TradeOffers.Factory deserialize(JsonObject json) {
         loadDefaultStats(json);
 
-        ItemStack buy = getItemStackFromJson(JsonFields.requireObject(json, "buy_item trade", "buy"));
+        ItemStack buy = getCostStackFromJson(JsonFields.requireObject(json, "buy_item trade", "buy"));
         ItemStack currency = getItemStackFromJson(JsonFields.requireObject(json, "buy_item trade", "reward"));
 
         return new Factory(buy, currency, maxUses, experience, priceMultiplier, demand);

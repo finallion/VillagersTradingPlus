@@ -4,7 +4,6 @@ import com.lion.villagertradingplus.tradeoffers.util.JsonFields;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.lion.villagertradingplus.tradeoffers.PricingTradeFactory;
 import com.lion.villagertradingplus.tradeoffers.TradeOfferManager;
 import com.lion.villagertradingplus.tradeoffers.catalog.CatalogBuilder;
 import com.lion.villagertradingplus.tradeoffers.catalog.CatalogExpandable;
@@ -30,11 +29,6 @@ public class JsonWeightedPoolTradeOffer extends JsonTradeOffer {
             JsonObject entry = element.getAsJsonObject();
             int weight = readInt(entry, "weight", 1);
             TradeOffers.Factory factory = TradeOfferManager.deserializeTrade(entry.getAsJsonObject("trade"));
-
-            // The inner PricingTradeFactory is stripped, so the cost scale applies once.
-            if (factory instanceof PricingTradeFactory pricing) {
-                factory = pricing.delegate();
-            }
 
             if (factory != null && weight > 0) {
                 entries.add(new Entry(weight, factory));

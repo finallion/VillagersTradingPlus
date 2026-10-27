@@ -1,6 +1,7 @@
 package com.lion.villagertradingplus.mixin;
 
 import com.lion.villagertradingplus.VillagerTradingPlus;
+import com.lion.villagertradingplus.tradeoffers.LevelCounts;
 import com.lion.villagertradingplus.tradeoffers.gui.TradeControl;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.MerchantEntity;
@@ -86,7 +87,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements Trad
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void villagertradingplus$readLevelCounts(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("VillagerTradingPlusLevelCounts")) {
-            villagertradingplus$levelCounts = nbt.getIntArray("VillagerTradingPlusLevelCounts");
+            villagertradingplus$levelCounts = LevelCounts.clamp(nbt.getIntArray("VillagerTradingPlusLevelCounts"));
         }
     }
 

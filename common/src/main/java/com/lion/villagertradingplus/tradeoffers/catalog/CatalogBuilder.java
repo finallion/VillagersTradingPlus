@@ -1,7 +1,7 @@
 package com.lion.villagertradingplus.tradeoffers.catalog;
 
 import com.lion.villagertradingplus.mixin.SellMapFactoryAccessor;
-import com.lion.villagertradingplus.tradeoffers.PricingTradeFactory;
+import com.lion.villagertradingplus.tradeoffers.TradePricing;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -33,7 +33,6 @@ public final class CatalogBuilder {
     private final List<ConditionGroup> conditionStack = new ArrayList<>();
 
     private final Deque<Float> shareStack = new ArrayDeque<>();
-    private final Deque<Float> priceFactorStack = new ArrayDeque<>();
 
     private final int tierPoolSize;
     private final int tierPicks;
@@ -54,7 +53,6 @@ public final class CatalogBuilder {
         this.weightStack.clear();
         this.conditionStack.clear();
         this.shareStack.clear();
-        this.priceFactorStack.clear();
         this.composedShare = 1.0f;
         this.composedPriceFactor = 1.0f;
         refreshConditions();
@@ -95,17 +93,8 @@ public final class CatalogBuilder {
         }
     }
 
-    public void pushPriceFactor(float factor) {
-        this.priceFactorStack.addLast(this.composedPriceFactor);
-        this.composedPriceFactor *= factor;
-    }
-
-    public void popPriceFactor() {
-        Float saved = this.priceFactorStack.pollLast();
-
-        if (saved != null) {
-            this.composedPriceFactor = saved;
-        }
+    public void setPriceFactor(float factor) {
+        this.composedPriceFactor = factor;
     }
 
     public void add(
@@ -159,7 +148,7 @@ public final class CatalogBuilder {
                         this.tierPicks,
                         maxUses,
                         villagerExperience,
-                        priceMultiplier,
+                        priceMultiplier * TradePricing.multiplierScale(),
                         demand,
                         minPrice,
                         maxPrice,
@@ -256,6 +245,6 @@ public final class CatalogBuilder {
     }
 
     private int scale(int rawPrice, int maxCount) {
-        return PricingTradeFactory.scaleCount(rawPrice, maxCount, this.composedPriceFactor);
+        return TradePricing.scaleCount(rawPrice, maxCount, this.composedPriceFactor);
     }
 }

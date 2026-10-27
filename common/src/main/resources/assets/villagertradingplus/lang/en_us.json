@@ -33,6 +33,7 @@
   "condition.villagertradingplus.generic": "Requires: %s",
   "condition.villagertradingplus.unknown": "Unknown condition: %s",
   "condition.villagertradingplus.biome": "Biome: %s",
+  "condition.villagertradingplus.villager_type": "Villager type: %s",
   "condition.villagertradingplus.biome_tag": "Biome tagged: %s",
   "condition.villagertradingplus.dimension": "Dimension: %s",
   "condition.villagertradingplus.weather": "Weather: %s",
