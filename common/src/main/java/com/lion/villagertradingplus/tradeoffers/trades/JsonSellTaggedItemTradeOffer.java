@@ -21,7 +21,7 @@ public class JsonSellTaggedItemTradeOffer extends JsonTradeOffer {
     public TradeOffers.Factory deserialize(JsonObject json) {
         loadDefaultStats(json);
         Ingredient sell = Ingredient.fromJson(JsonFields.requireObject(json, "sell_tagged_item trade", "sell"));
-        ItemStack currency = getItemStackFromJson(json.get("priceIn").getAsJsonObject());
+        ItemStack currency = getCostStackFromJson(json.get("priceIn").getAsJsonObject());
         return new Factory(sell, currency, maxUses, experience, priceMultiplier, demand);
     }
 

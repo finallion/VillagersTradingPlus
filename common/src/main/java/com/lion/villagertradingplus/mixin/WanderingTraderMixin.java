@@ -10,6 +10,7 @@ import net.minecraft.village.TradeOffers;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -17,6 +18,9 @@ import java.util.List;
 
 @Mixin(WanderingTraderEntity.class)
 public abstract class WanderingTraderMixin extends MerchantEntity implements TradeControl {
+
+    @Unique
+    private static final int villagertradingplus$BUYING_PAGE = 3;
 
     public WanderingTraderMixin(EntityType<? extends MerchantEntity> entityType, World world) {
         super(entityType, world);
@@ -38,6 +42,21 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
     }
 
     @Override
+    public TradeOffers.Factory[] villagertradingplus$catalogPool(int level) {
+        return level == villagertradingplus$BUYING_PAGE ? WanderingTraderTradeLoader.poolForLevel(0) : null;
+    }
+
+    @Override
+    public int villagertradingplus$catalogMaxLevel() {
+        return villagertradingplus$BUYING_PAGE;
+    }
+
+    @Override
+    public int villagertradingplus$catalogPicks(int level) {
+        return level == villagertradingplus$BUYING_PAGE ? WanderingTraderTradeLoader.countForLevel(0) : 0;
+    }
+
+    @Override
     public void villagertradingplus$rerollAll() {
         TradeOfferList offers = getOffers();
         offers.clear();
@@ -56,6 +75,10 @@ public abstract class WanderingTraderMixin extends MerchantEntity implements Tra
 
         if (common != null) {
             fillRecipesFromPool(offers, common, WanderingTraderTradeLoader.countForLevel(1));
+        }
+
+        for (Pair<TradeOffers.Factory[], Integer> extra : WanderingTraderTradeLoader.extraPairs()) {
+            fillRecipesFromPool(offers, extra.getLeft(), extra.getRight());
         }
     }
 }

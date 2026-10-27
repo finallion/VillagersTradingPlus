@@ -13,9 +13,11 @@ public final class TradeEventHandler {
 
     public static void onVillagerTrades(VillagerTradesEvent event) {
         TradeMerger.applyStaged(event.getType(), event.getTrades());
+        TradeMerger.applyStagedRebalanced(event.getType());
     }
 
     public static void onWandererTrades(WandererTradesEvent event) {
+        WanderingTraderTradeLoader.applyStagedTo(0, event.getBuyingTrades());
         WanderingTraderTradeLoader.applyStagedTo(1, event.getGenericTrades());
         WanderingTraderTradeLoader.applyStagedTo(2, event.getRareTrades());
         event.setGenericAmount(VillagerTradingPlus.CONFIG.trade_offers_wandering_trader);

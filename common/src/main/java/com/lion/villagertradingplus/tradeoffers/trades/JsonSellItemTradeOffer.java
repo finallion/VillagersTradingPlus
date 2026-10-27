@@ -16,7 +16,7 @@ public class JsonSellItemTradeOffer extends JsonTradeOffer {
         loadDefaultStats(json);
 
         ItemStack sell = getItemStackFromJson(JsonFields.requireObject(json, "sell_item trade", "sell"));
-        ItemStack currency = getItemStackFromJson(json.get("priceIn").getAsJsonObject());
+        ItemStack currency = getCostStackFromJson(json.get("priceIn").getAsJsonObject());
 
         return new Factory(sell, currency, maxUses, experience, priceMultiplier, demand);
     }

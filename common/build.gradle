@@ -14,3 +14,28 @@ loom {
 processResources {
 	from(rootProject.file("LICENSE"))
 }
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	testImplementation platform("org.junit:junit-bom:5.10.2")
+	testImplementation "org.junit.jupiter:junit-jupiter"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+test {
+	useJUnitPlatform()
+	// The helper classes extend Minecraft and only load through WideningLoader.
+	include "**/*Test.class"
+	systemProperty "vtp.rootDir", rootProject.projectDir.absolutePath
+	systemProperty "vtp.writeTemplates", project.hasProperty("writeTemplates") ? "true" : "false"
+	maxHeapSize = "1g"
+	workingDir = layout.buildDirectory.dir("test-work").get().asFile
+	doFirst { workingDir.mkdirs() }
+	testLogging {
+		events "failed", "skipped"
+		exceptionFormat "short"
+	}
+}

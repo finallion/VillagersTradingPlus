@@ -7,8 +7,10 @@
     "DataPackContentsMixin",
     "EnchantBookFactoryAccessor",
     "SellMapFactoryAccessor",
+    "TypedWrapperFactoryAccessor",
     "MerchantScreenHandlerAccessor",
     "MerchantScreenHandlerMixin",
+    "MerchantEntityMixin",
     "VillagerEntityMixin",
     "WanderingTraderMixin"
   ],

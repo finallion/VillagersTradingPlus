@@ -1,16 +1,20 @@
 package com.lion.villagertradingplus.tradeoffers.catalog;
 
 import com.lion.villagertradingplus.mixin.SellMapFactoryAccessor;
-import com.lion.villagertradingplus.tradeoffers.PricingTradeFactory;
+import com.lion.villagertradingplus.mixin.TypedWrapperFactoryAccessor;
+import com.lion.villagertradingplus.tradeoffers.TradePricing;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
+import net.minecraft.village.VillagerDataContainer;
+import net.minecraft.village.VillagerType;
 import net.minecraft.world.gen.structure.Structure;
 
 import java.lang.reflect.Field;
@@ -38,7 +42,6 @@ public final class CatalogBuilder {
     private final List<ConditionGroup> conditionStack = new ArrayList<>();
 
     private final Deque<Float> shareStack = new ArrayDeque<>();
-    private final Deque<Float> priceFactorStack = new ArrayDeque<>();
 
     private final int tierPoolSize;
     private final int tierPicks;
@@ -59,7 +62,6 @@ public final class CatalogBuilder {
         this.weightStack.clear();
         this.conditionStack.clear();
         this.shareStack.clear();
-        this.priceFactorStack.clear();
         this.composedShare = 1.0f;
         this.composedPriceFactor = 1.0f;
         refreshConditions();
@@ -100,17 +102,8 @@ public final class CatalogBuilder {
         }
     }
 
-    public void pushPriceFactor(float factor) {
-        this.priceFactorStack.addLast(this.composedPriceFactor);
-        this.composedPriceFactor *= factor;
-    }
-
-    public void popPriceFactor() {
-        Float saved = this.priceFactorStack.pollLast();
-
-        if (saved != null) {
-            this.composedPriceFactor = saved;
-        }
+    public void setPriceFactor(float factor) {
+        this.composedPriceFactor = factor;
     }
 
     public void add(
@@ -164,7 +157,7 @@ public final class CatalogBuilder {
                         this.tierPicks,
                         maxUses,
                         villagerExperience,
-                        priceMultiplier,
+                        priceMultiplier * TradePricing.multiplierScale(),
                         demand,
                         minPrice,
                         maxPrice,
@@ -194,6 +187,14 @@ public final class CatalogBuilder {
     }
 
     public void addSampled(TradeOffers.Factory factory, Entity merchant) {
+        if (factory instanceof TypedWrapperFactoryAccessor typed) {
+            factory = typed.villagertradingplus$typeToFactory().get(villagerType(merchant));
+
+            if (factory == null) {
+                return;
+            }
+        }
+
         if (isStructureMapFactory(factory)) {
             addStaticMapRow(factory);
             return;
@@ -204,6 +205,14 @@ public final class CatalogBuilder {
         if (offer != null) {
             addOffer(offer);
         }
+    }
+
+    private static RegistryKey<VillagerType> villagerType(Entity merchant) {
+        if (!(merchant instanceof VillagerDataContainer villager)) {
+            return null;
+        }
+
+        return villager.getVillagerData().type().getKey().orElse(null);
     }
 
     /// Vanilla map trades search for a structure when rolled. The factory class is private, so match its tag field.
@@ -280,6 +289,6 @@ public final class CatalogBuilder {
     }
 
     private int scale(int rawPrice, int maxCount) {
-        return PricingTradeFactory.scaleCount(rawPrice, maxCount, this.composedPriceFactor);
+        return TradePricing.scaleCount(rawPrice, maxCount, this.composedPriceFactor);
     }
 }
