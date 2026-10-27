@@ -1,0 +1,169 @@
+{
+  "profession": "minecraft:butcher",
+  "trades": {
+    "novice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:chicken",
+          "count": 14
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:porkchop",
+          "count": 7
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:rabbit",
+          "count": 4
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:rabbit_stew",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 1,
+        "price_multiplier": 0.05
+      }
+    ],
+    "apprentice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:coal",
+          "count": 15
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:cooked_porkchop",
+          "count": 5
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 5,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:cooked_chicken",
+          "count": 8
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 5,
+        "price_multiplier": 0.05
+      }
+    ],
+    "journeyman": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:mutton",
+          "count": 7
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 20,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:beef",
+          "count": 10
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 20,
+        "price_multiplier": 0.05
+      }
+    ],
+    "expert": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:dried_kelp_block",
+          "count": 10
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      }
+    ],
+    "master": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:sweet_berries",
+          "count": 10
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      }
+    ]
+  }
+}

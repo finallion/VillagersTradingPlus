@@ -5,10 +5,13 @@ license = "GPL-3.0-only"
 [[mods]]
 modId = "villagertradingplus"
 version = "${version}"
-displayName = "VillagerTradingPlus"
-authors = "Lion"
+displayName = "VillagersTradingPlus"
+authors = "LithiumPlus"
+displayURL = "https://modrinth.com/mod/villagerstradingplus"
+issueTrackerURL = "https://github.com/finallion/VillagersTradingPlus/issues"
+logoFile = "villagertradingplus_logo.png"
 description = '''
-A library for defining villager and wandering trader trades in JSON, with conditions, dynamic pricing and an in-game trade catalog.
+A library that replaces Minecraft's villager trading with a datapack-driven system.
 
 Support: https://www.patreon.com/cw/LithiumPlus
 '''

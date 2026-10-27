@@ -1,0 +1,298 @@
+{
+  "profession": "minecraft:fisherman",
+  "trades": {
+    "novice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:string",
+          "count": 20
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:coal",
+          "count": 10
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:multi_input",
+        "input_a": {
+          "item": "minecraft:cod",
+          "count": 6
+        },
+        "input_b": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "sell": {
+          "item": "minecraft:cooked_cod",
+          "count": 6
+        },
+        "max_uses": 16,
+        "villager_experience": 1,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:cod_bucket",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 3
+        },
+        "max_uses": 16,
+        "villager_experience": 1,
+        "price_multiplier": 0.05
+      }
+    ],
+    "apprentice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:cod",
+          "count": 15
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:multi_input",
+        "input_a": {
+          "item": "minecraft:salmon",
+          "count": 6
+        },
+        "input_b": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "sell": {
+          "item": "minecraft:cooked_salmon",
+          "count": 6
+        },
+        "max_uses": 16,
+        "villager_experience": 5,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:campfire",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 2
+        },
+        "max_uses": 12,
+        "villager_experience": 5,
+        "price_multiplier": 0.05
+      }
+    ],
+    "journeyman": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:salmon",
+          "count": 13
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 20,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_enchanted_tool",
+        "sell": {
+          "item": "minecraft:fishing_rod",
+          "count": 1
+        },
+        "basePriceIn": {
+          "item": "minecraft:emerald",
+          "count": 3
+        },
+        "max_uses": 3,
+        "villager_experience": 10,
+        "price_multiplier": 0.2
+      }
+    ],
+    "expert": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:tropical_fish",
+          "count": 6
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      }
+    ],
+    "master": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:pufferfish",
+          "count": 4
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:oak_boat",
+          "count": 1
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:predicates": {
+              "minecraft:villager/variant": "minecraft:plains"
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:spruce_boat",
+          "count": 1
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:taiga",
+                "minecraft:snow"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:jungle_boat",
+          "count": 1
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:predicates": {
+              "minecraft:villager/variant": [
+                "minecraft:desert",
+                "minecraft:jungle"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:acacia_boat",
+          "count": 1
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:predicates": {
+              "minecraft:villager/variant": "minecraft:savanna"
+            }
+          }
+        }
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:dark_oak_boat",
+          "count": 1
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05,
+        "merchant_predicate": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:predicates": {
+              "minecraft:villager/variant": "minecraft:swamp"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,659 @@
+{
+  "profession": "minecraft:mason",
+  "trades": {
+    "novice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:clay_ball",
+          "count": 10
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 2,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:brick",
+          "count": 10
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 1,
+        "price_multiplier": 0.05
+      }
+    ],
+    "apprentice": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:stone",
+          "count": 20
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:chiseled_stone_bricks",
+          "count": 4
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 5,
+        "price_multiplier": 0.05
+      }
+    ],
+    "journeyman": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:granite",
+          "count": 16
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 20,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:andesite",
+          "count": 16
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 20,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:diorite",
+          "count": 16
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 20,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:dripstone_block",
+          "count": 4
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:polished_andesite",
+          "count": 4
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:polished_diorite",
+          "count": 4
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:polished_granite",
+          "count": 4
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 16,
+        "villager_experience": 10,
+        "price_multiplier": 0.05
+      }
+    ],
+    "expert": [
+      {
+        "type": "villagertradingplus:buy_item",
+        "buy": {
+          "item": "minecraft:quartz",
+          "count": 12
+        },
+        "reward": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:white_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:orange_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:magenta_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:light_blue_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:yellow_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:lime_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:pink_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:gray_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:light_gray_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:cyan_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:purple_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:blue_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:brown_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:green_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:red_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:black_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:white_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:orange_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:magenta_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:light_blue_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:yellow_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:lime_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:pink_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:gray_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:light_gray_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:cyan_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:purple_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:blue_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:brown_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:green_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:red_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:black_glazed_terracotta",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 15,
+        "price_multiplier": 0.05
+      }
+    ],
+    "master": [
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:quartz_pillar",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      },
+      {
+        "type": "villagertradingplus:sell_item",
+        "sell": {
+          "item": "minecraft:quartz_block",
+          "count": 1
+        },
+        "priceIn": {
+          "item": "minecraft:emerald",
+          "count": 1
+        },
+        "max_uses": 12,
+        "villager_experience": 30,
+        "price_multiplier": 0.05
+      }
+    ]
+  }
+}

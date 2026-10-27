@@ -1,6 +1,8 @@
 package com.lion.villagertradingplus.mixin;
 
+import com.lion.villagertradingplus.tradeoffers.LevelCounts;
 import com.lion.villagertradingplus.tradeoffers.TradePools;
+import com.lion.villagertradingplus.tradeoffers.TradePricing;
 import com.lion.villagertradingplus.tradeoffers.gui.TradeControl;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
@@ -64,6 +66,7 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
 
     @Inject(method = "updateTrades", at = @At("TAIL"))
     private void villagertradingplus$recordVanillaTier(ServerLevel level, CallbackInfo ci) {
+        TradePricing.applyFrom(getOffers(), villagertradingplus$offersBeforeFill, this);
         villagertradingplus$recordTier(
                 level,
                 getVillagerData().level(),
@@ -82,7 +85,7 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     private void villagertradingplus$readLevelCounts(ValueInput view, CallbackInfo ci) {
         villagertradingplus$levelCounts =
-                view.getIntArray("VillagerTradingPlusLevelCounts").orElse(null);
+                view.getIntArray("VillagerTradingPlusLevelCounts").map(LevelCounts::clamp).orElse(null);
     }
 
     @Override
@@ -171,6 +174,7 @@ public abstract class VillagerEntityMixin extends AbstractVillager implements Tr
 
         if (set != null) {
             addOffersFromTradeSet(level, target, set);
+            TradePricing.applyFrom(target, before, this);
         }
 
         return target.size() - before;
