@@ -1,7 +1,6 @@
 package com.lion.villagertradingplus.tradeoffers.trades;
 
 import com.google.gson.JsonObject;
-import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.tradeoffers.util.ItemStackSerializer;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,8 +27,7 @@ public abstract class JsonTradeOffer {
         this.maxUses = readInt(jsonObject, "max_uses", 12);
         this.experience = readInt(jsonObject, "villager_experience", 5);
         this.demand = readInt(jsonObject, "demand", 0);
-        float base = readFloat(jsonObject, "price_multiplier", 0.05f);
-        this.priceMultiplier = base * VillagerTradingPlus.CONFIG.trade_price_multiplier_scale;
+        this.priceMultiplier = readFloat(jsonObject, "price_multiplier", 0.05f);
     }
 
     protected MerchantOffer buildOffer(ItemStack buy, ItemStack second, ItemStack sell) {

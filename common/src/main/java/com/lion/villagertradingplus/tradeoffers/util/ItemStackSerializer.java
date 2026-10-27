@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lion.villagertradingplus.VillagerTradingPlus;
 import com.lion.villagertradingplus.tradeoffers.TradeOfferManager;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
@@ -42,7 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/// Raw `nbt` applies last.
 public final class ItemStackSerializer {
 
     private ItemStackSerializer() {}
@@ -145,6 +145,10 @@ public final class ItemStackSerializer {
         if (json.has("nbt")) {
             applyRawNbt(stack, json.get("nbt").getAsString());
         }
+
+        if (json.has("components")) {
+            applyComponentPatch(stack, json.get("components"));
+        }
     }
 
     private static void applyEnchantments(ItemStack stack, JsonArray enchantments) {
@@ -218,6 +222,40 @@ public final class ItemStackSerializer {
                 DataComponents.WRITTEN_BOOK_CONTENT,
                 new WrittenBookContent(Filterable.passThrough(title), author, 0, pages, true)
         );
+    }
+
+    private static void applyComponentPatch(ItemStack stack, JsonElement patch) {
+        Optional<HolderLookup.Provider> lookup = DatapackRegistries.lookup();
+
+        if (lookup.isEmpty()) {
+            VillagerTradingPlus.LOGGER.error(
+                    "Cannot read \"components\" on a trade item: no datapack registries are loaded. "
+                            + "The item is used without them."
+            );
+            return;
+        }
+
+        try {
+            RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, lookup.get());
+            DataResult<DataComponentPatch> result = DataComponentPatch.CODEC.parse(ops, patch);
+
+            if (result.error().isPresent()) {
+                VillagerTradingPlus.LOGGER.warn(
+                        "Invalid \"components\" on a trade item{}, skipping them: {}",
+                        TradeOfferManager.fileSuffix(),
+                        result.error().get().message()
+                );
+                return;
+            }
+
+            stack.applyComponentsAndValidate(result.result().get());
+        } catch (Exception e) {
+            VillagerTradingPlus.LOGGER.warn(
+                    "Invalid \"components\" on a trade item{}, skipping them: {}",
+                    TradeOfferManager.fileSuffix(),
+                    e.getMessage()
+            );
+        }
     }
 
     private static void applyRawNbt(ItemStack stack, String snbt) {

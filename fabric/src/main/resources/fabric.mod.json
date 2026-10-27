@@ -2,14 +2,19 @@
   "schemaVersion": 1,
   "id": "villagertradingplus",
   "version": "${version}",
-  "name": "VillagerTradingPlus",
-  "description": "A library for defining villager and wandering trader trades in JSON, with conditions, dynamic pricing and an in-game trade catalog.",
+  "name": "VillagersTradingPlus",
+  "description": "A library that replaces Minecraft's villager trading with a datapack-driven system.",
   "authors": [
-    "Finallion"
+    "LithiumPlus"
   ],
-  "contact": {},
+  "contact": {
+    "homepage": "https://modrinth.com/mod/villagerstradingplus",
+    "sources": "https://github.com/finallion/VillagersTradingPlus",
+    "issues": "https://github.com/finallion/VillagersTradingPlus/issues"
+  },
 
   "license": "GPL-3.0-only",
+  "icon": "villagertradingplus_logo.png",
 
   "environment": "*",
   "entrypoints": {
@@ -26,7 +31,7 @@
 
   "depends": {
     "fabricloader": ">=0.19.5",
-    "fabric-api": "*",
+    "fabric-api": ">=0.162.0",
     "minecraft": ">=26.3 <26.4",
     "java": ">=25"
   },
